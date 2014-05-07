@@ -24,7 +24,7 @@ module.exports = function ( grunt ) {
 			files : [
 				'js/*.js'
 			],
-			tasks : [ 'concat', 'uglify' ]
+			tasks : [ 'uglify' ]
 		}
 	});
 	grunt.loadNpmTasks( 'grunt-contrib-uglify' );
