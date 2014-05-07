@@ -4,7 +4,10 @@
  */
 
 function json_api_client_js() {
-	wp_enqueue_script( 'wp-api', plugins_url( 'build/js/wp-api.js', __FILE__ ), array( 'jquery', 'backbone' ), '1.0', true );
+	wp_enqueue_script( 'wp-api', plugins_url( 'build/js/wp-api.min.js', __FILE__ ), array( 'jquery', 'underscore', 'backbone' ), '1.0', true );
+
+	$settings = array( 'root' => home_url( 'wp-json' ) );
+	wp_localize_script( 'wp-api', 'WP_API_Settings', $settings );
 }
 
 if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) {
