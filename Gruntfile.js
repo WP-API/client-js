@@ -31,5 +31,5 @@ module.exports = function ( grunt ) {
 	grunt.loadNpmTasks( 'grunt-contrib-watch' );
 	grunt.loadNpmTasks( 'grunt-contrib-qunit' );
 	grunt.registerTask( 'default', [ 'uglify:js' ] );
-	grunt.registerTask( 'qunit', [ 'qunit:all' ] );
+	grunt.registerTask( 'test', [ 'qunit:all' ] );
 };
