@@ -1,0 +1,9 @@
+{
+  "name": "wp-api-js",
+  "dependencies": {
+    "jquery": "~2.1.1",
+    "backbone": "~1.1.2",
+    "underscore": "~1.6.0",
+    "jquery-migrate": "~1.2.1"
+  }
+}

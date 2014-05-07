@@ -4,7 +4,11 @@ module.exports = function ( grunt ) {
         concat : {
             js : {
                 src : [
-                    'js/*'
+                    'js/app.js',
+                    'js/utils.js',
+                    'js/models.js',
+                    'js/views.js',
+                    'js/collections.js'
                 ],
                 dest : 'build/js/wp-api.js'
             }
@@ -16,12 +20,12 @@ module.exports = function ( grunt ) {
                 }
             }
         },
+        qunit: {
+            all: [ 'tests/*.html' ]
+        },
         watch : {
 			files : [
-                'js/app.js',
-                'js/models.js',
-                'js/views.js',
-                'js/collections.js'
+                'js/*.js'
             ],
 			tasks : [ 'concat', 'uglify' ]
 		}
@@ -29,5 +33,7 @@ module.exports = function ( grunt ) {
     grunt.loadNpmTasks( 'grunt-contrib-concat' );
     grunt.loadNpmTasks( 'grunt-contrib-uglify' );
     grunt.loadNpmTasks( 'grunt-contrib-watch' );
+    grunt.loadNpmTasks( 'grunt-contrib-qunit' );
     grunt.registerTask( 'default', [ 'concat:js', 'uglify:js' ] );
+    grunt.registerTask( 'qunit', [ 'qunit:all' ] );
 };
