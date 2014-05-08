@@ -10,11 +10,19 @@
      * @type {*}
      */
     wp.api.models.User = Backbone.Model.extend( {
+        idAttribute: "ID",
+
         urlRoot: WP_API_Settings.root + "/users",
 
         defaults: {
-            ID: 0,
+            ID: null,
+            username: "",
+            email: "",
+            password: "",
             name: "",
+            first_name: "",
+            last_name: "",
+            nickname: "",
             slug: "",
             URL: "",
             avatar: "",
@@ -118,7 +126,7 @@
             delete response.modified_gmt;
 
             // Parse the author into a User object
-            response.author = new wp.api.models.User(response.author);
+            response.author = new wp.api.models.User( { username: response.author } );
 
             return response;
         },
