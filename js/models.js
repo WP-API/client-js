@@ -36,6 +36,47 @@
         }
     });
 
+    /**
+     * Model for taxonomy
+     */
+    wp.api.models.Taxonomy = Backbone.Model.extend( {
+        idAttribute: "name",
+
+        defaults: {
+            name: null,
+            slug: '',
+            labels: [],
+            types: [ 'post' ],
+            show_cloud: false,
+            hierarchical: false,
+            meta: {
+                links: {}
+            }
+        },
+
+        url: function() {
+            var name = this.get( 'name' );
+            name = name || "";
+
+            return WP_API_Settings.root + '/posts/types/' + this.defaultPostType() + '/taxonomies/' + name;
+        },
+
+        /**
+         * Use the first post type as the default one
+         *
+         * @return string
+         */
+        defaultPostType: function() {
+            var types = this.get( 'types');
+
+            if ( typeof types !== 'undefined' && types[0] ) {
+                return types[0];
+            }
+
+            return null;
+        }
+    });
+
 
     /**
      * Backbone model for single posts
