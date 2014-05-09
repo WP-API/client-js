@@ -1,4 +1,4 @@
-( function( wp, WP_API_Settings, Backbone, window ) {
+( function( wp, WP_API_Settings, Backbone, window, undefined ) {
 
     "use strict";
 
@@ -75,6 +75,63 @@
 
             return null;
         }
+    });
+
+    /*
+
+    new wp.api.models.Term( {}, { type:'post', taxonomy: 'post_tag' } ).fetch();
+
+    new wp.api.models.Term().fetch();
+
+    new wp.api.collections.Terms({}, {}).
+     */
+
+    wp.api.models.Term = Backbone.Model.extend( {
+
+        idAttribute: 'ID',
+
+        type: 'post',
+
+        taxonomy: 'category',
+
+        initialize: function( attributes, options ) {
+            if ( typeof options != 'undefined' ) {
+                if ( options.type ) {
+                    this.type = options.type;
+                }
+
+                if ( options.taxonomy ) {
+                    this.taxonomy = options.taxonomy;
+                }
+            }
+        },
+
+        url: function() {
+            var id = this.get( 'ID' );
+            id = id || "";
+
+            return WP_API_Settings.root + '/posts/types/' + this.type + '/taxonomies/' + this.taxonomy + '/terms/' + id;
+        },
+
+        defaults: {
+            ID: null,
+            name: '',
+            slug: '',
+            description: '',
+            parent: null,
+            count: 0,
+            link: '',
+            meta: {
+                links: {}
+            }
+        },
+
+        parse: function(response) {
+
+
+            return response.results;
+        }
+
     });
 
 
@@ -202,4 +259,4 @@
         }
     });
 
-} )( wp, WP_API_Settings, Backbone, window, undefined );
+} )( wp, WP_API_Settings, Backbone, window );
