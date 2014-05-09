@@ -77,13 +77,8 @@
         }
     });
 
-    /*
-
-    new wp.api.models.Term( {}, { type:'post', taxonomy: 'post_tag' } ).fetch();
-
-    new wp.api.models.Term().fetch();
-
-    new wp.api.collections.Terms({}, {}).
+    /**
+     * Backbone model for term
      */
 
     wp.api.models.Term = Backbone.Model.extend( {
@@ -124,12 +119,6 @@
             meta: {
                 links: {}
             }
-        },
-
-        parse: function(response) {
-
-
-            return response.results;
         }
 
     });
