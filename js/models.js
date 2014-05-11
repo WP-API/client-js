@@ -150,8 +150,8 @@
             }
             else {
                 // Otherwise, get the post directly
-                    id: parent
                 var post = new wp.api.models.Post({
+                    ID: parent
                 });
 
                 // Note that this acts asynchronously
