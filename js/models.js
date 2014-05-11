@@ -155,7 +155,7 @@
                 });
 
                 // Note that this acts asynchronously
-                wp.api.models.post.fetch();
+                post.fetch();
                 return post;
             }
         }
