@@ -1,4 +1,4 @@
-( function( window, undefined ) {
+(function( window, undefined ) {
 
     'use strict';
 
@@ -11,4 +11,4 @@
     window.wp = window.wp || {};
     wp.api = wp.api || new WP_API();
 
-} )( window );
+})( window );
