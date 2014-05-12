@@ -1,6 +1,6 @@
-( function( window, undefined ) {
+(function( window, undefined ) {
 
-    "use strict";
+    'use strict';
 
     function WP_API() {
         this.models = {};
@@ -11,4 +11,4 @@
     window.wp = window.wp || {};
     wp.api = wp.api || new WP_API();
 
-} )( window );
+})( window );

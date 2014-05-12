@@ -1,13 +1,31 @@
-module.exports = function ( grunt ) {
-	grunt.initConfig( {
-		pkg : grunt.file.readJSON( 'package.json' ),
-		uglify : {
-			js : {
+/* jshint node:true */
+module.exports = function( grunt ) {
+	grunt.initConfig({
+		pkg: grunt.file.readJSON( 'package.json' ),
+		jshint: {
+			options: grunt.file.readJSON( '.jshintrc' ),
+			grunt: {
+				src: [ 'Gruntfile.js' ]
+			},
+			tests: {
+				src: [
+					'tests/**/*.js'
+				],
+				options: grunt.file.readJSON( 'tests/.jshintrc' )
+			},
+			core: {
+				src: [
+					'js/*.js'
+				]
+			}
+		},
+		uglify: {
+			js: {
 				options: {
 					sourceMap: true
 				},
-				files : {
-					'build/js/wp-api.min.js' : [
+				files: {
+					'build/js/wp-api.min.js': [
 						'js/app.js',
 						'js/utils.js',
 						'js/models.js',
@@ -20,16 +38,17 @@ module.exports = function ( grunt ) {
 		qunit: {
 			all: [ 'tests/*.html' ]
 		},
-		watch : {
-			files : [
+		watch: {
+			files: [
 				'js/*.js'
 			],
-			tasks : [ 'uglify' ]
+			tasks: [ 'uglify' ]
 		}
 	});
+	grunt.loadNpmTasks( 'grunt-contrib-jshint' );
 	grunt.loadNpmTasks( 'grunt-contrib-uglify' );
 	grunt.loadNpmTasks( 'grunt-contrib-watch' );
 	grunt.loadNpmTasks( 'grunt-contrib-qunit' );
-	grunt.registerTask( 'default', [ 'uglify:js' ] );
+	grunt.registerTask( 'default', [ 'jshint', 'uglify:js' ] );
 	grunt.registerTask( 'test', [ 'qunit:all' ] );
 };
