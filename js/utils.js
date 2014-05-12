@@ -1,6 +1,6 @@
 ( function( window, undefined ) {
 
-    "use strict";
+    'use strict';
 
     // ECMAScript 5 shim, from MDN
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString
