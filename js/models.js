@@ -1,4 +1,4 @@
-( function( wp, WP_API_Settings, Backbone, window ) {
+( function( wp, WP_API_Settings, Backbone, window, undefined ) {
 
     "use strict";
 
@@ -34,6 +34,93 @@
         avatar: function( size ) {
             return this.get( 'avatar' ) + '&s=' + size;
         }
+    });
+
+    /**
+     * Model for taxonomy
+     */
+    wp.api.models.Taxonomy = Backbone.Model.extend( {
+        idAttribute: "name",
+
+        defaults: {
+            name: null,
+            slug: '',
+            labels: [],
+            types: [ 'post' ],
+            show_cloud: false,
+            hierarchical: false,
+            meta: {
+                links: {}
+            }
+        },
+
+        url: function() {
+            var name = this.get( 'name' );
+            name = name || "";
+
+            return WP_API_Settings.root + '/posts/types/' + this.defaultPostType() + '/taxonomies/' + name;
+        },
+
+        /**
+         * Use the first post type as the default one
+         *
+         * @return string
+         */
+        defaultPostType: function() {
+            var types = this.get( 'types');
+
+            if ( typeof types !== 'undefined' && types[0] ) {
+                return types[0];
+            }
+
+            return null;
+        }
+    });
+
+    /**
+     * Backbone model for term
+     */
+
+    wp.api.models.Term = Backbone.Model.extend( {
+
+        idAttribute: 'ID',
+
+        type: 'post',
+
+        taxonomy: 'category',
+
+        initialize: function( attributes, options ) {
+            if ( typeof options != 'undefined' ) {
+                if ( options.type ) {
+                    this.type = options.type;
+                }
+
+                if ( options.taxonomy ) {
+                    this.taxonomy = options.taxonomy;
+                }
+            }
+        },
+
+        url: function() {
+            var id = this.get( 'ID' );
+            id = id || "";
+
+            return WP_API_Settings.root + '/posts/types/' + this.type + '/taxonomies/' + this.taxonomy + '/terms/' + id;
+        },
+
+        defaults: {
+            ID: null,
+            name: '',
+            slug: '',
+            description: '',
+            parent: null,
+            count: 0,
+            link: '',
+            meta: {
+                links: {}
+            }
+        }
+
     });
 
 
@@ -161,4 +248,4 @@
         }
     });
 
-} )( wp, WP_API_Settings, Backbone, window, undefined );
+} )( wp, WP_API_Settings, Backbone, window );
