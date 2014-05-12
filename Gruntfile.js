@@ -1,13 +1,13 @@
-module.exports = function ( grunt ) {
-	grunt.initConfig( {
-		pkg : grunt.file.readJSON( 'package.json' ),
-		uglify : {
-			js : {
+module.exports = function( grunt ) {
+	grunt.initConfig({
+		pkg: grunt.file.readJSON( 'package.json' ),
+		uglify: {
+			js: {
 				options: {
 					sourceMap: true
 				},
-				files : {
-					'build/js/wp-api.min.js' : [
+				files: {
+					'build/js/wp-api.min.js': [
 						'js/app.js',
 						'js/utils.js',
 						'js/models.js',
@@ -20,11 +20,11 @@ module.exports = function ( grunt ) {
 		qunit: {
 			all: [ 'tests/*.html' ]
 		},
-		watch : {
-			files : [
+		watch: {
+			files: [
 				'js/*.js'
 			],
-			tasks : [ 'uglify' ]
+			tasks: [ 'uglify' ]
 		}
 	});
 	grunt.loadNpmTasks( 'grunt-contrib-uglify' );
