@@ -1,6 +1,8 @@
 Backbone.js App for WP-API
 ==============
 
+This library provides a client-side interface for the [WP JSON API](https://github.com/WP-API/WP-API) plugin for WordPress. (Detailed project description and usage guide to come.)
+
 ## Development
 
 To develop, build and test this library, you must have [Node](http://nodejs.org) installed. For Windows users, simply [download](http://nodejs.org/download/) and install Node. For Mac users, we recommend installing Node using [Homebrew](http://mxcl.github.com/homebrew/). Once Homebrew is installed, run `brew install node` to install Node.js.
