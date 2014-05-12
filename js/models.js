@@ -12,7 +12,7 @@
      *
      * @type {*}
      */
-    wp.api.models.User = Backbone.Model.extend({
+    wp.api.models.User = Backbone.Model.extend( {
         idAttribute: 'ID',
 
         urlRoot: WP_API_Settings.root + '/users',
@@ -132,7 +132,7 @@
      *
      * @type {*}
      */
-    wp.api.models.Post = Backbone.Model.extend({
+    wp.api.models.Post = Backbone.Model.extend( {
 
         idAttribute: 'ID',
 
@@ -176,7 +176,7 @@
          * Overriden for correct date handling
          * @return {!Object} Serializable attributes
          */
-        toJSON: function() {
+        toJSON: function () {
             var attributes = _.clone( this.attributes );
 
             // Remove GMT dates in favour of our native Date objects
@@ -186,7 +186,7 @@
             delete attributes.modified_gmt;
 
             // Serialize Date objects back into 8601 strings
-            _.each( parseable_dates, function( key ) {
+            _.each( parseable_dates, function ( key ) {
                 attributes[ key ] = attributes[ key ].toISOString();
             });
 
@@ -201,9 +201,9 @@
          * @param {!Object} options Request options
          * @return {!Object} Fully parsed attributes
          */
-        parse: function( response, options ) {
+        parse: function ( response, options ) {
             // Parse dates into native Date objects
-            _.each( parseable_dates, function( key ) {
+            _.each( parseable_dates, function ( key ) {
                 if ( ! ( key in response ) ) {
                     return;
                 }
@@ -217,7 +217,7 @@
             delete response.modified_gmt;
 
             // Parse the author into a User object
-            response.author = new wp.api.models.User({ username: response.author });
+            response.author = new wp.api.models.User( { username: response.author } );
 
             return response;
         },
@@ -238,16 +238,16 @@
 
             // Can we get this from its collection?
             if ( this.collection ) {
-                return this.collection.get( parent );
+                return this.collection.get(parent);
             }
             else {
                 // Otherwise, get the post directly
-                post = new wp.api.Models.Post({
-                    id: parent
+                post = new wp.api.models.Post({
+                    ID: parent
                 });
 
                 // Note that this acts asynchronously
-                wp.api.models.post.fetch();
+                post.fetch();
                 return post;
             }
         }
