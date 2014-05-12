@@ -54,7 +54,7 @@ test( 'Post model can be instantiated with correct default values', function() {
 	equal( post.get('menu_order'), 0, 'menu_order should be 0' );
 	equal( post.get('comment_status'), 'open', 'comment_status should be open' );
 	equal( post.get('ping_status'), 'open', 'ping_status should be open' );
-	equal( post.get('sticky'), false, 'sticky should be open' );
+	equal( post.get('sticky'), false, 'sticky should be false' );
 	equal( post.get('date_tz'), 'Etc/UTC', 'date_tz should be Etc/UTC' );
 	equal( post.get('modified_tz'), 'Etc/UTC', 'modified_tz should be Etc/UTC' );
 
