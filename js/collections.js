@@ -1,3 +1,4 @@
+/* global WP_API_Settings:false */
 (function( wp, WP_API_Settings, Backbone, _, window, undefined ) {
 
     'use strict';
@@ -50,7 +51,7 @@
         taxonomy: 'category',
 
         initialize: function( models, options ) {
-            if ( typeof options != 'undefined' ) {
+            if ( typeof options !== 'undefined' ) {
                 if ( options.type ) {
                     this.type = options.type;
                 }

@@ -19,8 +19,8 @@ var testData = {
 	ping_status: 'closed',
 	sticky: true,
 	date_tz: 'America/New_York',
-	modified_tz: 'America/New_York',
-}
+	modified_tz: 'America/New_York'
+};
 
 var testResponse = JSON.parse( '{"ID":1,"title":"Test Post","status":"publish","type":"page","author":{"ID":1,"username":"admin","name":"admin","first_name":"","last_name":"","nickname":"admin","slug":"admin","URL":"","avatar":"http:\/\/1.gravatar.com\/avatar\/b17c1f19d80bf8f61c3f14962153f959?s=96","description":"","email":"admin@example.com","registered":"2014-03-05T18:37:51+00:00","meta":{"links":{"self":"http:\/\/example.com\/wp-json\/users\/1","archives":"http:\/\/example.com\/wp-json\/users\/1\/posts"}}},"content":"","parent":0,"link":"http:\/\/example.com\/test-post-2\/","date":"2014-05-11T19:29:15+00:00","modified":"2014-05-11T19:29:15+00:00","format":"standard","slug":"test-post-2","guid":"http:\/\/example.com\/test-post-2\/","excerpt":null,"menu_order":1,"comment_status":"closed","ping_status":"closed","sticky":false,"date_tz":"UTC","date_gmt":"2014-05-11T19:29:15+00:00","modified_tz":"UTC","modified_gmt":"2014-05-11T19:29:15+00:00","password":"","meta":{"links":{"self":"http:\/\/example.com\/wp-json\/posts\/1","author":"http:\/\/example.com\/wp-json\/users\/1","collection":"http:\/\/example.com\/wp-json\/posts","replies":"http:\/\/example.com\/wp-json\/posts\/1\/comments","version-history":"http:\/\/example.com\/wp-json\/posts\/1\/revisions"}},"featured_image":null,"terms":[]}' );
 
@@ -74,7 +74,7 @@ test( 'Post model data can be set correctly', function() {
 	var post1 = new wp.api.models.Post();
 	var post2 = new wp.api.models.Post( testData );
 
-	for ( key in testData ) {
+	for ( var key in testData ) {
 
 		post1.set( key, testData[key] );
 
@@ -87,7 +87,7 @@ test( 'Post model data can be set correctly', function() {
 
 test( 'Post model toJSON', function() {
 
-	expect(1);
+	expect( 1 );
 
 	var post = new wp.api.models.Post( testData );
 	var postJSON = post.toJSON();
@@ -98,7 +98,7 @@ test( 'Post model toJSON', function() {
 
 test( 'Post response is parsed correctly', function() {
 
-	expect(2);
+	expect( 2 );
 
 	var server = sinon.fakeServer.create();
 
@@ -133,7 +133,7 @@ test( 'Post parent is retrieved correctly when not part of a collection', functi
 		[ 200, { 'Content-Type': 'application/json' }, JSON.stringify([ testResponse ])]
 	);
 
-	var post   = new wp.api.models.Post( testData );
+	var post = new wp.api.models.Post( testData );
 	var parent = post.parent();
 
 	server.respond();
@@ -141,7 +141,7 @@ test( 'Post parent is retrieved correctly when not part of a collection', functi
 	equal( parent.toJSON().ID, 1, 'Post parent model should be retrieved correctly' );
 
 	var posts = new wp.api.collections.Posts();
-	var post1 = posts.create( new wp.api.models.Post({ ID:1, title: 'Test Parent' }) );
+	// var post1 = posts.create( new wp.api.models.Post({ ID:1, title: 'Test Parent' }) );
 	var post2 = posts.create( testData );
 
 	equal( post2.parent().get('title'), 'Test Parent' );

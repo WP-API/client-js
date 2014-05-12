@@ -1,6 +1,24 @@
+/* jshint node:true */
 module.exports = function( grunt ) {
 	grunt.initConfig({
 		pkg: grunt.file.readJSON( 'package.json' ),
+		jshint: {
+			options: grunt.file.readJSON( '.jshintrc' ),
+			grunt: {
+				src: [ 'Gruntfile.js' ]
+			},
+			tests: {
+				src: [
+					'tests/**/*.js'
+				],
+				options: grunt.file.readJSON( 'tests/.jshintrc' )
+			},
+			core: {
+				src: [
+					'js/*.js'
+				]
+			}
+		},
 		uglify: {
 			js: {
 				options: {
@@ -27,9 +45,10 @@ module.exports = function( grunt ) {
 			tasks: [ 'uglify' ]
 		}
 	});
+	grunt.loadNpmTasks( 'grunt-contrib-jshint' );
 	grunt.loadNpmTasks( 'grunt-contrib-uglify' );
 	grunt.loadNpmTasks( 'grunt-contrib-watch' );
 	grunt.loadNpmTasks( 'grunt-contrib-qunit' );
-	grunt.registerTask( 'default', [ 'uglify:js' ] );
+	grunt.registerTask( 'default', [ 'jshint', 'uglify:js' ] );
 	grunt.registerTask( 'test', [ 'qunit:all' ] );
 };

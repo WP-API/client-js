@@ -1,3 +1,6 @@
+/* global WP_API_Settings:false */
+// Suppress warning about parse function's unused "options" argument:
+/* jshint unused:false */
 (function( wp, WP_API_Settings, Backbone, window, undefined ) {
 
     'use strict';
@@ -90,7 +93,7 @@
         taxonomy: 'category',
 
         initialize: function( attributes, options ) {
-            if ( typeof options != 'undefined' ) {
+            if ( typeof options !== 'undefined' ) {
                 if ( options.type ) {
                     this.type = options.type;
                 }
@@ -164,7 +167,7 @@
                 meta: {
                     links: {}
                 }
-            }
+            };
         },
 
         /**
@@ -201,8 +204,9 @@
         parse: function( response, options ) {
             // Parse dates into native Date objects
             _.each( parseable_dates, function( key ) {
-                if ( ! ( key in response ) )
+                if ( ! ( key in response ) ) {
                     return;
+                }
 
                 var timestamp = wp.api.utils.parseISO8601( response[ key ] );
                 response[ key ] = new Date( timestamp );
@@ -224,7 +228,8 @@
          * @return {wp.api.models.Post} Parent post, null if not found
          */
         parent: function() {
-            var parent = this.get( 'parent' );
+            var post,
+                parent = this.get( 'parent' );
 
             // Return null if we don't have a parent
             if ( parent === 0 ) {
@@ -237,7 +242,7 @@
             }
             else {
                 // Otherwise, get the post directly
-                var post = new wp.api.Models.Post({
+                post = new wp.api.Models.Post({
                     id: parent
                 });
 

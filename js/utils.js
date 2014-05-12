@@ -14,24 +14,25 @@
         };
 
         Date.prototype.toISOString = function() {
-            return this.getUTCFullYear()
-                + '-' + pad( this.getUTCMonth() + 1 )
-                + '-' + pad( this.getUTCDate() )
-                + 'T' + pad( this.getUTCHours() )
-                + ':' + pad( this.getUTCMinutes() )
-                + ':' + pad( this.getUTCSeconds() )
-                + '.' + String( ( this.getUTCMilliseconds()/1000 ).toFixed( 3 ) ).slice( 2, 5 )
-                + 'Z';
+            return this.getUTCFullYear() +
+                '-' + pad( this.getUTCMonth() + 1 ) +
+                '-' + pad( this.getUTCDate() ) +
+                'T' + pad( this.getUTCHours() ) +
+                ':' + pad( this.getUTCMinutes() ) +
+                ':' + pad( this.getUTCSeconds() ) +
+                '.' + String( ( this.getUTCMilliseconds()/1000 ).toFixed( 3 ) ).slice( 2, 5 ) +
+                'Z';
         };
     }
 
     function WP_API_Utils() {
-        var origParse = Date.parse;
-        var numericKeys = [ 1, 4, 5, 6, 7, 10, 11 ];
+        var origParse = Date.parse,
+            numericKeys = [ 1, 4, 5, 6, 7, 10, 11 ];
 
 
         this.parseISO8601 = function( date ) {
-            var timestamp, struct, minutesOffset = 0;
+            var timestamp, struct, i, k,
+                minutesOffset = 0;
 
             // ES5 §15.9.4.2 states that the string should attempt to be parsed as a Date Time String Format string
             // before falling back to any implementation-specific date parsing, so that’s what we do, even if native
@@ -39,7 +40,7 @@
             //              1 YYYY                2 MM       3 DD           4 HH    5 mm       6 ss        7 msec        8 Z 9 ±    10 tzHH    11 tzmm
             if ((struct = /^(\d{4}|[+\-]\d{6})(?:-(\d{2})(?:-(\d{2}))?)?(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{3}))?)?(?:(Z)|([+\-])(\d{2})(?::(\d{2}))?)?)?$/.exec(date))) {
                 // avoid NaN timestamps caused by “undefined” values being passed to Date.UTC
-                for ( var i = 0, k; ( k = numericKeys[i] ); ++i) {
+                for ( i = 0; ( k = numericKeys[i] ); ++i) {
                     struct[k] = +struct[k] || 0;
                 }
 
