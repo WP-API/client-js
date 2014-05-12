@@ -105,11 +105,7 @@ test( 'Post response is parsed correctly', function() {
 	server.respondWith(
 		'GET',
 		'/posts/1',
-		[
-			200,
-			{ 'Content-Type': 'application/json' },
-			JSON.stringify([ testResponse ])
-		]
+		[ 200, { 'Content-Type': 'application/json' }, JSON.stringify([ testResponse ]) ]
 	);
 
 	var post = new wp.api.models.Post({ID:1});
@@ -132,13 +128,9 @@ test( 'Post parent is retrieved correctly when not part of a collection', functi
 	var server = sinon.fakeServer.create();
 
 	server.respondWith(
-		"GET",
-		"/posts/1",
-		[
-			200,
-			{ "Content-Type": "application/json" },
-			JSON.stringify([ testResponse ])
-		]
+		'GET',
+		'/posts/1',
+		[ 200, { 'Content-Type': 'application/json' }, JSON.stringify([ testResponse ])]
 	);
 
 	var post   = new wp.api.models.Post( testData );
