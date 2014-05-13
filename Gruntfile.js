@@ -35,18 +35,18 @@ module.exports = function( grunt ) {
 				}
 			}
 		},
-        concat: {
-            js: {
-                src: [
-                    'js/app.js',
-                    'js/utils.js',
-                    'js/models.js',
-                    'js/views.js',
-                    'js/collections.js'
-                ],
-                dest: 'build/js/wp-api.js'
-            }
-        },
+		concat: {
+			js: {
+				src: [
+					'js/app.js',
+					'js/utils.js',
+					'js/models.js',
+					'js/views.js',
+					'js/collections.js'
+				],
+				dest: 'build/js/wp-api.js'
+			}
+		},
 		qunit: {
 			all: [ 'tests/*.html' ]
 		},
@@ -58,8 +58,8 @@ module.exports = function( grunt ) {
 		}
 	});
 	grunt.loadNpmTasks( 'grunt-contrib-jshint' );
-    grunt.loadNpmTasks( 'grunt-contrib-uglify' );
-    grunt.loadNpmTasks( 'grunt-contrib-concat' );
+	grunt.loadNpmTasks( 'grunt-contrib-uglify' );
+	grunt.loadNpmTasks( 'grunt-contrib-concat' );
 	grunt.loadNpmTasks( 'grunt-contrib-watch' );
 	grunt.loadNpmTasks( 'grunt-contrib-qunit' );
 	grunt.registerTask( 'default', [ 'jshint', 'uglify:js', 'concat:js' ] );
