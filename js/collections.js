@@ -22,6 +22,15 @@
 	});
 
 	/**
+	 * Backbone post statuses collection
+	 */
+	wp.api.collections.PostStatuses = Backbone.Collection.extend({
+		url: WP_API_Settings.root + '/posts/statuses',
+
+		model: wp.api.models.PostStatus
+	});
+
+	/**
 	 * Backbone taxonomy collection
 	 */
 	wp.api.collections.Taxonomies = Backbone.Collection.extend({

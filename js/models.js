@@ -40,6 +40,39 @@
 	});
 
 	/**
+	 * Backbone model for a post status
+	 */
+	wp.api.models.PostStatus = Backbone.Model.extend( {
+		idAttribute: 'slug',
+
+		urlRoot: WP_API_Settings.root + '/posts/statuses',
+
+		defaults: {
+			slug: null,
+			name: '',
+			'public': true,
+			'protected': false,
+			'private': false,
+			queryable: true,
+			show_in_list: true,
+			meta: {
+				links: {}
+			}
+		},
+
+		/**
+		 * This model is read only
+		 */
+		save: function() {
+			return false;
+		},
+
+		'delete': function() {
+			return false;
+		}
+	});
+
+	/**
 	 * Model for taxonomy
 	 */
 	wp.api.models.Taxonomy = Backbone.Model.extend({
