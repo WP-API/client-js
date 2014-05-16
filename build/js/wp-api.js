@@ -342,6 +342,38 @@
 		}
 	});
 
+	/**
+	 * Backbone model for single post types
+	 */
+	wp.api.models.PostType = Backbone.Model.extend( {
+		idAttribute: 'slug',
+
+		urlRoot: WP_API_Settings.root + '/posts/types',
+
+		defaults: {
+			slug: null,
+			name: '',
+			description: '',
+			labels: {},
+			queryable: false,
+			searchable: false,
+			hierarchical: false,
+			meta: {
+				links: {}
+			},
+			taxonomies: []
+		},
+
+		/**
+		 * This is a read only model
+		 * 
+		 * @returns {boolean}
+		 */
+		sync: function () {
+			return false;
+		}
+	});
+
 })( wp, WP_API_Settings, Backbone, window );
 
 
@@ -385,6 +417,15 @@
 		url: function() {
 			return WP_API_Settings.root + '/posts/types/' + this.type + '/taxonomies/';
 		}
+	});
+
+	/**
+	 * Backbone post type collection
+	 */
+	wp.api.collections.PostTypes = Backbone.Collection.extend({
+		model: wp.api.models.PostType,
+
+		url: WP_API_Settings.root + '/posts/types'
 	});
 
 	/**
