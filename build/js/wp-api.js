@@ -366,10 +366,14 @@
 
 		/**
 		 * This is a read only model
-		 * 
+		 *
 		 * @returns {boolean}
 		 */
-		sync: function () {
+		save: function () {
+			return false;
+		},
+
+		'delete': function () {
 			return false;
 		}
 	});
