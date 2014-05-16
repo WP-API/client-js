@@ -41,6 +41,15 @@
 	});
 
 	/**
+	 * Backbone post type collection
+	 */
+	wp.api.collections.PostTypes = Backbone.Collection.extend({
+		model: wp.api.models.PostType,
+
+		url: WP_API_Settings.root + '/posts/types'
+	});
+
+	/**
 	 * Backbone terms collection
 	 */
 	wp.api.collections.Terms = Backbone.Collection.extend({
