@@ -22,6 +22,15 @@
 	});
 
 	/**
+	 * Backbone media library collection
+	 */
+	wp.api.collections.MediaLibrary = Backbone.Collection.extend({
+		url: WP_API_Settings.root + '/media',
+
+		model: wp.api.models.Media
+	});
+
+	/**
 	 * Backbone taxonomy collection
 	 */
 	wp.api.collections.Taxonomies = Backbone.Collection.extend({
