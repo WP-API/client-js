@@ -141,7 +141,7 @@ test( 'Post parent is retrieved correctly when not part of a collection', functi
 	equal( parent.toJSON().ID, 1, 'Post parent model should be retrieved correctly' );
 
 	var posts = new wp.api.collections.Posts();
-	// var post1 = posts.create( new wp.api.models.Post({ ID:1, title: 'Test Parent' }) );
+	posts.create( new wp.api.models.Post({ ID:1, title: 'Test Parent' }) );
 	var post2 = posts.create( testData );
 
 	equal( post2.parent().get('title'), 'Test Parent' );
