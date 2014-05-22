@@ -198,6 +198,44 @@
 
 	});
 
+	/**
+	 * Backbone model for pages
+	 */
+	wp.api.models.Page = Backbone.Model.extend( {
+		idAttribute: 'ID',
+
+		urlRoot: WP_API_Settings.root + '/pages',
+
+		defaults: {
+			ID: null,
+			title: '',
+			status: 'publish',
+			type: 'page',
+			author: new wp.api.models.User(),
+			content: '',
+			parent: 0,
+			link: '',
+			date: new Date(),
+			modified: new Date(),
+			date_tz: 'Etc/UTC',
+			modified_tz: 'Etc/UTC',
+			format: 'standard',
+			slug: '',
+			guid: '',
+			excerpt: '',
+			menu_order: 0,
+			comment_status: 'closed',
+			ping_status: 'open',
+			sticky: false,
+			password: '',
+			meta: {
+				links: {}
+			},
+			featured_image: null,
+			terms: []
+		}
+	});
+
 
 	/**
 	 * Backbone model for single posts

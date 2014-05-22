@@ -13,6 +13,15 @@
 	});
 
 	/**
+	 * Backbone collection for pages
+	 */
+	wp.api.collections.Pages = Backbone.Collection.extend({
+		url: WP_API_Settings.root + '/pages',
+
+		model: wp.api.models.Page
+	});
+
+	/**
 	 * Backbone users collection
 	 */
 	wp.api.collections.Users = Backbone.Collection.extend({
