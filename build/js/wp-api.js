@@ -160,6 +160,45 @@
 			return false;
 		}
 	});
+	
+	/**
+	 * Backbone model for media items
+	 */
+	wp.api.models.Media = Backbone.Model.extend( {
+		idAttribute: 'ID',
+
+		urlRoot: WP_API_Settings.root + '/media',
+
+		defaults: {
+			ID: null,
+			title: '',
+			status: 'inherit',
+			type: 'attachment',
+			author: {},
+			content: '',
+			parent: 0,
+			link: '',
+			date: new Date(),
+			modified: new Date(),
+			format: 'standard',
+			slug: '',
+			guid: '',
+			excerpt: null,
+			menu_order: 0,
+			comment_status: 'open',
+			ping_status: 'open',
+			sticky: false,
+			date_tz: 'Etc/UTC',
+			modified_tz: 'Etc/UTC',
+			meta: {
+				links: {}
+			},
+			terms: [],
+			source: '',
+			is_image: true,
+			attachment_meta: {}
+		}
+	});
 
 	/**
 	 * Model for taxonomy
@@ -248,6 +287,44 @@
 
 	});
 
+	/**
+	 * Backbone model for pages
+	 */
+	wp.api.models.Page = Backbone.Model.extend( {
+		idAttribute: 'ID',
+
+		urlRoot: WP_API_Settings.root + '/pages',
+
+		defaults: {
+			ID: null,
+			title: '',
+			status: 'publish',
+			type: 'page',
+			author: new wp.api.models.User(),
+			content: '',
+			parent: 0,
+			link: '',
+			date: new Date(),
+			modified: new Date(),
+			date_tz: 'Etc/UTC',
+			modified_tz: 'Etc/UTC',
+			format: 'standard',
+			slug: '',
+			guid: '',
+			excerpt: '',
+			menu_order: 0,
+			comment_status: 'closed',
+			ping_status: 'open',
+			sticky: false,
+			password: '',
+			meta: {
+				links: {}
+			},
+			featured_image: null,
+			terms: []
+		}
+	});
+
 
 	/**
 	 * Backbone model for single posts
@@ -263,29 +340,29 @@
 		defaults: function() {
 			return {
 				ID: null,
-				title:          '',
-				status:         'draft',
-				type:           'post',
-				author:         new wp.api.models.User(),
-				content:        '',
-				link:           '',
-				'parent':       0,
-				date:           new Date(),
-				// date_gmt:       new Date(),
-				modified:       new Date(),
-				// modified_gmt:   new Date(),
-				format:         'standard',
-				slug:           '',
-				guid:           '',
-				excerpt:        '',
-				menu_order:     0,
+				title: '',
+				status: 'draft',
+				type: 'post',
+				author: new wp.api.models.User(),
+				content: '',
+				link: '',
+				'parent': 0,
+				date: new Date(),
+				// date_gmt: new Date(),
+				modified: new Date(),
+				// modified_gmt: new Date(),
+				format: 'standard',
+				slug: '',
+				guid: '',
+				excerpt: '',
+				menu_order: 0,
 				comment_status: 'open',
-				ping_status:    'open',
-				sticky:         false,
-				date_tz:        'Etc/UTC',
-				modified_tz:    'Etc/UTC',
-				terms:          {},
-				post_meta:      {},
+				ping_status: 'open',
+				sticky: false,
+				date_tz: 'Etc/UTC',
+				modified_tz: 'Etc/UTC',
+				terms: {},
+				post_meta: {},
 				meta: {
 					links: {}
 				}
@@ -413,7 +490,6 @@
 
 })( wp, WP_API_Settings, Backbone, window );
 
-
 /* global WP_API_Settings:false */
 (function( wp, WP_API_Settings, Backbone, _, window, undefined ) {
 
@@ -426,6 +502,15 @@
 		url: WP_API_Settings.root + '/posts',
 
 		model: wp.api.models.Post
+	});
+
+	/**
+	 * Backbone collection for pages
+	 */
+	wp.api.collections.Pages = Backbone.Collection.extend({
+		url: WP_API_Settings.root + '/pages',
+
+		model: wp.api.models.Page
 	});
 
 	/**
@@ -444,6 +529,16 @@
 		url: WP_API_Settings.root + '/posts/statuses',
 
 		model: wp.api.models.PostStatus
+
+	});
+
+	/**
+	 * Backbone media library collection
+	 */
+	wp.api.collections.MediaLibrary = Backbone.Collection.extend({
+		url: WP_API_Settings.root + '/media',
+
+		model: wp.api.models.Media
 	});
 
 	/**
