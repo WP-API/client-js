@@ -71,6 +71,45 @@
 			return false;
 		}
 	});
+	
+	/**
+	 * Backbone model for media items
+	 */
+	wp.api.models.Media = Backbone.Model.extend( {
+		idAttribute: 'ID',
+
+		urlRoot: WP_API_Settings.root + '/media',
+
+		defaults: {
+			ID: null,
+			title: '',
+			status: 'inherit',
+			type: 'attachment',
+			author: {},
+			content: '',
+			parent: 0,
+			link: '',
+			date: new Date(),
+			modified: new Date(),
+			format: 'standard',
+			slug: '',
+			guid: '',
+			excerpt: null,
+			menu_order: 0,
+			comment_status: 'open',
+			ping_status: 'open',
+			sticky: false,
+			date_tz: 'Etc/UTC',
+			modified_tz: 'Etc/UTC',
+			meta: {
+				links: {}
+			},
+			terms: [],
+			source: '',
+			is_image: true,
+			attachment_meta: {}
+		}
+	});
 
 	/**
 	 * Model for taxonomy

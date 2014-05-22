@@ -28,6 +28,16 @@
 		url: WP_API_Settings.root + '/posts/statuses',
 
 		model: wp.api.models.PostStatus
+
+	});
+
+	/**
+	 * Backbone media library collection
+	 */
+	wp.api.collections.MediaLibrary = Backbone.Collection.extend({
+		url: WP_API_Settings.root + '/media',
+
+		model: wp.api.models.Media
 	});
 
 	/**
