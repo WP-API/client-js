@@ -139,8 +139,10 @@ test( 'Post parent is retrieved correctly', function() {
 
 	// 2. Test fetching parent from if it is part of the same collection as the current post model.
 
-	var posts = new wp.api.collections.Posts();
-	posts.create( new wp.api.models.Post({ ID:1, title: 'Test Parent' }) );
+	var posts = new wp.api.collections.Posts([
+		new wp.api.models.Post({ ID:1, title: 'Test Parent' })
+	]);
+
 	var post2 = posts.create( testData );
 
 	equal( post2.parent().get('title'), 'Test Parent' );
