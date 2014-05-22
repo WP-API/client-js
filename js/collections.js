@@ -69,6 +69,25 @@
 	});
 
 	/**
+	 * Backbone comment collection
+	 */
+	wp.api.collections.Comments = Backbone.Collection.extend({
+		model: wp.api.models.Comment,
+
+		post: null,
+
+		initialize: function( models, options ) {
+			if ( options && options.post ) {
+				this.post = options.post;
+			}
+		},
+
+		url: function() {
+			return WP_API_Settings.root + '/posts/' + this.post + '/comments';
+		}
+	});
+
+	/**
 	 * Backbone post type collection
 	 */
 	wp.api.collections.PostTypes = Backbone.Collection.extend({

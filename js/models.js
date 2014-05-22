@@ -364,6 +364,38 @@
 	});
 
 	/**
+	 * Backbone model for comments
+	 */
+	wp.api.models.Comment = Backbone.Model.extend( {
+		idAttribute: 'ID',
+
+		defaults: {
+			ID: null,
+			post: null,
+			content: '',
+			status: 'approved',
+			type: 'comment',
+			parent: 0,
+			author: new wp.api.models.User(),
+			date: new Date(),
+			date_tz: 'Etc/UTC',
+			meta: {
+				links: {}
+			}
+		},
+
+		url: function() {
+			var post_id = this.get( 'post' );
+			post_id = post_id || '';
+
+			var id = this.get( 'ID' );
+			id = id || '';
+
+			return WP_API_Settings.root + '/posts/' + post_id + '/comments/' + id;
+		}
+	});
+
+	/**
 	 * Backbone model for single post types
 	 */
 	wp.api.models.PostType = Backbone.Model.extend( {
