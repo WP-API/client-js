@@ -8,11 +8,31 @@
 	var parseable_dates = [ 'date', 'modified' ];
 
 	/**
+	 * Backbone base model for sending nonces with requests
+	 */
+	wp.api.models.Base = Backbone.Model.extend( {
+		sync: function( method, model, options ) {
+			options = options || {};
+
+			var beforeSend = options.beforeSend;
+			options.beforeSend = function( xhr ) {
+				xhr.setRequestHeader( 'X-WP-Nonce', WP_API_Settings.nonce );
+
+				if ( beforeSend ) {
+					return beforeSend.apply( this, arguments );
+				}
+			};
+
+			return Backbone.sync( method, model, options );
+		}
+	});
+
+	/**
 	 * Backbone model for single users
 	 *
 	 * @type {*}
 	 */
-	wp.api.models.User = Backbone.Model.extend( {
+	wp.api.models.User = wp.api.models.Base.extend( {
 		idAttribute: 'ID',
 
 		urlRoot: WP_API_Settings.root + '/users',
@@ -42,7 +62,7 @@
 	/**
 	 * Backbone model for a post status
 	 */
-	wp.api.models.PostStatus = Backbone.Model.extend( {
+	wp.api.models.PostStatus = wp.api.models.Base.extend( {
 		idAttribute: 'slug',
 
 		urlRoot: WP_API_Settings.root + '/posts/statuses',
@@ -75,7 +95,7 @@
 	/**
 	 * Model for taxonomy
 	 */
-	wp.api.models.Taxonomy = Backbone.Model.extend({
+	wp.api.models.Taxonomy = wp.api.models.Base.extend({
 		idAttribute: 'name',
 
 		defaults: {
@@ -117,7 +137,7 @@
 	 * Backbone model for term
 	 */
 
-	wp.api.models.Term = Backbone.Model.extend({
+	wp.api.models.Term = wp.api.models.Base.extend({
 
 		idAttribute: 'ID',
 
@@ -188,7 +208,7 @@
 	 *
 	 * @type {*}
 	 */
-	wp.api.models.Post = Backbone.Model.extend( {
+	wp.api.models.Post = wp.api.models.Base.extend( {
 
 		idAttribute: 'ID',
 
@@ -396,7 +416,7 @@
 	/**
 	 * Backbone model for comments
 	 */
-	wp.api.models.Comment = Backbone.Model.extend( {
+	wp.api.models.Comment = wp.api.models.Base.extend( {
 		idAttribute: 'ID',
 
 		defaults: {
@@ -480,7 +500,7 @@
 	/**
 	 * Backbone model for single post types
 	 */
-	wp.api.models.PostType = Backbone.Model.extend( {
+	wp.api.models.PostType = wp.api.models.Base.extend( {
 		idAttribute: 'slug',
 
 		urlRoot: WP_API_Settings.root + '/posts/types',
