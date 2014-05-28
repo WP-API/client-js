@@ -130,4 +130,23 @@
 		}
 	});
 
+	/**
+	 * Backbone revisions collection
+	 */
+	wp.api.collections.Revisions = Backbone.Collection.extend( {
+		model: wp.api.models.Revision,
+
+		post: null,
+
+		initialize: function( models, options ) {
+			if ( options && options.post ) {
+				this.post = options.post;
+			}
+		},
+
+		url: function() {
+			return WP_API_Settings.root + '/posts/' + this.post + '/revisions';
+		}
+	});
+
 })( wp, WP_API_Settings, Backbone, _, window );

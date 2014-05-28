@@ -340,6 +340,19 @@
 	});
 
 	/**
+	 * Backbone model for pages
+	 */
+	wp.api.models.Revision = wp.api.models.Post.extend( {
+		url: function() {
+			var parent_id = this.get( 'parent' );
+			parent_id = parent_id || '';
+
+			return WP_API_Settings.root + '/posts/' + parent_id + '/revisions/';
+		}
+
+	});
+
+	/**
 	 * Backbone model for media items
 	 */
 	wp.api.models.Media = wp.api.models.Post.extend( {
