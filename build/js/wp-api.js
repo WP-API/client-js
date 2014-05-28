@@ -160,45 +160,6 @@
 			return false;
 		}
 	});
-	
-	/**
-	 * Backbone model for media items
-	 */
-	wp.api.models.Media = Backbone.Model.extend( {
-		idAttribute: 'ID',
-
-		urlRoot: WP_API_Settings.root + '/media',
-
-		defaults: {
-			ID: null,
-			title: '',
-			status: 'inherit',
-			type: 'attachment',
-			author: {},
-			content: '',
-			parent: 0,
-			link: '',
-			date: new Date(),
-			modified: new Date(),
-			format: 'standard',
-			slug: '',
-			guid: '',
-			excerpt: null,
-			menu_order: 0,
-			comment_status: 'open',
-			ping_status: 'open',
-			sticky: false,
-			date_tz: 'Etc/UTC',
-			modified_tz: 'Etc/UTC',
-			meta: {
-				links: {}
-			},
-			terms: [],
-			source: '',
-			is_image: true,
-			attachment_meta: {}
-		}
-	});
 
 	/**
 	 * Model for taxonomy
@@ -272,6 +233,30 @@
 			return WP_API_Settings.root + '/posts/types/' + this.type + '/taxonomies/' + this.taxonomy + '/terms/' + id;
 		},
 
+		parent: function() {
+			var term,
+				parent = this.get( 'parent' );
+
+			// Return null if we don't have a parent
+			if ( parent === 0 ) {
+				return null;
+			}
+
+			// Can we get this from its collection?
+			if ( this.collection ) {
+				return this.collection.get( parent );
+			} else {
+				// Otherwise, get the post directly
+				term = new wp.api.models.Term( {
+					ID: parent
+				});
+
+				// Note that this acts asynchronously
+				term.fetch();
+				return term;
+			}
+		},
+
 		defaults: {
 			ID: null,
 			name: '',
@@ -286,45 +271,6 @@
 		}
 
 	});
-
-	/**
-	 * Backbone model for pages
-	 */
-	wp.api.models.Page = Backbone.Model.extend( {
-		idAttribute: 'ID',
-
-		urlRoot: WP_API_Settings.root + '/pages',
-
-		defaults: {
-			ID: null,
-			title: '',
-			status: 'publish',
-			type: 'page',
-			author: new wp.api.models.User(),
-			content: '',
-			parent: 0,
-			link: '',
-			date: new Date(),
-			modified: new Date(),
-			date_tz: 'Etc/UTC',
-			modified_tz: 'Etc/UTC',
-			format: 'standard',
-			slug: '',
-			guid: '',
-			excerpt: '',
-			menu_order: 0,
-			comment_status: 'closed',
-			ping_status: 'open',
-			sticky: false,
-			password: '',
-			meta: {
-				links: {}
-			},
-			featured_image: null,
-			terms: []
-		}
-	});
-
 
 	/**
 	 * Backbone model for single posts
@@ -348,9 +294,9 @@
 				link: '',
 				'parent': 0,
 				date: new Date(),
-				// date_gmt: new Date(),
+				date_gmt: new Date(),
 				modified: new Date(),
-				// modified_gmt: new Date(),
+				modified_gmt: new Date(),
 				format: 'standard',
 				slug: '',
 				guid: '',
@@ -375,18 +321,12 @@
 		 * Overriden for correct date handling
 		 * @return {!Object} Serializable attributes
 		 */
-		toJSON: function () {
+		toJSON: function() {
 			var attributes = _.clone( this.attributes );
-
-			// Remove GMT dates in favour of our native Date objects
-			// The API only requires one of `date` and `date_gmt`, so this is
-			// safe for use.
-			delete attributes.date_gmt;
-			delete attributes.modified_gmt;
 
 			// Serialize Date objects back into 8601 strings
 			_.each( parseable_dates, function ( key ) {
-				attributes[ key ] = attributes[ key ].toISOString();
+				attributes[key] = attributes[key].toISOString();
 			});
 
 			return attributes;
@@ -400,20 +340,16 @@
 		 * @param {!Object} options Request options
 		 * @return {!Object} Fully parsed attributes
 		 */
-		parse: function ( response, options ) {
+		parse: function( response ) {
 			// Parse dates into native Date objects
 			_.each( parseable_dates, function ( key ) {
 				if ( ! ( key in response ) ) {
 					return;
 				}
 
-				var timestamp = wp.api.utils.parseISO8601( response[ key ] );
-				response[ key ] = new Date( timestamp );
+				var timestamp = wp.api.utils.parseISO8601( response[key] );
+				response[key] = new Date( timestamp );
 			});
-
-			// Remove GMT dates in favour of our native Date objects
-			delete response.date_gmt;
-			delete response.modified_gmt;
 
 			// Parse the author into a User object
 			response.author = new wp.api.models.User( { username: response.author } );
@@ -427,6 +363,7 @@
 		 * @return {wp.api.models.Post} Parent post, null if not found
 		 */
 		parent: function() {
+
 			var post,
 				parent = this.get( 'parent' );
 
@@ -437,17 +374,181 @@
 
 			// Can we get this from its collection?
 			if ( this.collection ) {
-				return this.collection.get(parent);
-			}
-			else {
+				return this.collection.get( parent );
+			} else {
 				// Otherwise, get the post directly
-				post = new wp.api.models.Post({
+				post = new wp.api.models.Post( {
 					ID: parent
 				});
 
 				// Note that this acts asynchronously
 				post.fetch();
 				return post;
+			}
+		}
+	});
+
+	/**
+	 * Backbone model for pages
+	 */
+	wp.api.models.Page = wp.api.models.Post.extend( {
+		idAttribute: 'ID',
+
+		urlRoot: WP_API_Settings.root + '/pages',
+
+		defaults: {
+			ID: null,
+			title: '',
+			status: 'publish',
+			type: 'page',
+			author: new wp.api.models.User(),
+			content: '',
+			parent: 0,
+			link: '',
+			date: new Date(),
+			modified: new Date(),
+			date_gmt: new Date(),
+			modified_gmt: new Date(),
+			date_tz: 'Etc/UTC',
+			modified_tz: 'Etc/UTC',
+			format: 'standard',
+			slug: '',
+			guid: '',
+			excerpt: '',
+			menu_order: 0,
+			comment_status: 'closed',
+			ping_status: 'open',
+			sticky: false,
+			password: '',
+			meta: {
+				links: {}
+			},
+			featured_image: null,
+			terms: []
+		}
+	});
+
+	/**
+	 * Backbone model for media items
+	 */
+	wp.api.models.Media = wp.api.models.Post.extend( {
+		idAttribute: 'ID',
+
+		urlRoot: WP_API_Settings.root + '/media',
+
+		defaults: {
+			ID: null,
+			title: '',
+			status: 'inherit',
+			type: 'attachment',
+			author: {},
+			content: '',
+			parent: 0,
+			link: '',
+			date: new Date(),
+			modified: new Date(),
+			date_gmt: new Date(),
+			modified_gmt: new Date(),
+			format: 'standard',
+			slug: '',
+			guid: '',
+			excerpt: null,
+			menu_order: 0,
+			comment_status: 'open',
+			ping_status: 'open',
+			sticky: false,
+			date_tz: 'Etc/UTC',
+			modified_tz: 'Etc/UTC',
+			meta: {
+				links: {}
+			},
+			terms: [],
+			source: '',
+			is_image: true,
+			attachment_meta: {}
+		}
+	});
+
+	/**
+	 * Backbone model for comments
+	 */
+	wp.api.models.Comment = Backbone.Model.extend( {
+		idAttribute: 'ID',
+
+		defaults: {
+			ID: null,
+			post: null,
+			content: '',
+			status: 'approved',
+			type: 'comment',
+			parent: 0,
+			author: new wp.api.models.User(),
+			date: new Date(),
+			date_gmt: new Date(),
+			date_tz: 'Etc/UTC',
+			meta: {
+				links: {}
+			}
+		},
+
+		url: function() {
+			var post_id = this.get( 'post' );
+			post_id = post_id || '';
+
+			var id = this.get( 'ID' );
+			id = id || '';
+
+			return WP_API_Settings.root + '/posts/' + post_id + '/comments/' + id;
+		},
+
+		parse: function( response ) {
+			_.each( parseable_dates, function ( key ) {
+				if ( ! ( key in response ) ) {
+					return;
+				}
+
+				var timestamp = wp.api.utils.parseISO8601( response[key] );
+				response[key] = new Date( timestamp );
+			});
+
+			// Parse the author into a User object
+			response.author = new wp.api.models.User( { username: response.author } );
+
+			return response;
+		},
+
+		toJSON: function() {
+			var attributes = _.clone( this.attributes );
+
+			// Serialize Date objects back into 8601 strings
+			_.each( parseable_dates, function ( key ) {
+				attributes[key] = attributes[key].toISOString();
+			});
+
+			return attributes;
+		},
+
+		parent: function() {
+			var comment,
+				parent = this.get( 'parent' );
+
+			// Return null if we don't have a parent
+			if ( parent === 0 ) {
+				return null;
+			}
+
+			// Can we get this from its collection?
+			if ( this.collection ) {
+				return this.collection.get(parent);
+			} else {
+				// Otherwise, get the post directly
+				comment = new wp.api.models.Comment({
+					ID: parent
+				});
+
+				// Note that this acts asynchronously
+				comment.fetch();
+				return comment;
 			}
 		}
 	});
@@ -557,6 +658,25 @@
 
 		url: function() {
 			return WP_API_Settings.root + '/posts/types/' + this.type + '/taxonomies/';
+		}
+	});
+
+	/**
+	 * Backbone comment collection
+	 */
+	wp.api.collections.Comments = Backbone.Collection.extend({
+		model: wp.api.models.Comment,
+
+		post: null,
+
+		initialize: function( models, options ) {
+			if ( options && options.post ) {
+				this.post = options.post;
+			}
+		},
+
+		url: function() {
+			return WP_API_Settings.root + '/posts/' + this.post + '/comments';
 		}
 	});
 
