@@ -121,7 +121,7 @@
 	 *
 	 * @type {*}
 	 */
-	wp.api.models.User = Backbone.Model.extend( {
+	wp.api.models.User = wp.api.models.Base.extend( {
 		idAttribute: 'ID',
 
 		urlRoot: WP_API_Settings.root + '/users',
@@ -372,7 +372,7 @@
 			});
 
 			// Parse the author into a User object
-			response.author = new wp.api.models.User( { username: response.author } );
+			response.author = new wp.api.models.User( response.author );
 
 			return response;
 		},

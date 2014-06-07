@@ -1,12 +1,27 @@
 module( 'Post Model Tests' );
 
+// Sample User Data
+var testUserData = {
+	ID: 1,
+	username: 'wordpress',
+	email: 'generic@wordpress.org',
+	password: '',
+	name: 'WordPress',
+	first_name: 'Word',
+	last_name: 'Press',
+	nickname: 'The WordPress\'er',
+	slug: 'wordpress',
+	URL: 'http://wordpress.org',
+	avatar: 'http://s.w.org/style/images/wp-header-logo-2x.png?1'
+};
+
 // Sample Post Data.
 var testData = {
 	title:   'Test Post',
 	content: '<p>Nulla At Nulla Justo, Eget Luctus Tortor. Nulla Facilisi Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam in dui mauris. Vivamus. Hendrerit arcu sed erat molestie vehicula. Sed auctor neque eu tellus rhoncus ut eleifend nibh porttitor. Ut in nulla enim. Phasellus molestie magna non est bibendum non venenatis nisl tempor.</p> <p>Suspendisse. Dictum feugiat nisl ut dapibus. Mauris iaculis porttitor posuere. Praesent id metus massa, ut blandit odio.<\/p>\n',
 	type: 'page',
 	status: 'publish',
-	author: new wp.api.models.User(),
+	author: new wp.api.models.User( testUserData ),
 	parent: 1,
 	date: new Date(),
 	date_gmt: new Date(),
@@ -59,13 +74,12 @@ test( 'Post model can be instantiated with correct default values', function() {
 	equal( post.get('modified_tz'), 'Etc/UTC', 'modified_tz should be Etc/UTC' );
 	deepEqual( post.get('terms'), {}, 'terms should be an empty object' );
 	deepEqual( post.get('post_meta'), {}, 'post_meta should be an empty object');
-	deepEqual( post.get('meta'), { links: {} }, 'meta should be { links: {} }' );
 
 });
 
 test( 'Post model data can be set', function() {
 
-	expect ( 34 );
+	expect ( 40 );
 
 	// Instantiate 2 new Post models.
 	// 1 - setting data after creating the model.
@@ -86,36 +100,47 @@ test( 'Post model data can be set', function() {
 
 test( 'Post model toJSON', function() {
 
-	expect( 1 );
+	expect( 7 );
 
 	var post = new wp.api.models.Post( testData );
 	var postJSON = post.toJSON();
 
 	// Check that dates are correctly converted to a string.
-	equal( postJSON.date, post.get('date').toISOString() );
+	equal( postJSON.date, post.get( 'date' ).toISOString() );
+	equal( postJSON.date, post.get( 'modified' ).toISOString() );
 
+	// Check that user is setup correctly
+	equal( postJSON.author.get( 'ID' ), 1 );
+	equal( postJSON.author.get( 'username' ), 'wordpress' );
+	equal( postJSON.author.get( 'first_name' ), 'Word' );
+	equal( postJSON.author.get( 'last_name' ), 'Press' );
+	equal( postJSON.author.get( 'email' ), 'generic@wordpress.org' );
 });
 
 test( 'Post response is parsed correctly', function() {
 
-	expect( 2 );
+	expect( 4 );
 
 	var server = sinon.fakeServer.create();
 
 	server.respondWith(
 		'GET',
 		'/posts/1',
-		[ 200, { 'Content-Type': 'application/json' }, JSON.stringify([ testResponse ]) ]
+		[ 200, { 'Content-Type': 'application/json' }, JSON.stringify( testResponse ) ]
 	);
 
-	var post = new wp.api.models.Post({ID:1});
+	var post = new wp.api.models.Post( { ID: 1 } );
 	post.fetch();
 
 	server.respond();
 
 	// Check date & modified is correctly parsed.
-	equal( Object.prototype.toString.call( post.get('date') ), '[object Date]', 'date should be object type Date' );
-	equal( Object.prototype.toString.call( post.get('modified') ), '[object Date]', 'modified should be object type Date' );
+	equal( Object.prototype.toString.call( post.get( 'date' ) ), '[object Date]', 'date should be object type Date' );
+	equal( Object.prototype.toString.call( post.get( 'modified' ) ), '[object Date]', 'modified should be object type Date' );
+
+	// Check if user is setup correctly
+	equal( post.get( 'author' ).get( 'username' ), 'admin' );
+	equal( post.get( 'author' ).get( 'ID' ), 1 );
 
 	server.restore();
 
@@ -131,7 +156,7 @@ test( 'Post parent is retrieved correctly', function() {
 	server.respondWith(
 		'GET',
 		'/posts/1',
-		[ 200, { 'Content-Type': 'application/json' }, JSON.stringify([ testResponse ])]
+		[ 200, { 'Content-Type': 'application/json' }, JSON.stringify( testResponse )]
 	);
 
 	var post = new wp.api.models.Post( testData );

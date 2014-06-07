@@ -283,7 +283,7 @@
 			});
 
 			// Parse the author into a User object
-			response.author = new wp.api.models.User( { username: response.author } );
+			response.author = new wp.api.models.User( response.author );
 
 			return response;
 		},
