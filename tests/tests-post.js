@@ -1,7 +1,5 @@
 module( 'Post Model Tests' );
 
-var testDate = new Date();
-
 // Sample Post Data.
 var testData = {
 	title:   'Test Post',
@@ -10,7 +8,10 @@ var testData = {
 	status: 'publish',
 	author: new wp.api.models.User(),
 	parent: 1,
-	date: testDate,
+	date: new Date(),
+	date_gmt: new Date(),
+	modified: new Date(),
+	modified_gmt: new Date(),
 	format: 'standard',
 	slug: 'post-slug',
 	guid: 'example.com',
@@ -42,8 +43,10 @@ test( 'Post model can be instantiated with correct default values', function() {
 	equal( post.get('content'), '', 'Content should be empty' );
 	equal( post.get('link'), '', 'Link should be empty' );
 	equal( post.get('parent'), 0, 'Parent should be 0' );
-	equal( Object.prototype.toString.call( post.get('date') ), '[object Date]', 'date should be object type Date' );
-	equal( post.get('date_gmt'), undefined, 'date_gmt should be undefined' );
+	equal( Object.prototype.toString.call( post.get( 'date' ) ), '[object Date]', 'date should be object type Date' );
+	equal( Object.prototype.toString.call( post.get( 'date_gmt' ) ), '[object Date]', 'date_gmt should be object type Date' );
+	equal( Object.prototype.toString.call( post.get('modified') ), '[object Date]', 'modified should be object type Date' );
+
 	equal( post.get('format'), 'standard', 'Format should be standard' );
 	equal( post.get('slug'), '', 'Slug should be empty' );
 	equal( post.get('guid'), '', 'guid should be empty' );
