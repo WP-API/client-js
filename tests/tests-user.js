@@ -56,21 +56,6 @@ test( 'User model data can be set', function() {
 
 });
 
-test( 'User model toJSON', function() {
+// Todo: User collection test
 
-	expect( 7 );
-
-	var post = new wp.api.models.Post( testData );
-	var postJSON = post.toJSON();
-
-	// Check that dates are correctly converted to a string.
-	equal( postJSON.date, post.get( 'date' ).toISOString() );
-	equal( postJSON.date, post.get( 'modified' ).toISOString() );
-
-	// Check that user is setup correctly
-	equal( postJSON.author.get( 'ID' ), 1 );
-	equal( postJSON.author.get( 'username' ), 'wordpress' );
-	equal( postJSON.author.get( 'first_name' ), 'Word' );
-	equal( postJSON.author.get( 'last_name' ), 'Press' );
-	equal( postJSON.author.get( 'email' ), 'generic@wordpress.org' );
-});
+// Todo: User avatar test
