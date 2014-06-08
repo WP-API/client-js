@@ -1,5 +1,7 @@
 module( 'Post Model Tests' );
 
+var Backbone = Backbone || {};
+
 // Sample User Data
 var testUserData = {
 	ID: 1,

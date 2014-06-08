@@ -312,8 +312,6 @@
 					ID: parent
 				});
 
-				console.log(post);
-
 				// Note that this acts asynchronously
 				post.fetch();
 				return post;
