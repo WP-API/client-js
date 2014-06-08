@@ -308,9 +308,11 @@
 				return this.collection.get( parent );
 			} else {
 				// Otherwise, get the post directly
-				post = new wp.api.models.Post( {
+				post = new this.constructor( {
 					ID: parent
 				});
+
+				console.log(post);
 
 				// Note that this acts asynchronously
 				post.fetch();
@@ -330,7 +332,7 @@
 		defaults: {
 			ID: null,
 			title: '',
-			status: 'publish',
+			status: 'draft',
 			type: 'page',
 			author: new wp.api.models.User(),
 			content: '',
