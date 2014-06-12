@@ -55,17 +55,7 @@
 	wp.api.collections.Taxonomies = Backbone.Collection.extend({
 		model: wp.api.models.Taxonomy,
 
-		type: 'post',
-
-		initialize: function( models, options ) {
-			if ( options && options.type ) {
-				this.type = options.type;
-			}
-		},
-
-		url: function() {
-			return WP_API_Settings.root + '/posts/types/' + this.type + '/taxonomies/';
-		}
+		url: WP_API_Settings.root + '/taxonomies'
 	});
 
 	/**

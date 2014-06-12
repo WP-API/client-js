@@ -11,7 +11,7 @@ var testUserData = {
 	name: 'WordPress',
 	first_name: 'Word',
 	last_name: 'Press',
-	nickname: 'The WordPress\'er',
+	nickname: 'The WordPresser',
 	slug: 'wordpress',
 	URL: 'http://wordpress.org',
 	avatar: 'http://s.w.org/style/images/wp-header-logo-2x.png?1'
@@ -45,7 +45,7 @@ var testPageResponse = JSON.parse( '{"ID":1,"title":"test","status":"publish","t
 
 test( 'Page model can be instantiated with correct default values', function() {
 
-	expect( 23 );
+	expect( 24 );
 
 	// Instantiate Local Contact Backbone Model Object
 	var page = new wp.api.models.Page();
@@ -73,6 +73,7 @@ test( 'Page model can be instantiated with correct default values', function() {
 	equal( page.get('date_tz'), 'Etc/UTC', 'date_tz should be Etc/UTC' );
 	equal( page.get('modified_tz'), 'Etc/UTC', 'modified_tz should be Etc/UTC' );
 	deepEqual( page.get('terms'), [], 'terms should be an empty object' );
+	deepEqual( page.get('meta'), { links: {} }, 'meta should just contain an empty links object');
 
 });
 
@@ -106,7 +107,7 @@ test( 'Page model toJSON', function() {
 
 	// Check that dates are correctly converted to a string.
 	equal( pageJSON.date, page.get( 'date' ).toISOString() );
-	equal( pageJSON.date, page.get( 'modified' ).toISOString() );
+	equal( pageJSON.modified, page.get( 'modified' ).toISOString() );
 
 	// Check that user is setup correctly
 	equal( pageJSON.author.get( 'ID' ), 1 );

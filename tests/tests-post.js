@@ -38,7 +38,8 @@ var testPostData = {
 	ping_status: 'closed',
 	sticky: true,
 	date_tz: 'America/New_York',
-	modified_tz: 'America/New_York'
+	modified_tz: 'America/New_York',
+	featured_imag: null
 };
 
 // Sample Post Response.
@@ -47,7 +48,7 @@ var testPostCollectionResponse = JSON.parse( '[{"ID":1,"title":"Test Post","stat
 
 test( 'Post model can be instantiated with correct default values', function() {
 
-	expect( 23 );
+	expect( 25 );
 
 	// Instantiate Local Contact Backbone Model Object
 	var post = new wp.api.models.Post();
@@ -74,14 +75,16 @@ test( 'Post model can be instantiated with correct default values', function() {
 	equal( post.get('sticky'), false, 'sticky should be false' );
 	equal( post.get('date_tz'), 'Etc/UTC', 'date_tz should be Etc/UTC' );
 	equal( post.get('modified_tz'), 'Etc/UTC', 'modified_tz should be Etc/UTC' );
+	equal( post.get('featured_image'), null, 'Featured image should be null' );
 	deepEqual( post.get('terms'), {}, 'terms should be an empty object' );
 	deepEqual( post.get('post_meta'), {}, 'post_meta should be an empty object');
+	deepEqual( post.get('meta'), { links: {} }, 'meta should just contain an empty links object');
 
 });
 
 test( 'Post model data can be set', function() {
 
-	expect ( 40 );
+	expect ( 42 );
 
 	// Instantiate 2 new Post models.
 	// 1 - setting data after creating the model.
@@ -105,11 +108,12 @@ test( 'Post model toJSON', function() {
 	expect( 7 );
 
 	var post = new wp.api.models.Post( testPostData );
+	//console.log(post);
 	var postJSON = post.toJSON();
 
 	// Check that dates are correctly converted to a string.
 	equal( postJSON.date, post.get( 'date' ).toISOString() );
-	equal( postJSON.date, post.get( 'modified' ).toISOString() );
+	equal( postJSON.modified, post.get( 'modified' ).toISOString() );
 
 	// Check that user is setup correctly
 	equal( postJSON.author.get( 'ID' ), 1 );

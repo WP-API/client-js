@@ -9,7 +9,7 @@ var testUserData = {
 	name: 'WordPress',
 	first_name: 'Word',
 	last_name: 'Press',
-	nickname: 'The WordPress\'er',
+	nickname: 'The WordPresser',
 	slug: 'wordpress',
 	URL: 'http://wordpress.org',
 	avatar: 'http://s.w.org/style/images/wp-header-logo-2x.png?1'

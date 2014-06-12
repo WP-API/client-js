@@ -1,6 +1,6 @@
-(function( window, undefined ) {
+(function( Backbone, _, window, undefined ) {
 
-	'use strict';
+	//'use strict';
 
 	// ECMAScript 5 shim, from MDN
 	// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString
@@ -70,4 +70,4 @@
 	wp.api = wp.api || {};
 	wp.api.utils = wp.api.utils || new WP_API_Utils();
 
-})( window );
+})( Backbone, _, window );
