@@ -138,7 +138,7 @@
 	 * Model for taxonomy
 	 */
 	wp.api.models.Taxonomy = BaseModel.extend({
-		idAttribute: 'name',
+		idAttribute: 'slug',
 
 		urlRoot: WP_API_Settings.root + '/taxonomies',
 
@@ -334,7 +334,7 @@
 	/**
 	 * Backbone model for comments
 	 */
-	wp.api.models.Comment = BaseModel.extend(_.extend( {
+	wp.api.models.Comment = BaseModel.extend( _.extend( {
 		idAttribute: 'ID',
 
 		defaults: {

@@ -93,6 +93,8 @@ test( 'Comment response is parsed correctly', function() {
 
 	server.respond();
 
+	console.log(comment);
+
 	// Check date & modified is correctly parsed.
 	equal( Object.prototype.toString.call( comment.get( 'date' ) ), '[object Date]', 'date should be object type Date' );
 	equal( Object.prototype.toString.call( comment.get( 'date_gmt' ) ), '[object Date]', 'modified should be object type Date' );
