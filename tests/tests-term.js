@@ -7,11 +7,11 @@
 
 	// Sample Post Data.
 	var testTermData = {
-		'ID': 2,
+		'ID': 1,
 		'name': 'Politics',
 		'slug': 'politics',
 		'description': 'This is the politics category.',
-		'parent': null,
+		'parent': 2,
 		'count': 8,
 		'link': 'http:\/\/example.com\/category\/politics\/',
 		'meta': {
@@ -22,7 +22,7 @@
 		}
 	};
 
-	var testTermResponse = JSON.parse( '{"ID":1,"name":"News","slug":"news","description":"This is the news category.","parent":null,"count":8,"link":"http:\/\/example.com\/category\/news\/","meta":{"links":{"collection":"http:\/\/example.com\/wp-json\/taxonomies\/category\/terms","self":"http:\/\/example.com\/wp-json\/taxonomies\/category\/terms\/1"}}}' );
+	var testTermResponse = JSON.parse( '{"ID":2,"name":"News","slug":"news","description":"This is the news category.","parent":null,"count":8,"link":"http:\/\/example.com\/category\/news\/","meta":{"links":{"collection":"http:\/\/example.com\/wp-json\/taxonomies\/category\/terms","self":"http:\/\/example.com\/wp-json\/taxonomies\/category\/terms\/1"}}}' );
 
 	test( 'Taxonomy model can be instantiated with correct default values', function() {
 
@@ -82,6 +82,35 @@
 		equal( term.get( 'count' ), 8 );
 
 		server.restore();
+
+	});
+
+	test( 'Term parent is retrieved correctly', function() {
+
+		expect( 2 );
+
+		var term = new wp.api.models.Term( testTermData );
+
+		var server = sinon.fakeServer.create();
+		server.respondWith(
+			'GET',
+			'/taxonomies/category/terms/2',
+			[ 200, { 'Content-Type': 'application/json' }, JSON.stringify( testTermResponse )]
+		);
+
+		var parent = term.parent();
+
+		server.respond();
+
+		equal( parent.toJSON().ID, 2, 'Term parent model should be retrieved correctly' );
+
+		var terms = new wp.api.collections.Terms([
+			new wp.api.models.Term({ ID: 2, slug: 'news', taxonomy: 'category' })
+		]);
+
+		var term2 = terms.create( testTermData );
+
+		equal( term2.parent().get('slug'), 'news' );
 
 	});
 

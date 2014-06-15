@@ -1,5 +1,3 @@
-var Backbone = Backbone || {};
-
 ( function() {
 
 	module( 'Taxonomy Model Tests' );
