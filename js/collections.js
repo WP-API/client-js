@@ -126,16 +126,16 @@
 	wp.api.collections.Revisions = Backbone.Collection.extend( {
 		model: wp.api.models.Revision,
 
-		post: null,
+		parent: null,
 
 		initialize: function( models, options ) {
-			if ( options && options.post ) {
-				this.post = options.post;
+			if ( options && options.parent ) {
+				this.parent = options.parent;
 			}
 		},
 
 		url: function() {
-			return WP_API_Settings.root + '/posts/' + this.post + '/revisions';
+			return WP_API_Settings.root + '/posts/' + this.parent + '/revisions';
 		}
 	});
 

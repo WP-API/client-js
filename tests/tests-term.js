@@ -112,6 +112,7 @@
 
 		equal( term2.parent().get('slug'), 'news' );
 
+		server.restore();
 	});
 
 	// Todo: Test term collection

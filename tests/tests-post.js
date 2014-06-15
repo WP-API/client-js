@@ -2,7 +2,7 @@ var Backbone = Backbone || {};
 
 ( function() {
 
-	module( 'Post Model Tests' );
+	module( 'Post and Revision Model Tests' );
 
 	// Sample User Data
 	var testUserData = {
@@ -47,6 +47,7 @@ var Backbone = Backbone || {};
 	// Sample Post Response.
 	var testPostResponse = JSON.parse( '{"ID":1,"title":"Test Post","status":"publish","type":"page","author":{"ID":1,"username":"admin","name":"admin","first_name":"","last_name":"","nickname":"admin","slug":"admin","URL":"","avatar":"http:\/\/1.gravatar.com\/avatar\/b17c1f19d80bf8f61c3f14962153f959?s=96","description":"","email":"admin@example.com","registered":"2014-03-05T18:37:51+00:00","meta":{"links":{"self":"http:\/\/example.com\/wp-json\/users\/1","archives":"http:\/\/example.com\/wp-json\/users\/1\/posts"}}},"content":"","parent":0,"link":"http:\/\/example.com\/test-post-2\/","date":"2014-05-11T19:29:15+00:00","modified":"2014-05-11T19:29:15+00:00","format":"standard","slug":"test-post-2","guid":"http:\/\/example.com\/test-post-2\/","excerpt":null,"menu_order":1,"comment_status":"closed","ping_status":"closed","sticky":false,"date_tz":"UTC","date_gmt":"2014-05-11T19:29:15+00:00","modified_tz":"UTC","modified_gmt":"2014-05-11T19:29:15+00:00","password":"","meta":{"links":{"self":"http:\/\/example.com\/wp-json\/posts\/1","author":"http:\/\/example.com\/wp-json\/users\/1","collection":"http:\/\/example.com\/wp-json\/posts","replies":"http:\/\/example.com\/wp-json\/posts\/1\/comments","version-history":"http:\/\/example.com\/wp-json\/posts\/1\/revisions"}},"featured_image":null,"terms":[]}' );
 	var testPostCollectionResponse = JSON.parse( '[{"ID":1,"title":"Test Post","status":"publish","type":"page","author":{"ID":1,"username":"admin","name":"admin","first_name":"","last_name":"","nickname":"admin","slug":"admin","URL":"","avatar":"http:\/\/1.gravatar.com\/avatar\/b17c1f19d80bf8f61c3f14962153f959?s=96","description":"","email":"admin@example.com","registered":"2014-03-05T18:37:51+00:00","meta":{"links":{"self":"http:\/\/example.com\/wp-json\/users\/1","archives":"http:\/\/example.com\/wp-json\/users\/1\/posts"}}},"content":"","parent":0,"link":"http:\/\/example.com\/test-post-2\/","date":"2014-05-11T19:29:15+00:00","modified":"2014-05-11T19:29:15+00:00","format":"standard","slug":"test-post-2","guid":"http:\/\/example.com\/test-post-2\/","excerpt":null,"menu_order":1,"comment_status":"closed","ping_status":"closed","sticky":false,"date_tz":"UTC","date_gmt":"2014-05-11T19:29:15+00:00","modified_tz":"UTC","modified_gmt":"2014-05-11T19:29:15+00:00","password":"","meta":{"links":{"self":"http:\/\/example.com\/wp-json\/posts\/1","author":"http:\/\/example.com\/wp-json\/users\/1","collection":"http:\/\/example.com\/wp-json\/posts","replies":"http:\/\/example.com\/wp-json\/posts\/1\/comments","version-history":"http:\/\/example.com\/wp-json\/posts\/1\/revisions"}},"featured_image":null,"terms":[]}]' );
+	var testRevisionCollectionResponse = JSON.parse( '[{"ID":2,"title":"test","status":"inherit","type":"revision","author":{"ID":1,"username":"admin","name":"admin","first_name":"word","last_name":"press","nickname":"admin","slug":"admin","URL":"","avatar":"","description":"","registered":"2013-04-04T16:58:14+00:00","meta":{"links":{"self":"http:\/\/example.com\/wp-json\/users\/1","archives":"http:\/\/example.com\/wp-json\/users\/1\/posts"}}},"content":"Revision content","parent":0,"link":"http:\/\/example.com\/2014\/05\/1-revision-v1\/","date":"2014-05-28T00:55:04+00:00","modified":"2014-05-28T00:55:04+00:00","format":"standard","slug":"1-revision-v1","guid":"http:\/\/example.com\/2014\/05\/1-revision-v1\/","excerpt":"This is the excerpt","menu_order":0,"comment_status":"closed","ping_status":"open","sticky":false,"date_tz":"UTC","date_gmt":"2014-05-28T00:55:04+00:00","modified_tz":"UTC","modified_gmt":"2014-05-28T00:55:04+00:00","password":"","title_raw":"test","content_raw":"sdfsdfsf sdfsfdsf","excerpt_raw":"","guid_raw":"http:\/\/example.com\/2014\/05\/1-revision-v1\/","post_meta":[],"meta":{"links":{"self":"http:\/\/example.com\/wp-json\/posts\/1/revisions/2","author":"http:\/\/example.com\/wp-json\/users\/1","collection":"http:\/\/example.com\/wp-json\/posts/1/revisions","up":"http:\/\/example.com\/wp-json\/posts\/1"}},"terms":[]}]' );
 
 	test( 'Post model can be instantiated with correct default values', function() {
 
@@ -154,6 +155,35 @@ var Backbone = Backbone || {};
 
 	});
 
+	test( 'Post revision collection response is parsed correctly', function() {
+
+		expect( 4 );
+
+		var server = sinon.fakeServer.create();
+
+		server.respondWith(
+			'GET',
+			'/posts/1/revisions',
+			[ 200, { 'Content-Type': 'application/json' }, JSON.stringify( testRevisionCollectionResponse ) ]
+		);
+
+		var revisions = new wp.api.collections.Revisions( {}, { parent: 1 } );
+		revisions.fetch();
+
+		server.respond();
+
+		// Check date & modified is correctly parsed.
+		equal( Object.prototype.toString.call( revisions.at( 0 ).get( 'date' ) ), '[object Date]', 'date should be object type Date' );
+		equal( Object.prototype.toString.call( revisions.at( 0 ).get( 'modified' ) ), '[object Date]', 'modified should be object type Date' );
+
+		// Check if user is setup correctly
+		equal( revisions.at( 0 ).get( 'author' ).get( 'username' ), 'admin' );
+		equal( revisions.at( 0 ).get( 'author' ).get( 'ID' ), 1 );
+
+		server.restore();
+
+	});
+
 	test( 'Post parent is retrieved correctly', function() {
 
 		expect( 2 );
@@ -183,6 +213,8 @@ var Backbone = Backbone || {};
 
 		equal( post2.parent().get('title'), 'Test Parent' );
 
+		server.restore();
+
 	});
 
 	test( 'Post collection is received and setup correctly', function() {
@@ -203,6 +235,8 @@ var Backbone = Backbone || {};
 		var post = posts.at( 0 );
 
 		equal( post.get('title'), 'Test Post' );
+
+		server.restore();
 
 	});
 

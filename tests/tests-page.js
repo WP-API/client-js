@@ -177,6 +177,8 @@ var Backbone = Backbone || {};
 
 		equal( page2.parent().get('title'), 'Test Parent' );
 
+		server.restore();
+
 	});
 
 })();

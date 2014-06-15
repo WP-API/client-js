@@ -155,12 +155,18 @@
 				return null;
 			}
 
+			var parentModel = this;
+
+			if ( typeof this.parentModel !== 'undefined' ) {
+				parentModel = new this.parentModel;
+			}
+
 			// Can we get this from its collection?
-			if ( this.collection ) {
-				return this.collection.get( parent );
+			if ( parentModel.collection ) {
+				return parentModel.collection.get( parent );
 			} else {
 				// Otherwise, get the object directly
-				object = new this.constructor( {
+				object = new parentModel.constructor( {
 					ID: parent
 				});
 
@@ -374,9 +380,15 @@
 			var parent_id = this.get( 'parent' );
 			parent_id = parent_id || '';
 
-			return WP_API_Settings.root + '/posts/' + parent_id + '/revisions/';
-		}
+			var id = this.get( 'ID' );
+			id = id || '';
 
+			return WP_API_Settings.root + '/posts/' + parent_id + '/revisions/' + id;
+		},
+
+		initialize: function( attributes, options ) {
+			this.parentModel = wp.api.models.Post;
+		}
 	});
 
 	/**
@@ -392,14 +404,12 @@
 			title: '',
 			status: 'inherit',
 			type: 'attachment',
-			author: {},
+			author: new wp.api.models.User(),
 			content: '',
 			parent: 0,
 			link: '',
 			date: new Date(),
 			modified: new Date(),
-			date_gmt: new Date(),
-			modified_gmt: new Date(),
 			format: 'standard',
 			slug: '',
 			guid: '',
@@ -410,13 +420,20 @@
 			sticky: false,
 			date_tz: 'Etc/UTC',
 			modified_tz: 'Etc/UTC',
+			date_gmt: new Date(),
+			modified_gmt: new Date(),
 			meta: {
 				links: {}
 			},
 			terms: [],
 			source: '',
 			is_image: true,
-			attachment_meta: {}
+			attachment_meta: {},
+			image_meta: {}
+		},
+
+		initialize: function( attributes, options ) {
+			this.parentModel = wp.api.models.Post;
 		}
 	}, TimeStampedMixin, HierarchicalMixin ) );
 
@@ -652,16 +669,16 @@
 	wp.api.collections.Revisions = Backbone.Collection.extend( {
 		model: wp.api.models.Revision,
 
-		post: null,
+		parent: null,
 
 		initialize: function( models, options ) {
-			if ( options && options.post ) {
-				this.post = options.post;
+			if ( options && options.parent ) {
+				this.parent = options.parent;
 			}
 		},
 
 		url: function() {
-			return WP_API_Settings.root + '/posts/' + this.post + '/revisions';
+			return WP_API_Settings.root + '/posts/' + this.parent + '/revisions';
 		}
 	});
 

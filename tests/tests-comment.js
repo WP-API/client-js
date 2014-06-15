@@ -136,6 +136,8 @@ var Backbone = Backbone || {};
 
 		equal( comment2.parent().get('content'), 'Some content!' );
 
+		server.restore();
+
 	});
 
 })();
