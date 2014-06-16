@@ -35,7 +35,7 @@
 			}
 		},
 		'taxonomies': []
-	}
+	};
 
 	var testPostTypeResponse = JSON.parse( '{"name":"Pages","slug":"page","description":"","labels":{"name":"Pages","singular_name":"Page","add_new":"Add New","add_new_item":"Add New Page","edit_item":"Edit Page","new_item":"New Page","view_item":"View Page","search_items":"Search Pages","not_found":"No pages found.","not_found_in_trash":"No pages found in Trash.","parent_item_colon":"Parent Page:","all_items":"All Pages","menu_name":"Pages","name_admin_bar":"Page"},"queryable":false,"searchable":true,"hierarchical":true,"meta":{"links":{"self":"http:\/\/example.com\/wp-json\/posts\/types\/page","collection":"http:\/\/example.com\/wp-json\/posts\/types","http:\/\/wp-api.org\/1.1\/collections\/taxonomy\/":"http:\/\/example.com\/wp-json\/taxonomies?type=page","archives":"http:\/\/example.com\/wp-json\/pages"}},"taxonomies":[]}' );
 
@@ -47,12 +47,12 @@
 		var postType = new wp.api.models.PostType();
 
 		equal( postType.get('name'), '', 'Default name is empty' );
-		equal( postType.get('slug'), null, 'Default slug should be empty' );
+		equal( postType.get('slug'), null, 'Default slug should be null' );
 		deepEqual( postType.get('labels'), {} , 'Default labels should be an empty object' );
-		deepEqual( postType.get('queryable'), false, 'Default queryable should be false' );
-		deepEqual( postType.get('searchable'), false, 'Default searchable should be false' );
+		equal( postType.get('queryable'), false, 'Default queryable should be false' );
+		equal( postType.get('searchable'), false, 'Default searchable should be false' );
 		equal( postType.get('hierarchical'), false, 'Default hierarchical should be false' );
-		ok( postType.get('taxonomies') instanceof Array );
+		ok( postType.get('taxonomies') instanceof Array, 'Default taxonomies should be an array' );
 		deepEqual( postType.get('meta'), { links: {} }, 'meta should just contain an empty links object');
 
 	});
