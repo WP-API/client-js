@@ -111,7 +111,6 @@ var Backbone = Backbone || {};
 		expect( 7 );
 
 		var post = new wp.api.models.Post( testPostData );
-		//console.log(post);
 		var postJSON = post.toJSON();
 
 		// Check that dates are correctly converted to a string.
