@@ -396,7 +396,7 @@
 				format: 'standard',
 				slug: '',
 				guid: '',
-				excerpt: null,
+				excerpt: '',
 				menu_order: 0,
 				comment_status: 'open',
 				ping_status: 'open',
