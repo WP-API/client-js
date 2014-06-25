@@ -1,7 +1,11 @@
-Backbone.js App for WP-API
+Backbone.js App for JSON REST API
 ==============
 
-This library provides a client-side interface for the [WP JSON API](https://github.com/WP-API/WP-API) plugin for WordPress. (Detailed project description and usage guide to come.)
+This library provides a client-side interface for the [JSON REST API](https://github.com/WP-API/WP-API) plugin for WordPress. This code in this repository generates the Backbone JavaScript application that pairs with JSON REST API. Using this library, you can interact with WordPress installations that have JSON REST API installed using Backbone Models and Collections. Learn more about Backbone [here](http://backbonejs.org/).
+
+## Usage
+
+The compiled JavaScript is included by JSON REST API by default. Compiled code is pulled into Github Pages which is enqueued by JSON REST API. That being said, this repository is setup as a WordPress plugin for development purposes. You can activate this plugin along side JSON REST API, and they will play nice together. The Client JS will dequeue the Github Pages version of the code and enqueue it's own. 
 
 ## Development
 
@@ -25,7 +29,7 @@ This will use [Grunt](http://gruntjs.com) to check the source scripts in `js/` f
 
 ### Testing
 
-You can run the unit tests for this library using Grunt:
+You can run the QUnit tests for this library using Grunt:
 ```bash
 $ npm test
 ```
