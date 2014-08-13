@@ -239,4 +239,56 @@ var Backbone = Backbone || {};
 
 	});
 
+	test( 'Post collection pagination is working', function() {
+
+		expect( 12 );
+
+		var server = sinon.fakeServer.create();
+		server.respondWith(
+			'GET',
+			'/posts',
+			[ 200, { 'Content-Type': 'application/json', 'X-WP-TotalPages': '3', 'X-WP-Total': '3' }, JSON.stringify( testPostCollectionResponse )]
+		);
+
+		var posts = new wp.api.collections.Posts();
+		posts.fetch();
+		server.respond();
+
+		equal( posts.hasMore(), true );
+		equal( posts.state.currentPage, 1 );
+		equal( posts.state.totalObjects, 3 );
+		equal( posts.state.totalPages, 3 );
+
+		server.respondWith(
+			'GET',
+			'/posts?page=2',
+			[ 200, { 'Content-Type': 'application/json', 'X-WP-TotalPages': '3', 'X-WP-Total': '3' }, JSON.stringify( testPostCollectionResponse )]
+		);
+
+		posts.more();
+		server.respond();
+
+		equal( posts.hasMore(), true );
+		equal( posts.state.currentPage, 2 );
+		equal( posts.state.totalObjects, 3 );
+		equal( posts.state.totalPages, 3 );
+
+		server.respondWith(
+			'GET',
+			'/posts?page=3',
+			[ 200, { 'Content-Type': 'application/json', 'X-WP-TotalPages': '3', 'X-WP-Total': '3' }, JSON.stringify( testPostCollectionResponse )]
+		);
+
+		posts.more();
+		server.respond();
+
+		equal( posts.hasMore(), false );
+		equal( posts.state.currentPage, 3 );
+		equal( posts.state.totalObjects, 3 );
+		equal( posts.state.totalPages, 3 );
+
+		server.restore();
+
+	});
+
 })();

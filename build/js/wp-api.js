@@ -651,10 +651,98 @@
 
 	'use strict';
 
+	var BaseCollection = Backbone.Collection.extend(
+		/** @lends BaseCollection.prototype  */
+		{
+
+			/**
+			 * Setup default state
+			 */
+			initialize: function() {
+				this.state = {
+					currentPage: null,
+					totalPages: null,
+					totalObjects: null
+				};
+			},
+
+			/**
+			 * Overwrite Backbone.Collection.sync to pagination state based on response headers
+			 *
+			 * @param {string} method
+			 * @param {Backbone.Model} model
+			 * @param {{success}, *} options
+			 * @returns {*}
+			 */
+			sync: function( method, model, options ) {
+				options = options || {};
+				var SELF = this;
+
+				var success = options.success;
+				options.success = function( data, textStatus, request ) {
+					SELF.state.totalPages = parseInt( request.getResponseHeader( 'X-WP-TotalPages' ) );
+					SELF.state.totalObjects = parseInt( request.getResponseHeader( 'X-WP-Total' ) );
+
+					if ( SELF.state.currentPage === null ) {
+						SELF.state.currentPage = 1;
+					} else {
+						SELF.state.currentPage++;
+					}
+
+					if ( success ) {
+						return success.apply( this, arguments );
+					}
+				};
+
+				return Backbone.sync( method, model, options );
+			},
+
+			/**
+			 * Fetches the next page of objects if a new page exists
+			 *
+			 * @param {data: {page}} options
+			 * @returns {*}
+			 */
+			more: function( options ) {
+				options = options || {};
+				options.data = options.data || {};
+
+				if ( typeof options.data.page === 'undefined' ) {
+					if ( this.state.currentPage === null || this.state.currentPage <= 1 ) {
+						options.data.page = 2;
+					} else {
+						options.data.page = this.state.currentPage + 1;
+					}
+				} else {
+					if ( ! this.hasMore() ) {
+						return false;
+					}
+				}
+
+				return this.fetch( options );
+			},
+
+			/**
+			 * Returns true if there are more pages of objects available
+			 *
+			 * @returns null|boolean
+			 */
+			hasMore: function() {
+				if ( this.state.totalPages === null ||
+					 this.state.totalObjects === null ||
+					 this.state.currentPage === null ) {
+					return null
+				} else {
+					return ( this.state.currentPage < this.state.totalPages );
+				}
+			}
+		}
+	);
+
 	/**
 	 * Backbone collection for posts
 	 */
-	wp.api.collections.Posts = Backbone.Collection.extend(
+	wp.api.collections.Posts = BaseCollection.extend(
 		/** @lends Posts.prototype */
 		{
 			url: WP_API_Settings.root + '/posts',
@@ -666,7 +754,7 @@
 	/**
 	 * Backbone collection for pages
 	 */
-	wp.api.collections.Pages = Backbone.Collection.extend(
+	wp.api.collections.Pages = BaseCollection.extend(
 		/** @lends Pages.prototype */
 		{
 			url: WP_API_Settings.root + '/pages',
@@ -678,7 +766,7 @@
 	/**
 	 * Backbone users collection
 	 */
-	wp.api.collections.Users = Backbone.Collection.extend(
+	wp.api.collections.Users = BaseCollection.extend(
 		/** @lends Users.prototype */
 		{
 			url: WP_API_Settings.root + '/users',
@@ -690,7 +778,7 @@
 	/**
 	 * Backbone post statuses collection
 	 */
-	wp.api.collections.PostStatuses = Backbone.Collection.extend(
+	wp.api.collections.PostStatuses = BaseCollection.extend(
 		/** @lends PostStatuses.prototype */
 		{
 			url: WP_API_Settings.root + '/posts/statuses',
@@ -703,7 +791,7 @@
 	/**
 	 * Backbone media library collection
 	 */
-	wp.api.collections.MediaLibrary = Backbone.Collection.extend(
+	wp.api.collections.MediaLibrary = BaseCollection.extend(
 		/** @lends MediaLibrary.prototype */
 		{
 			url: WP_API_Settings.root + '/media',
@@ -715,7 +803,7 @@
 	/**
 	 * Backbone taxonomy collection
 	 */
-	wp.api.collections.Taxonomies = Backbone.Collection.extend(
+	wp.api.collections.Taxonomies = BaseCollection.extend(
 		/** @lends Taxonomies.prototype */
 		{
 			model: wp.api.models.Taxonomy,
@@ -727,7 +815,7 @@
 	/**
 	 * Backbone comment collection
 	 */
-	wp.api.collections.Comments = Backbone.Collection.extend(
+	wp.api.collections.Comments = BaseCollection.extend(
 		/** @lends Comments.prototype */
 		{
 			model: wp.api.models.Comment,
@@ -740,6 +828,8 @@
 			 * @constructs
 			 */
 			initialize: function( models, options ) {
+				BaseCollection.initialize.apply( this, arguments );
+
 				if ( options && options.post ) {
 					this.post = options.post;
 				}
@@ -759,7 +849,7 @@
 	/**
 	 * Backbone post type collection
 	 */
-	wp.api.collections.PostTypes = Backbone.Collection.extend(
+	wp.api.collections.PostTypes = BaseCollection.extend(
 		/** @lends PostTypes.prototype */
 		{
 			model: wp.api.models.PostType,
@@ -771,7 +861,7 @@
 	/**
 	 * Backbone terms collection
 	 */
-	wp.api.collections.Terms = Backbone.Collection.extend(
+	wp.api.collections.Terms = BaseCollection.extend(
 		/** @lends Terms.prototype */
 		{
 			model: wp.api.models.Term,
@@ -786,6 +876,8 @@
 			 * @constructs
 			 */
 			initialize: function( models, options ) {
+				BaseCollection.initialize.apply( this, arguments );
+
 				if ( typeof options !== 'undefined' ) {
 					if ( options.type ) {
 						this.type = options.type;
@@ -823,7 +915,7 @@
 	/**
 	 * Backbone revisions collection
 	 */
-	wp.api.collections.Revisions = Backbone.Collection.extend(
+	wp.api.collections.Revisions = BaseCollection.extend(
 		/** @lends Revisions.prototype */
 		{
 			model: wp.api.models.Revision,
@@ -836,6 +928,8 @@
 			 * @constructs
 			 */
 			initialize: function( models, options ) {
+				BaseCollection.initialize.apply( this, arguments );
+
 				if ( options && options.parent ) {
 					this.parent = options.parent;
 				}
