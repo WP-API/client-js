@@ -86,7 +86,7 @@ var Backbone = Backbone || {};
 
 		server.respondWith(
 			'GET',
-			'posts/1/comments/1',
+			'/posts/1/comments/1',
 			[ 200, { 'Content-Type': 'application/json' }, JSON.stringify( testCommentResponse ) ]
 		);
 
