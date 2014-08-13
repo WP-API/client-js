@@ -27,24 +27,36 @@
 			 * @returns {*}
 			 */
 			sync: function( method, model, options ) {
-				options = options || {};
-				var SELF = this;
+				if ( 'read' === method ) {
+					options = options || {};
+					options.data = options.data || {};
 
-				var success = options.success;
-				options.success = function( data, textStatus, request ) {
-					SELF.state.totalPages = parseInt( request.getResponseHeader( 'X-WP-TotalPages' ) );
-					SELF.state.totalObjects = parseInt( request.getResponseHeader( 'X-WP-Total' ) );
-
-					if ( SELF.state.currentPage === null ) {
-						SELF.state.currentPage = 1;
-					} else {
-						SELF.state.currentPage++;
+					if ( typeof options.data.page === 'undefined' ) {
+						this.state = {
+							currentPage: null,
+							totalPages: null,
+							totalObjects: null
+						};
 					}
 
-					if ( success ) {
-						return success.apply( this, arguments );
-					}
-				};
+					var SELF = this;
+
+					var success = options.success;
+					options.success = function( data, textStatus, request ) {
+						SELF.state.totalPages = parseInt( request.getResponseHeader( 'X-WP-TotalPages' ) );
+						SELF.state.totalObjects = parseInt( request.getResponseHeader( 'X-WP-Total' ) );
+
+						if ( SELF.state.currentPage === null ) {
+							SELF.state.currentPage = 1;
+						} else {
+							SELF.state.currentPage++;
+						}
+
+						if ( success ) {
+							return success.apply( this, arguments );
+						}
+					};
+				}
 
 				return Backbone.sync( method, model, options );
 			},
@@ -60,14 +72,14 @@
 				options.data = options.data || {};
 
 				if ( typeof options.data.page === 'undefined' ) {
+					if ( ! this.hasMore() ) {
+						return false;
+					}
+
 					if ( this.state.currentPage === null || this.state.currentPage <= 1 ) {
 						options.data.page = 2;
 					} else {
 						options.data.page = this.state.currentPage + 1;
-					}
-				} else {
-					if ( ! this.hasMore() ) {
-						return false;
 					}
 				}
 

@@ -241,7 +241,7 @@ var Backbone = Backbone || {};
 
 	test( 'Post collection pagination is working', function() {
 
-		expect( 12 );
+		expect( 17 );
 
 		var server = sinon.fakeServer.create();
 		server.respondWith(
@@ -284,6 +284,22 @@ var Backbone = Backbone || {};
 
 		equal( posts.hasMore(), false );
 		equal( posts.state.currentPage, 3 );
+		equal( posts.state.totalObjects, 3 );
+		equal( posts.state.totalPages, 3 );
+
+		equal( posts.more(), false );
+
+		server.respondWith(
+			'GET',
+			'/posts',
+			[ 200, { 'Content-Type': 'application/json', 'X-WP-TotalPages': '3', 'X-WP-Total': '3' }, JSON.stringify( testPostCollectionResponse )]
+		);
+
+		posts.fetch();
+		server.respond();
+
+		equal( posts.hasMore(), true );
+		equal( posts.state.currentPage, 1 );
 		equal( posts.state.totalObjects, 3 );
 		equal( posts.state.totalPages, 3 );
 
