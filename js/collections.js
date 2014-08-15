@@ -12,6 +12,7 @@
 			 */
 			initialize: function() {
 				this.state = {
+					data: {},
 					currentPage: null,
 					totalPages: null,
 					totalObjects: null
@@ -28,18 +29,22 @@
 			 */
 			sync: function( method, model, options ) {
 				if ( 'read' === method ) {
-					options = options || {};
-					options.data = options.data || {};
+					var SELF = this;
 
-					if ( typeof options.data.page === 'undefined' ) {
-						this.state = {
-							currentPage: null,
-							totalPages: null,
-							totalObjects: null
-						};
+					options = options || {};
+					if ( options.data ) {
+						SELF.state.data = _.clone( options.data );
+
+						delete SELF.state.data.page;
+					} else {
+						SELF.state.data = options.data = {};
 					}
 
-					var SELF = this;
+					if ( typeof options.data.page === 'undefined' ) {
+						SELF.state.currentPage = null;
+						SELF.state.totalPages = null;
+						SELF.state.totalObjects = null;
+					}
 
 					var success = options.success;
 					options.success = function( data, textStatus, request ) {
@@ -70,6 +75,8 @@
 			more: function( options ) {
 				options = options || {};
 				options.data = options.data || {};
+				
+				_.extend( options.data, this.state.data );
 
 				if ( typeof options.data.page === 'undefined' ) {
 					if ( ! this.hasMore() ) {

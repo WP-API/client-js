@@ -660,6 +660,7 @@
 			 */
 			initialize: function() {
 				this.state = {
+					data: {},
 					currentPage: null,
 					totalPages: null,
 					totalObjects: null
@@ -677,14 +678,18 @@
 			sync: function( method, model, options ) {
 				if ( 'read' === method ) {
 					options = options || {};
-					options.data = options.data || {};
+					if ( options.data ) {
+						this.state.data = _.clone( options.data );
+
+						delete this.state.data.page;
+					} else {
+						this.state.data = options.data = {};
+					}
 
 					if ( typeof options.data.page === 'undefined' ) {
-						this.state = {
-							currentPage: null,
-							totalPages: null,
-							totalObjects: null
-						};
+						this.state.currentPage = null,
+						this.state.totalPages = null,
+						this.state.totalObjects = null
 					}
 
 					var SELF = this;
@@ -718,6 +723,7 @@
 			more: function( options ) {
 				options = options || {};
 				options.data = options.data || {};
+				_.extend( options.data, this.state.data );
 
 				if ( typeof options.data.page === 'undefined' ) {
 					if ( ! this.hasMore() ) {
