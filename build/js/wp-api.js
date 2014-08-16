@@ -677,27 +677,30 @@
 			 */
 			sync: function( method, model, options ) {
 				if ( 'read' === method ) {
-					options = options || {};
-					if ( options.data ) {
-						this.state.data = _.clone( options.data );
+					var SELF = this;
 
-						delete this.state.data.page;
+					options = options || {};
+
+					if ( options.data ) {
+						SELF.state.data = _.clone( options.data );
+
+						delete SELF.state.data.page;
 					} else {
-						this.state.data = options.data = {};
+						SELF.state.data = options.data = {};
 					}
 
 					if ( typeof options.data.page === 'undefined' ) {
-						this.state.currentPage = null,
-						this.state.totalPages = null,
-						this.state.totalObjects = null
+						SELF.state.currentPage = null;
+						SELF.state.totalPages = null;
+						SELF.state.totalObjects = null;
+					} else {
+						SELF.state.currentPage = options.data.page - 1;
 					}
-
-					var SELF = this;
 
 					var success = options.success;
 					options.success = function( data, textStatus, request ) {
-						SELF.state.totalPages = parseInt( request.getResponseHeader( 'X-WP-TotalPages' ) );
-						SELF.state.totalObjects = parseInt( request.getResponseHeader( 'X-WP-Total' ) );
+						SELF.state.totalPages = parseInt( request.getResponseHeader( 'X-WP-TotalPages' ), 10 );
+						SELF.state.totalObjects = parseInt( request.getResponseHeader( 'X-WP-Total' ), 10 );
 
 						if ( SELF.state.currentPage === null ) {
 							SELF.state.currentPage = 1;
@@ -723,6 +726,7 @@
 			more: function( options ) {
 				options = options || {};
 				options.data = options.data || {};
+
 				_.extend( options.data, this.state.data );
 
 				if ( typeof options.data.page === 'undefined' ) {
@@ -749,7 +753,7 @@
 				if ( this.state.totalPages === null ||
 					 this.state.totalObjects === null ||
 					 this.state.currentPage === null ) {
-					return null
+					return null;
 				} else {
 					return ( this.state.currentPage < this.state.totalPages );
 				}

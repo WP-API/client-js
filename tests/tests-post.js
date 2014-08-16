@@ -358,4 +358,26 @@ var Backbone = Backbone || {};
 		equal( posts.state.totalPages, 3 );
 	});
 
+	test( 'Test pagination starting at page 2', function() {
+		expect( 4 );
+
+		var server = sinon.fakeServer.create();
+
+		server.respondWith(
+			'GET',
+			'/posts?page=2',
+			[ 200, { 'Content-Type': 'application/json', 'X-WP-TotalPages': '2', 'X-WP-Total': '2' }, JSON.stringify( testPostCollectionResponse )]
+		);
+
+		var posts = new wp.api.collections.Posts();
+
+		posts.fetch( { data: { page: 2 } } );
+		server.respond();
+
+		equal( posts.hasMore(), false );
+		equal( posts.state.currentPage, 2 );
+		equal( posts.state.totalObjects, 2 );
+		equal( posts.state.totalPages, 2 );
+	});
+
 })();
