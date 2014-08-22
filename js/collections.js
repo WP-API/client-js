@@ -20,7 +20,9 @@
 			},
 
 			/**
-			 * Overwrite Backbone.Collection.sync to pagination state based on response headers
+			 * Overwrite Backbone.Collection.sync to pagination state based on response headers.
+			 *
+			 * Set nonce header before every Backbone sync.
 			 *
 			 * @param {string} method
 			 * @param {Backbone.Model} model
@@ -28,10 +30,17 @@
 			 * @returns {*}
 			 */
 			sync: function( method, model, options ) {
+				var beforeSend = options.beforeSend,
+					options = options || {};
+				options.beforeSend = function( xhr ) {
+					xhr.setRequestHeader( 'X-WP-Nonce', WP_API_Settings.nonce );
+
+					if ( beforeSend ) {
+						return beforeSend.apply( this, arguments );
+					}
+				};
 				if ( 'read' === method ) {
 					var SELF = this;
-
-					options = options || {};
 
 					if ( options.data ) {
 						SELF.state.data = _.clone( options.data );
