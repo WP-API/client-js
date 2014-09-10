@@ -30,8 +30,9 @@
 			 * @returns {*}
 			 */
 			sync: function( method, model, options ) {
-				var beforeSend = options.beforeSend,
-					options = options || {};
+				var beforeSend = options.beforeSend;
+				options = options || {};
+				
 				options.beforeSend = function( xhr ) {
 					xhr.setRequestHeader( 'X-WP-Nonce', WP_API_Settings.nonce );
 
