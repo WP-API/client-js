@@ -125,14 +125,17 @@
 			sync: function( method, model, options ) {
 				options = options || {};
 
-				var beforeSend = options.beforeSend;
-				options.beforeSend = function( xhr ) {
-					xhr.setRequestHeader( 'X-WP-Nonce', WP_API_Settings.nonce );
+				if ( typeof WP_API_Settings.nonce !== 'undefined' ) {
+					var beforeSend = options.beforeSend;
 
-					if ( beforeSend ) {
-						return beforeSend.apply( this, arguments );
-					}
-				};
+					options.beforeSend = function( xhr ) {
+						xhr.setRequestHeader( 'X-WP-Nonce', WP_API_Settings.nonce );
+
+						if ( beforeSend ) {
+							return beforeSend.apply( this, arguments );
+						}
+					};
+				}
 
 				return Backbone.sync( method, model, options );
 			}
