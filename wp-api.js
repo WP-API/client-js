@@ -224,7 +224,7 @@
 		{
 			idAttribute: 'id',
 
-			urlRoot: WP_API_Settings.root + '/wp/v2/users',
+			urlRoot: WP_API_Settings.root + 'wp/v2/users',
 
 			defaults: {
 				id: null,
@@ -256,7 +256,7 @@
 		{
 			idAttribute: 'slug',
 
-			urlRoot: WP_API_Settings.root + '/wp/v2/taxonomies',
+			urlRoot: WP_API_Settings.root + 'wp/v2/taxonomies',
 
 			defaults: {
 				name: '',
@@ -287,7 +287,7 @@
 				var id = this.get( 'id' );
 				id = id || '';
 
-				return WP_API_Settings.root + '/wp/v2/taxonomies/' + this.get( 'taxonomy' ) + '/terms/' + id;
+				return WP_API_Settings.root + 'wp/v2/taxonomies/' + this.get( 'taxonomy' ) + '/terms/' + id;
 			},
 
 			defaults: {
@@ -313,7 +313,7 @@
 		{
 			idAttribute: 'id',
 
-			urlRoot: WP_API_Settings.root + '/wp/v2/posts',
+			urlRoot: WP_API_Settings.root + 'wp/v2/posts',
 
 			defaults: {
 				id: null,
@@ -349,7 +349,7 @@
 		{
 			idAttribute: 'id',
 
-			urlRoot: WP_API_Settings.root + '/wp/v2/pages',
+			urlRoot: WP_API_Settings.root + 'wp/v2/pages',
 
 			defaults: {
 				id: null,
@@ -393,7 +393,7 @@
 			url: function() {
 				var id = this.get( 'id' ) || '';
 
-				return WP_API_Settings.root + '/wp/v2/posts/' + id + '/revisions';
+				return WP_API_Settings.root + 'wp/v2/posts/' + id + '/revisions';
 			},
 
 			defaults: {
@@ -423,7 +423,7 @@
 		{
 			idAttribute: 'id',
 
-			urlRoot: WP_API_Settings.root + '/wp/v2/media',
+			urlRoot: WP_API_Settings.root + 'wp/v2/media',
 
 			defaults: {
 				id: null,
@@ -503,7 +503,7 @@
 				var id = this.get( 'id' );
 				id = id || '';
 
-				return WP_API_Settings.root + '/wp/v2/posts/' + post_id + '/comments/' + id;
+				return WP_API_Settings.root + 'wp/v2/posts/' + post_id + '/comments/' + id;
 			}
 		}, TimeStampedMixin, HierarchicalMixin )
 	);
@@ -516,7 +516,7 @@
 		{
 			idAttribute: 'slug',
 
-			urlRoot: WP_API_Settings.root + '/wp/v2/posts/types',
+			urlRoot: WP_API_Settings.root + 'wp/v2/posts/types',
 
 			defaults: {
 				slug: null,
@@ -554,7 +554,7 @@
 		{
 			idAttribute: 'slug',
 
-			urlRoot: WP_API_Settings.root + '/wp/v2/posts/statuses',
+			urlRoot: WP_API_Settings.root + 'wp/v2/posts/statuses',
 
 			defaults: {
 				slug: null,
@@ -718,7 +718,7 @@
 	wp.api.collections.Posts = BaseCollection.extend(
 		/** @lends Posts.prototype */
 		{
-			url: WP_API_Settings.root + '/wp/v2/posts',
+			url: WP_API_Settings.root + 'wp/v2/posts',
 
 			model: wp.api.models.Post
 		}
@@ -730,7 +730,7 @@
 	wp.api.collections.Pages = BaseCollection.extend(
 		/** @lends Pages.prototype */
 		{
-			url: WP_API_Settings.root + '/wp/v2/pages',
+			url: WP_API_Settings.root + 'wp/v2/pages',
 
 			model: wp.api.models.Page
 		}
@@ -742,7 +742,7 @@
 	wp.api.collections.Users = BaseCollection.extend(
 		/** @lends Users.prototype */
 		{
-			url: WP_API_Settings.root + '/wp/v2/users',
+			url: WP_API_Settings.root + 'wp/v2/users',
 
 			model: wp.api.models.User
 		}
@@ -754,7 +754,7 @@
 	wp.api.collections.PostStatuses = BaseCollection.extend(
 		/** @lends PostStatuses.prototype */
 		{
-			url: WP_API_Settings.root + '/wp/v2/statuses',
+			url: WP_API_Settings.root + 'wp/v2/statuses',
 
 			model: wp.api.models.PostStatus,
 
@@ -778,7 +778,7 @@
 	wp.api.collections.MediaLibrary = BaseCollection.extend(
 		/** @lends MediaLibrary.prototype */
 		{
-			url: WP_API_Settings.root + '/wp/v2/media',
+			url: WP_API_Settings.root + 'wp/v2/media',
 
 			model: wp.api.models.Media
 		}
@@ -792,7 +792,7 @@
 		{
 			model: wp.api.models.Taxonomy,
 
-			url: WP_API_Settings.root + '/wp/v2/taxonomies'
+			url: WP_API_Settings.root + 'wp/v2/taxonomies'
 		}
 	);
 
@@ -809,7 +809,7 @@
 			 *
 			 * @returns {string}
 			 */
-			url: WP_API_Settings.root + '/wp/v2/comments'
+			url: WP_API_Settings.root + 'wp/v2/comments'
 		}
 	);
 
@@ -821,7 +821,7 @@
 		{
 			model: wp.api.models.PostType,
 
-			url: WP_API_Settings.root + '/wp/v2/types',
+			url: WP_API_Settings.root + 'wp/v2/types',
 
 			parse: function( response ) {
 				var responseArray = [];
@@ -868,7 +868,7 @@
 			 * @returns {string}
 			 */
 			url: function() {
-				return WP_API_Settings.root + '/wp/v2/terms/' + this.taxonomy;
+				return WP_API_Settings.root + 'wp/v2/terms/' + this.taxonomy;
 			}
 		}
 	);
@@ -904,7 +904,7 @@
 			 * @returns {string}
 			 */
 			url: function() {
-				return WP_API_Settings.root + '/wp/v2/posts/' + this.parent + '/revisions';
+				return WP_API_Settings.root + 'wp/v2/posts/' + this.parent + '/revisions';
 			}
 		}
 	);
