@@ -497,13 +497,10 @@
 			 * @returns {string}
 			 */
 			url: function() {
-				var post_id = this.get( 'post' );
-				post_id = post_id || '';
-
 				var id = this.get( 'id' );
 				id = id || '';
 
-				return WP_API_Settings.root + '/posts/' + post_id + '/comments/' + id;
+				return WP_API_Settings.root + '/comments/' + id;
 			}
 		}, TimeStampedMixin, HierarchicalMixin )
 	);
