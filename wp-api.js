@@ -497,9 +497,6 @@
 			 * @returns {string}
 			 */
 			url: function() {
-				var post_id = this.get( 'post' );
-				post_id = post_id || '';
-
 				var id = this.get( 'id' );
 				id = id || '';
 
