@@ -128,7 +128,7 @@
 			});
 
 			// Parse the author into a User object
-			if ( 'undefined' === typeof response.author ) {
+			if ( 'undefined' !== typeof response.author ) {
 				response.author = new wp.api.models.User( response.author );
 			}
 
