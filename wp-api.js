@@ -40,7 +40,7 @@
 
 	/**
 	 * Parse date into ISO8601 format
-	 * 
+	 *
 	 * @param {Date} date
 	 */
 	wp.api.utils.parseISO8601 = function( date ) {
@@ -203,7 +203,7 @@
 					var beforeSend = options.beforeSend;
 
 					options.beforeSend = function( xhr ) {
-						xhr.setRequestHeader( 'HTTP_X_WP_NONCE', WP_API_Settings.nonce );
+						xhr.setRequestHeader( 'X-WP-Nonce', WP_API_Settings.nonce );
 
 						if ( beforeSend ) {
 							return beforeSend.apply( this, arguments );
