@@ -128,7 +128,7 @@
 			});
 
 			// Parse the author into a User object
-			if ( 'undefined' typeof response.author ) {
+			if ( 'undefined' !== typeof response.author ) {
 				response.author = new wp.api.models.User( response.author );
 			}
 
@@ -224,7 +224,7 @@
 		{
 			idAttribute: 'id',
 
-			urlRoot: WP_API_Settings.root + '/users',
+			urlRoot: WP_API_Settings.root + 'wp/v2/users',
 
 			defaults: {
 				id: null,
@@ -256,7 +256,7 @@
 		{
 			idAttribute: 'slug',
 
-			urlRoot: WP_API_Settings.root + '/taxonomies',
+			urlRoot: WP_API_Settings.root + 'wp/v2/taxonomies',
 
 			defaults: {
 				name: '',
@@ -287,7 +287,7 @@
 				var id = this.get( 'id' );
 				id = id || '';
 
-				return WP_API_Settings.root + '/taxonomies/' + this.get( 'taxonomy' ) + '/terms/' + id;
+				return WP_API_Settings.root + 'wp/v2/taxonomies/' + this.get( 'taxonomy' ) + '/terms/' + id;
 			},
 
 			defaults: {
@@ -313,7 +313,7 @@
 		{
 			idAttribute: 'id',
 
-			urlRoot: WP_API_Settings.root + '/posts',
+			urlRoot: WP_API_Settings.root + 'wp/v2/posts',
 
 			defaults: {
 				id: null,
@@ -349,7 +349,7 @@
 		{
 			idAttribute: 'id',
 
-			urlRoot: WP_API_Settings.root + '/pages',
+			urlRoot: WP_API_Settings.root + 'wp/v2/pages',
 
 			defaults: {
 				id: null,
@@ -393,7 +393,7 @@
 			url: function() {
 				var id = this.get( 'id' ) || '';
 
-				return WP_API_Settings.root + '/posts/' + id + '/revisions';
+				return WP_API_Settings.root + 'wp/v2/posts/' + id + '/revisions';
 			},
 
 			defaults: {
@@ -423,7 +423,7 @@
 		{
 			idAttribute: 'id',
 
-			urlRoot: WP_API_Settings.root + '/media',
+			urlRoot: WP_API_Settings.root + 'wp/v2/media',
 
 			defaults: {
 				id: null,
@@ -500,7 +500,7 @@
 				var id = this.get( 'id' );
 				id = id || '';
 
-				return WP_API_Settings.root + '/comments/' + id;
+				return WP_API_Settings.root + 'wp/v2/posts/' + post_id + '/comments/' + id;
 			}
 		}, TimeStampedMixin, HierarchicalMixin )
 	);
@@ -513,7 +513,7 @@
 		{
 			idAttribute: 'slug',
 
-			urlRoot: WP_API_Settings.root + '/posts/types',
+			urlRoot: WP_API_Settings.root + 'wp/v2/posts/types',
 
 			defaults: {
 				slug: null,
@@ -551,7 +551,7 @@
 		{
 			idAttribute: 'slug',
 
-			urlRoot: WP_API_Settings.root + '/posts/statuses',
+			urlRoot: WP_API_Settings.root + 'wp/v2/posts/statuses',
 
 			defaults: {
 				slug: null,
@@ -715,7 +715,7 @@
 	wp.api.collections.Posts = BaseCollection.extend(
 		/** @lends Posts.prototype */
 		{
-			url: WP_API_Settings.root + '/posts',
+			url: WP_API_Settings.root + 'wp/v2/posts',
 
 			model: wp.api.models.Post
 		}
@@ -727,7 +727,7 @@
 	wp.api.collections.Pages = BaseCollection.extend(
 		/** @lends Pages.prototype */
 		{
-			url: WP_API_Settings.root + '/pages',
+			url: WP_API_Settings.root + 'wp/v2/pages',
 
 			model: wp.api.models.Page
 		}
@@ -739,7 +739,7 @@
 	wp.api.collections.Users = BaseCollection.extend(
 		/** @lends Users.prototype */
 		{
-			url: WP_API_Settings.root + '/users',
+			url: WP_API_Settings.root + 'wp/v2/users',
 
 			model: wp.api.models.User
 		}
@@ -751,7 +751,7 @@
 	wp.api.collections.PostStatuses = BaseCollection.extend(
 		/** @lends PostStatuses.prototype */
 		{
-			url: WP_API_Settings.root + '/statuses',
+			url: WP_API_Settings.root + 'wp/v2/statuses',
 
 			model: wp.api.models.PostStatus,
 
@@ -775,7 +775,7 @@
 	wp.api.collections.MediaLibrary = BaseCollection.extend(
 		/** @lends MediaLibrary.prototype */
 		{
-			url: WP_API_Settings.root + '/media',
+			url: WP_API_Settings.root + 'wp/v2/media',
 
 			model: wp.api.models.Media
 		}
@@ -789,7 +789,7 @@
 		{
 			model: wp.api.models.Taxonomy,
 
-			url: WP_API_Settings.root + '/taxonomies'
+			url: WP_API_Settings.root + 'wp/v2/taxonomies'
 		}
 	);
 
@@ -806,7 +806,7 @@
 			 *
 			 * @returns {string}
 			 */
-			url: WP_API_Settings.root + '/comments'
+			url: WP_API_Settings.root + 'wp/v2/comments'
 		}
 	);
 
@@ -818,7 +818,7 @@
 		{
 			model: wp.api.models.PostType,
 
-			url: WP_API_Settings.root + '/types',
+			url: WP_API_Settings.root + 'wp/v2/types',
 
 			parse: function( response ) {
 				var responseArray = [];
@@ -865,7 +865,7 @@
 			 * @returns {string}
 			 */
 			url: function() {
-				return WP_API_Settings.root + '/terms/' + this.taxonomy;
+				return WP_API_Settings.root + 'wp/v2/terms/' + this.taxonomy;
 			}
 		}
 	);
@@ -901,7 +901,7 @@
 			 * @returns {string}
 			 */
 			url: function() {
-				return WP_API_Settings.root + '/posts/' + this.parent + '/revisions';
+				return WP_API_Settings.root + 'wp/v2/posts/' + this.parent + '/revisions';
 			}
 		}
 	);
