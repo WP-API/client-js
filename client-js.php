@@ -7,7 +7,7 @@ function json_api_client_js() {
 	/**
 	 * Check if WP API functionality exists. Not using is_plugin_active in prepartion for
 	 */
-	if ( ! function_exists( 'json_get_url_prefix' ) ) {
+	if ( ! function_exists( 'rest_get_url_prefix' ) ) {
 		return;
 	}
 
