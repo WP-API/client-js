@@ -17,14 +17,21 @@
 
 	'use strict';
 
-	// ECMAScript 5 shim, from MDN
-	// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString
+	window.wp = window.wp || {};
+	wp.api = wp.api || {};
+	wp.api.utils = wp.api.utils || {};
+
+	/**
+	 * ECMAScript 5 shim, from MDN.
+	 * @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString
+	 */
 	if ( ! Date.prototype.toISOString ) {
 		var pad = function( number ) {
 			var r = String( number );
 			if ( r.length === 1 ) {
 				r = '0' + r;
 			}
+
 			return r;
 		};
 
@@ -35,55 +42,50 @@
 				'T' + pad( this.getUTCHours() ) +
 				':' + pad( this.getUTCMinutes() ) +
 				':' + pad( this.getUTCSeconds() ) +
-				'.' + String( ( this.getUTCMilliseconds()/1000 ).toFixed( 3 ) ).slice( 2, 5 ) +
+				'.' + String( ( this.getUTCMilliseconds() / 1000 ).toFixed( 3 ) ).slice( 2, 5 ) +
 				'Z';
 		};
 	}
 
-	function WP_API_Utils() {
-		var origParse = Date.parse,
+	/**
+	 * Parse date into ISO8601 format.
+	 *
+	 * @param {Date} date.
+	 */
+	wp.api.utils.parseISO8601 = function( date ) {
+		var timestamp, struct, i, k,
+			minutesOffset = 0,
 			numericKeys = [ 1, 4, 5, 6, 7, 10, 11 ];
 
-
-		this.parseISO8601 = function( date ) {
-			var timestamp, struct, i, k,
-				minutesOffset = 0;
-
-			// ES5 §15.9.4.2 states that the string should attempt to be parsed as a Date Time String Format string
-			// before falling back to any implementation-specific date parsing, so that’s what we do, even if native
-			// implementations could be faster
-			//              1 YYYY                2 MM       3 DD           4 HH    5 mm       6 ss        7 msec        8 Z 9 ±    10 tzHH    11 tzmm
-			if ((struct = /^(\d{4}|[+\-]\d{6})(?:-(\d{2})(?:-(\d{2}))?)?(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{3}))?)?(?:(Z)|([+\-])(\d{2})(?::(\d{2}))?)?)?$/.exec(date))) {
-				// avoid NaN timestamps caused by “undefined” values being passed to Date.UTC
-				for ( i = 0; ( k = numericKeys[i] ); ++i) {
-					struct[k] = +struct[k] || 0;
-				}
-
-				// allow undefined days and months
-				struct[2] = ( +struct[2] || 1 ) - 1;
-				struct[3] = +struct[3] || 1;
-
-				if ( struct[8] !== 'Z' && struct[9] !== undefined ) {
-					minutesOffset = struct[10] * 60 + struct[11];
-
-					if ( struct[9] === '+' ) {
-						minutesOffset = 0 - minutesOffset;
-					}
-				}
-
-				timestamp = Date.UTC( struct[1], struct[2], struct[3], struct[4], struct[5] + minutesOffset, struct[6], struct[7] );
-			}
-			else {
-				timestamp = origParse ? origParse( date ) : NaN;
+		// ES5 §15.9.4.2 states that the string should attempt to be parsed as a Date Time String Format string
+		// before falling back to any implementation-specific date parsing, so that’s what we do, even if native
+		// implementations could be faster.
+		//              1 YYYY                2 MM       3 DD           4 HH    5 mm       6 ss        7 msec        8 Z 9 ±    10 tzHH    11 tzmm
+		if ( ( struct = /^(\d{4}|[+\-]\d{6})(?:-(\d{2})(?:-(\d{2}))?)?(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{3}))?)?(?:(Z)|([+\-])(\d{2})(?::(\d{2}))?)?)?$/.exec( date ) ) ) {
+			// Avoid NaN timestamps caused by “undefined” values being passed to Date.UTC.
+			for ( i = 0; ( k = numericKeys[i] ); ++i ) {
+				struct[k] = +struct[k] || 0;
 			}
 
-			return timestamp;
-		};
-	}
+			// Allow undefined days and months.
+			struct[2] = ( +struct[2] || 1 ) - 1;
+			struct[3] = +struct[3] || 1;
 
-	window.wp = window.wp || {};
-	wp.api = wp.api || {};
-	wp.api.utils = wp.api.utils || new WP_API_Utils();
+			if ( struct[8] !== 'Z' && struct[9] !== undefined ) {
+				minutesOffset = struct[10] * 60 + struct[11];
+
+				if ( struct[9] === '+' ) {
+					minutesOffset = 0 - minutesOffset;
+				}
+			}
+
+			timestamp = Date.UTC( struct[1], struct[2], struct[3], struct[4], struct[5] + minutesOffset, struct[6], struct[7] );
+		} else {
+			timestamp = Date.parse ? Date.parse( date ) : NaN;
+		}
+
+		return timestamp;
+	};
 
 })( window );
 
@@ -94,500 +96,517 @@
 
 	'use strict';
 
-	var parseable_dates = [ 'date', 'modified' ];
-
 	/**
-	 * Backbone model for single users
+	 * Array of parseable dates.
 	 *
-	 * @type {*}
+	 * @type {string[]}.
 	 */
-	wp.api.models.User = Backbone.Model.extend( {
-		idAttribute: 'ID',
-
-		urlRoot: WP_API_Settings.root + '/users',
-
-		defaults: {
-			ID: null,
-			username: '',
-			email: '',
-			password: '',
-			name: '',
-			first_name: '',
-			last_name: '',
-			nickname: '',
-			slug: '',
-			URL: '',
-			avatar: '',
-			meta: {
-				links: {}
-			}
-		},
-
-		avatar: function( size ) {
-			return this.get( 'avatar' ) + '&s=' + size;
-		}
-	});
+	var parseable_dates = [ 'date', 'modified', 'date_gmt', 'modified_gmt' ];
 
 	/**
-	 * Backbone model for a post status
+	 * Mixin for all content that is time stamped.
+	 *
+	 * @type {{toJSON: toJSON, parse: parse}}.
 	 */
-	wp.api.models.PostStatus = Backbone.Model.extend( {
-		idAttribute: 'slug',
-
-		urlRoot: WP_API_Settings.root + '/posts/statuses',
-
-		defaults: {
-			slug: null,
-			name: '',
-			'public': true,
-			'protected': false,
-			'private': false,
-			queryable: true,
-			show_in_list: true,
-			meta: {
-				links: {}
-			}
-		},
-
+	var TimeStampedMixin = {
 		/**
-		 * This model is read only
-		 */
-		save: function() {
-			return false;
-		},
-
-		'delete': function() {
-			return false;
-		}
-	});
-
-	/**
-	 * Model for taxonomy
-	 */
-	wp.api.models.Taxonomy = Backbone.Model.extend({
-		idAttribute: 'name',
-
-		defaults: {
-			name: null,
-			slug: '',
-			labels: [],
-			types: [ 'post' ],
-			show_cloud: false,
-			hierarchical: false,
-			meta: {
-				links: {}
-			}
-		},
-
-		url: function() {
-			var name = this.get( 'name' );
-			name = name || '';
-
-			return WP_API_Settings.root + '/posts/types/' + this.defaultPostType() + '/taxonomies/' + name;
-		},
-
-		/**
-		 * Use the first post type as the default one
+		 * Serialize the entity pre-sync.
 		 *
-		 * @return string
+		 * @returns {*}.
 		 */
-		defaultPostType: function() {
-			var types = this.get( 'types');
+		toJSON: function() {
+			var attributes = _.clone( this.attributes );
 
-			if ( typeof types !== 'undefined' && types[0] ) {
-				return types[0];
+			// Serialize Date objects back into 8601 strings.
+			_.each( parseable_dates, function( key ) {
+				if ( key in attributes ) {
+					attributes[key] = attributes[key].toISOString();
+				}
+			});
+
+			return attributes;
+		},
+
+		/**
+		 * Unserialize the fetched response.
+		 *
+		 * @param {*} response.
+		 * @returns {*}.
+		 */
+		parse: function( response ) {
+
+			// Parse dates into native Date objects.
+			_.each( parseable_dates, function ( key ) {
+				if ( ! ( key in response ) ) {
+					return;
+				}
+
+				var timestamp = wp.api.utils.parseISO8601( response[key] );
+				response[key] = new Date( timestamp );
+			});
+
+			// Parse the author into a User object.
+			if ( 'undefined' !== typeof response.author ) {
+				response.author = new wp.api.models.User( response.author );
 			}
 
-			return null;
+			return response;
 		}
-	});
+	};
 
 	/**
-	 * Backbone model for term
+	 * Mixin for all hierarchical content types such as posts.
+	 *
+	 * @type {{parent: parent}}.
 	 */
-
-	wp.api.models.Term = Backbone.Model.extend({
-
-		idAttribute: 'ID',
-
-		type: 'post',
-
-		taxonomy: 'category',
-
-		initialize: function( attributes, options ) {
-			if ( typeof options !== 'undefined' ) {
-				if ( options.type ) {
-					this.type = options.type;
-				}
-
-				if ( options.taxonomy ) {
-					this.taxonomy = options.taxonomy;
-				}
-			}
-		},
-
-		url: function() {
-			var id = this.get( 'ID' );
-			id = id || '';
-
-			return WP_API_Settings.root + '/posts/types/' + this.type + '/taxonomies/' + this.taxonomy + '/terms/' + id;
-		},
-
+	var HierarchicalMixin = {
+		/**
+		 * Get parent object.
+		 *
+		 * @returns {Backbone.Model}
+		 */
 		parent: function() {
-			var term,
-				parent = this.get( 'parent' );
 
-			// Return null if we don't have a parent
+			var object, parent = this.get( 'parent' );
+
+			// Return null if we don't have a parent.
 			if ( parent === 0 ) {
 				return null;
 			}
 
+			var parentModel = this;
+
+			if ( 'undefined' !== typeof this.parentModel ) {
+				/**
+				 * Probably a better way to do this. Perhaps grab a cached version of the
+				 * instantiated model?
+				 */
+				parentModel = new this.parentModel();
+			}
+
 			// Can we get this from its collection?
-			if ( this.collection ) {
-				return this.collection.get( parent );
+			if ( parentModel.collection ) {
+				return parentModel.collection.get( parent );
 			} else {
-				// Otherwise, get the post directly
-				term = new wp.api.models.Term( {
-					ID: parent
+
+				// Otherwise, get the object directly.
+				object = new parentModel.constructor( {
+					id: parent
 				});
 
-				// Note that this acts asynchronously
-				term.fetch();
-				return term;
-			}
-		},
+				// Note that this acts asynchronously.
+				object.fetch();
 
-		defaults: {
-			ID: null,
-			name: '',
-			slug: '',
-			description: '',
-			parent: null,
-			count: 0,
-			link: '',
-			meta: {
-				links: {}
+				return object;
 			}
 		}
-
-	});
+	};
 
 	/**
-	 * Backbone model for single posts
-	 *
-	 * @type {*}
+	 * Private Backbone base model for all models.
 	 */
-	wp.api.models.Post = Backbone.Model.extend( {
+	var BaseModel = Backbone.Model.extend(
+		/** @lends BaseModel.prototype  */
+		{
+			/**
+			 * Set nonce header before every Backbone sync.
+			 *
+			 * @param {string} method.
+			 * @param {Backbone.Model} model.
+			 * @param {{beforeSend}, *} options.
+			 * @returns {*}.
+			 */
+			sync: function( method, model, options ) {
+				options = options || {};
 
-		idAttribute: 'ID',
+				if ( 'undefined' !== typeof WP_API_Settings.nonce ) {
+					var beforeSend = options.beforeSend;
 
-		urlRoot: WP_API_Settings.root + '/posts',
+					options.beforeSend = function( xhr ) {
+						xhr.setRequestHeader( 'X-WP-Nonce', WP_API_Settings.nonce );
 
-		defaults: function() {
-			return {
-				ID: null,
-				title: '',
-				status: 'draft',
-				type: 'post',
-				author: new wp.api.models.User(),
-				content: '',
+						if ( beforeSend ) {
+							return beforeSend.apply( this, arguments );
+						}
+					};
+				}
+
+				return Backbone.sync( method, model, options );
+			}
+		}
+	);
+
+	/**
+	 * Backbone model for single users.
+	 */
+	wp.api.models.User = BaseModel.extend(
+		/** @lends User.prototype  */
+		{
+			idAttribute: 'id',
+
+			urlRoot: WP_API_Settings.root + 'wp/v2/users',
+
+			defaults: {
+				id: null,
+				avatar_url: {},
+				capabilities: {},
+				description: '',
+				email: '',
+				extra_capabilities: {},
+				first_name: '',
+				last_name: '',
 				link: '',
-				'parent': 0,
+				name: '',
+				nickname: '',
+				registered_date: new Date(),
+				roles: [],
+				slug: '',
+				url: '',
+				username: '',
+				_links: {}
+			}
+		}
+	);
+
+	/**
+	 * Model for Taxonomy.
+	 */
+	wp.api.models.Taxonomy = BaseModel.extend(
+		/** @lends Taxonomy.prototype  */
+		{
+			idAttribute: 'slug',
+
+			urlRoot: WP_API_Settings.root + 'wp/v2/taxonomies',
+
+			defaults: {
+				name: '',
+				slug: null,
+				description: '',
+				labels: {},
+				types: [],
+				show_cloud: false,
+				hierarchical: false
+			}
+		}
+	);
+
+	/**
+	 * Backbone model for term.
+	 */
+	wp.api.models.Term = BaseModel.extend(
+		/** @lends Term.prototype */
+		{
+			idAttribute: 'id',
+
+			/**
+			 * Return URL for the model.
+			 *
+			 * @returns {string}
+			 */
+			url: function() {
+				var id = this.get( 'id' );
+				id = id || '';
+
+				return WP_API_Settings.root + 'wp/v2/taxonomies/' + this.get( 'taxonomy' ) + '/terms/' + id;
+			},
+
+			defaults: {
+				id: null,
+				name: '',
+				slug: '',
+				description: '',
+				parent: null,
+				count: 0,
+				link: '',
+				taxonomy: '',
+				_links: {}
+			}
+
+		}
+	);
+
+	/**
+	 * Backbone model for single posts.
+	 */
+	wp.api.models.Post = BaseModel.extend( _.extend(
+		/** @lends Post.prototype  */
+		{
+			idAttribute: 'id',
+
+			urlRoot: WP_API_Settings.root + 'wp/v2/posts',
+
+			defaults: {
+				id: null,
 				date: new Date(),
 				date_gmt: new Date(),
+				guid: {},
+				link: '',
 				modified: new Date(),
 				modified_gmt: new Date(),
-				format: 'standard',
+				password: '',
 				slug: '',
-				guid: '',
-				excerpt: '',
-				menu_order: 0,
+				status: 'draft',
+				type: 'post',
+				title: {},
+				content: {},
+				author: null,
+				excerpt: {},
+				featured_image: null,
 				comment_status: 'open',
 				ping_status: 'open',
 				sticky: false,
-				date_tz: 'Etc/UTC',
-				modified_tz: 'Etc/UTC',
-				terms: {},
-				post_meta: {},
-				meta: {
-					links: {}
-				}
-			};
-		},
-
-		/**
-		 * Serialize the entity
-		 *
-		 * Overriden for correct date handling
-		 * @return {!Object} Serializable attributes
-		 */
-		toJSON: function() {
-			var attributes = _.clone( this.attributes );
-
-			// Serialize Date objects back into 8601 strings
-			_.each( parseable_dates, function ( key ) {
-				attributes[key] = attributes[key].toISOString();
-			});
-
-			return attributes;
-		},
-
-		/**
-		 * Unserialize the entity
-		 *
-		 * Overriden for correct date handling
-		 * @param {!Object} response Attributes parsed from JSON
-		 * @param {!Object} options Request options
-		 * @return {!Object} Fully parsed attributes
-		 */
-		parse: function( response ) {
-			// Parse dates into native Date objects
-			_.each( parseable_dates, function ( key ) {
-				if ( ! ( key in response ) ) {
-					return;
-				}
-
-				var timestamp = wp.api.utils.parseISO8601( response[key] );
-				response[key] = new Date( timestamp );
-			});
-
-			// Parse the author into a User object
-			response.author = new wp.api.models.User( { username: response.author } );
-
-			return response;
-		},
-
-		/**
-		 * Get parent post
-		 *
-		 * @return {wp.api.models.Post} Parent post, null if not found
-		 */
-		parent: function() {
-
-			var post,
-				parent = this.get( 'parent' );
-
-			// Return null if we don't have a parent
-			if ( parent === 0 ) {
-				return null;
+				format: 'standard',
+				_links: {}
 			}
-
-			// Can we get this from its collection?
-			if ( this.collection ) {
-				return this.collection.get( parent );
-			} else {
-				// Otherwise, get the post directly
-				post = new wp.api.models.Post( {
-					ID: parent
-				});
-
-				// Note that this acts asynchronously
-				post.fetch();
-				return post;
-			}
-		}
-	});
+		}, TimeStampedMixin, HierarchicalMixin )
+	);
 
 	/**
-	 * Backbone model for pages
+	 * Backbone model for pages.
 	 */
-	wp.api.models.Page = wp.api.models.Post.extend( {
-		idAttribute: 'ID',
+	wp.api.models.Page = BaseModel.extend( _.extend(
+		/** @lends Page.prototype  */
+		{
+			idAttribute: 'id',
 
-		urlRoot: WP_API_Settings.root + '/pages',
+			urlRoot: WP_API_Settings.root + 'wp/v2/pages',
 
-		defaults: {
-			ID: null,
-			title: '',
-			status: 'publish',
-			type: 'page',
-			author: new wp.api.models.User(),
-			content: '',
-			parent: 0,
-			link: '',
-			date: new Date(),
-			modified: new Date(),
-			date_gmt: new Date(),
-			modified_gmt: new Date(),
-			date_tz: 'Etc/UTC',
-			modified_tz: 'Etc/UTC',
-			format: 'standard',
-			slug: '',
-			guid: '',
-			excerpt: '',
-			menu_order: 0,
-			comment_status: 'closed',
-			ping_status: 'open',
-			sticky: false,
-			password: '',
-			meta: {
-				links: {}
+			defaults: {
+				id: null,
+				date: new Date(),
+				date_gmt: new Date(),
+				guid: {},
+				link: '',
+				modified: new Date(),
+				modified_gmt: new Date(),
+				password: '',
+				slug: '',
+				status: 'draft',
+				type: 'page',
+				title: {},
+				content: {},
+				author: null,
+				excerpt: {},
+				featured_image: null,
+				comment_status: 'closed',
+				ping_status: 'closed',
+				menu_order: null,
+				template: '',
+				_links: {}
+			}
+		}, TimeStampedMixin, HierarchicalMixin )
+	);
+
+	/**
+	 * Backbone model for revisions.
+	 */
+	wp.api.models.Revision = BaseModel.extend( _.extend(
+		/** @lends Revision.prototype */
+		{
+			idAttribute: 'id',
+
+			/**
+			 * Return URL for the model.
+			 *
+			 * @returns {string}.
+			 */
+			url: function() {
+				var id = this.get( 'id' ) || '';
+
+				return WP_API_Settings.root + 'wp/v2/posts/' + id + '/revisions';
 			},
-			featured_image: null,
-			terms: []
-		}
-	});
+
+			defaults: {
+				id: null,
+				author: null,
+				date: new Date(),
+				date_gmt: new Date(),
+				guid: {},
+				modified: new Date(),
+				modified_gmt: new Date(),
+				parent: 0,
+				slug: '',
+				title: {},
+				content: {},
+				excerpt: {},
+				_links: {}
+			}
+
+		}, TimeStampedMixin, HierarchicalMixin )
+	);
 
 	/**
-	 * Backbone model for media items
+	 * Backbone model for media items.
 	 */
-	wp.api.models.Media = wp.api.models.Post.extend( {
-		idAttribute: 'ID',
+	wp.api.models.Media = BaseModel.extend( _.extend(
+		/** @lends Media.prototype */
+		{
+			idAttribute: 'id',
 
-		urlRoot: WP_API_Settings.root + '/media',
+			urlRoot: WP_API_Settings.root + 'wp/v2/media',
 
-		defaults: {
-			ID: null,
-			title: '',
-			status: 'inherit',
-			type: 'attachment',
-			author: {},
-			content: '',
-			parent: 0,
-			link: '',
-			date: new Date(),
-			modified: new Date(),
-			date_gmt: new Date(),
-			modified_gmt: new Date(),
-			format: 'standard',
-			slug: '',
-			guid: '',
-			excerpt: null,
-			menu_order: 0,
-			comment_status: 'open',
-			ping_status: 'open',
-			sticky: false,
-			date_tz: 'Etc/UTC',
-			modified_tz: 'Etc/UTC',
-			meta: {
-				links: {}
+			defaults: {
+				id: null,
+				date: new Date(),
+				date_gmt: new Date(),
+				guid: {},
+				link: '',
+				modified: new Date(),
+				modified_gmt: new Date(),
+				password: '',
+				slug: '',
+				status: 'draft',
+				type: 'attachment',
+				title: {},
+				author: null,
+				comment_status: 'open',
+				ping_status: 'open',
+				alt_text: '',
+				caption: '',
+				description: '',
+				media_type: '',
+				media_details: {},
+				post: null,
+				source_url: '',
+				_links: {}
 			},
-			terms: [],
-			source: '',
-			is_image: true,
-			attachment_meta: {}
-		}
-	});
+
+			/**
+			 * @class Represent a media item.
+			 * @augments Backbone.Model.
+			 * @constructs
+			 */
+			initialize: function() {
+
+				// Todo: what of the parent model is a page?
+				this.parentModel = wp.api.models.Post;
+			}
+		}, TimeStampedMixin, HierarchicalMixin )
+	);
 
 	/**
-	 * Backbone model for comments
+	 * Backbone model for comments.
 	 */
-	wp.api.models.Comment = Backbone.Model.extend( {
-		idAttribute: 'ID',
+	wp.api.models.Comment = BaseModel.extend( _.extend(
+		/** @lends Comment.prototype */
+		{
+			idAttribute: 'id',
 
-		defaults: {
-			ID: null,
-			post: null,
-			content: '',
-			status: 'approved',
-			type: 'comment',
-			parent: 0,
-			author: new wp.api.models.User(),
-			date: new Date(),
-			date_gmt: new Date(),
-			date_tz: 'Etc/UTC',
-			meta: {
-				links: {}
-			}
-		},
-
-		url: function() {
-			var post_id = this.get( 'post' );
-			post_id = post_id || '';
-
-			var id = this.get( 'ID' );
-			id = id || '';
-
-			return WP_API_Settings.root + '/posts/' + post_id + '/comments/' + id;
-		},
-
-		parse: function( response ) {
-			_.each( parseable_dates, function ( key ) {
-				if ( ! ( key in response ) ) {
-					return;
-				}
-
-				var timestamp = wp.api.utils.parseISO8601( response[key] );
-				response[key] = new Date( timestamp );
-			});
-
-			// Parse the author into a User object
-			response.author = new wp.api.models.User( { username: response.author } );
-
-			return response;
-		},
-
-		toJSON: function() {
-			var attributes = _.clone( this.attributes );
-
-			// Serialize Date objects back into 8601 strings
-			_.each( parseable_dates, function ( key ) {
-				attributes[key] = attributes[key].toISOString();
-			});
-
-			return attributes;
-		},
-
-		parent: function() {
-			var comment,
-				parent = this.get( 'parent' );
-
-			// Return null if we don't have a parent
-			if ( parent === 0 ) {
-				return null;
-			}
-
-			// Can we get this from its collection?
-			if ( this.collection ) {
-				return this.collection.get(parent);
-			} else {
-				// Otherwise, get the post directly
-				comment = new wp.api.models.Comment({
-					ID: parent
-				});
-
-				// Note that this acts asynchronously
-				comment.fetch();
-				return comment;
-			}
-		}
-	});
-
-	/**
-	 * Backbone model for single post types
-	 */
-	wp.api.models.PostType = Backbone.Model.extend( {
-		idAttribute: 'slug',
-
-		urlRoot: WP_API_Settings.root + '/posts/types',
-
-		defaults: {
-			slug: null,
-			name: '',
-			description: '',
-			labels: {},
-			queryable: false,
-			searchable: false,
-			hierarchical: false,
-			meta: {
-				links: {}
+			defaults: {
+				id: null,
+				author: null,
+				author_email: '',
+				author_ip: '',
+				author_name: '',
+				author_url: '',
+				author_user_agent: '',
+				content: {},
+				date: new Date(),
+				date_gmt: new Date(),
+				karma: 0,
+				link: '',
+				parent: 0,
+				post: null,
+				status: 'hold',
+				type: '',
+				_links: {}
 			},
-			taxonomies: []
-		},
 
-		/**
-		 * This is a read only model
-		 *
-		 * @returns {boolean}
-		 */
-		save: function () {
-			return false;
-		},
+			/**
+			 * Return URL for model.
+			 *
+			 * @returns {string}.
+			 */
+			url: function() {
+				var post_id = this.get( 'post' );
+				post_id = post_id || '';
 
-		'delete': function () {
-			return false;
+				var id = this.get( 'id' );
+				id = id || '';
+
+				return WP_API_Settings.root + 'wp/v2/posts/' + post_id + '/comments/' + id;
+			}
+		}, TimeStampedMixin, HierarchicalMixin )
+	);
+
+	/**
+	 * Backbone model for single post types.
+	 */
+	wp.api.models.PostType = BaseModel.extend(
+		/** @lends PostType.prototype */
+		{
+			idAttribute: 'slug',
+
+			urlRoot: WP_API_Settings.root + 'wp/v2/posts/types',
+
+			defaults: {
+				slug: null,
+				name: '',
+				description: '',
+				labels: {},
+				hierarchical: false
+			},
+
+			/**
+			 * Prevent model from being saved.
+			 *
+			 * @returns {boolean}.
+			 */
+			save: function() {
+				return false;
+			},
+
+			/**
+			 * Prevent model from being deleted.
+			 *
+			 * @returns {boolean}.
+			 */
+			'delete': function() {
+				return false;
+			}
 		}
-	});
+	);
+
+	/**
+	 * Backbone model for a post status.
+	 */
+	wp.api.models.PostStatus = BaseModel.extend(
+		/** @lends PostStatus.prototype */
+		{
+			idAttribute: 'slug',
+
+			urlRoot: WP_API_Settings.root + 'wp/v2/posts/statuses',
+
+			defaults: {
+				slug: null,
+				name: '',
+				'public': true,
+				'protected': false,
+				'private': false,
+				queryable: true,
+				show_in_list: true,
+				_links: {}
+			},
+
+			/**
+			 * Prevent model from being saved.
+			 *
+			 * @returns {boolean}.
+			 */
+			save: function() {
+				return false;
+			},
+
+			/**
+			 * Prevent model from being deleted.
+			 *
+			 * @returns {boolean}.
+			 */
+			'delete': function() {
+				return false;
+			}
+		}
+	);
 
 })( wp, WP_API_Settings, Backbone, window );
 
@@ -597,130 +616,333 @@
 	'use strict';
 
 	/**
-	 * wp.api.collections.Posts
+	 * Contains basic collection functionality such as pagination.
 	 */
-	wp.api.collections.Posts = Backbone.Collection.extend({
-		url: WP_API_Settings.root + '/posts',
+	var BaseCollection = Backbone.Collection.extend(
+		/** @lends BaseCollection.prototype  */
+		{
 
-		model: wp.api.models.Post
-	});
+			/**
+			 * Setup default state.
+			 */
+			initialize: function() {
+				this.state = {
+					data: {},
+					currentPage: null,
+					totalPages: null,
+					totalObjects: null
+				};
+			},
 
-	/**
-	 * Backbone collection for pages
-	 */
-	wp.api.collections.Pages = Backbone.Collection.extend({
-		url: WP_API_Settings.root + '/pages',
+			/**
+			 * Overwrite Backbone.Collection.sync to pagination state based on response headers.
+			 *
+			 * Set nonce header before every Backbone sync.
+			 *
+			 * @param {string} method.
+			 * @param {Backbone.Model} model.
+			 * @param {{success}, *} options.
+			 * @returns {*}.
+			 */
+			sync: function( method, model, options ) {
+				options = options || {};
+				var beforeSend = options.beforeSend,
+					self = this;
 
-		model: wp.api.models.Page
-	});
+				if ( 'undefined' !== typeof WP_API_Settings.nonce ) {
+					options.beforeSend = function( xhr ) {
+						xhr.setRequestHeader( 'X-WP-Nonce', WP_API_Settings.nonce );
 
-	/**
-	 * Backbone users collection
-	 */
-	wp.api.collections.Users = Backbone.Collection.extend({
-		url: WP_API_Settings.root + '/users',
-
-		model: wp.api.models.User
-	});
-
-	/**
-	 * Backbone post statuses collection
-	 */
-	wp.api.collections.PostStatuses = Backbone.Collection.extend({
-		url: WP_API_Settings.root + '/posts/statuses',
-
-		model: wp.api.models.PostStatus
-
-	});
-
-	/**
-	 * Backbone media library collection
-	 */
-	wp.api.collections.MediaLibrary = Backbone.Collection.extend({
-		url: WP_API_Settings.root + '/media',
-
-		model: wp.api.models.Media
-	});
-
-	/**
-	 * Backbone taxonomy collection
-	 */
-	wp.api.collections.Taxonomies = Backbone.Collection.extend({
-		model: wp.api.models.Taxonomy,
-
-		type: 'post',
-
-		initialize: function( models, options ) {
-			if ( options && options.type ) {
-				this.type = options.type;
-			}
-		},
-
-		url: function() {
-			return WP_API_Settings.root + '/posts/types/' + this.type + '/taxonomies/';
-		}
-	});
-
-	/**
-	 * Backbone comment collection
-	 */
-	wp.api.collections.Comments = Backbone.Collection.extend({
-		model: wp.api.models.Comment,
-
-		post: null,
-
-		initialize: function( models, options ) {
-			if ( options && options.post ) {
-				this.post = options.post;
-			}
-		},
-
-		url: function() {
-			return WP_API_Settings.root + '/posts/' + this.post + '/comments';
-		}
-	});
-
-	/**
-	 * Backbone post type collection
-	 */
-	wp.api.collections.PostTypes = Backbone.Collection.extend({
-		model: wp.api.models.PostType,
-
-		url: WP_API_Settings.root + '/posts/types'
-	});
-
-	/**
-	 * Backbone terms collection
-	 */
-	wp.api.collections.Terms = Backbone.Collection.extend({
-		model: wp.api.models.Term,
-
-		type: 'post',
-
-		taxonomy: 'category',
-
-		initialize: function( models, options ) {
-			if ( typeof options !== 'undefined' ) {
-				if ( options.type ) {
-					this.type = options.type;
+						if ( beforeSend ) {
+							return beforeSend.apply( self, arguments );
+						}
+					};
 				}
 
-				if ( options.taxonomy ) {
+				if ( 'read' === method ) {
+					if ( options.data ) {
+						self.state.data = _.clone( options.data );
+
+						delete self.state.data.page;
+					} else {
+						self.state.data = options.data = {};
+					}
+
+					if ( 'undefined' === typeof options.data.page ) {
+						self.state.currentPage = null;
+						self.state.totalPages = null;
+						self.state.totalObjects = null;
+					} else {
+						self.state.currentPage = options.data.page - 1;
+					}
+
+					var success = options.success;
+					options.success = function( data, textStatus, request ) {
+						self.state.totalPages = parseInt( request.getResponseHeader( 'x-wp-totalpages' ), 10 );
+						self.state.totalObjects = parseInt( request.getResponseHeader( 'x-wp-total' ), 10 );
+
+						if ( self.state.currentPage === null ) {
+							self.state.currentPage = 1;
+						} else {
+							self.state.currentPage++;
+						}
+
+						if ( success ) {
+							return success.apply( this, arguments );
+						}
+					};
+				}
+
+				return Backbone.sync( method, model, options );
+			},
+
+			/**
+			 * Fetches the next page of objects if a new page exists.
+			 *
+			 * @param {data: {page}} options.
+			 * @returns {*}.
+			 */
+			more: function( options ) {
+				options = options || {};
+				options.data = options.data || {};
+
+				_.extend( options.data, this.state.data );
+
+				if ( 'undefined' === typeof options.data.page ) {
+					if ( ! this.hasMore() ) {
+						return false;
+					}
+
+					if ( this.state.currentPage === null || this.state.currentPage <= 1 ) {
+						options.data.page = 2;
+					} else {
+						options.data.page = this.state.currentPage + 1;
+					}
+				}
+
+				return this.fetch( options );
+			},
+
+			/**
+			 * Returns true if there are more pages of objects available.
+			 *
+			 * @returns null|boolean.
+			 */
+			hasMore: function() {
+				if ( this.state.totalPages === null ||
+					 this.state.totalObjects === null ||
+					 this.state.currentPage === null ) {
+					return null;
+				} else {
+					return ( this.state.currentPage < this.state.totalPages );
+				}
+			}
+		}
+	);
+
+	/**
+	 * Backbone collection for posts.
+	 */
+	wp.api.collections.Posts = BaseCollection.extend(
+		/** @lends Posts.prototype */
+		{
+			url: WP_API_Settings.root + 'wp/v2/posts',
+
+			model: wp.api.models.Post
+		}
+	);
+
+	/**
+	 * Backbone collection for pages.
+	 */
+	wp.api.collections.Pages = BaseCollection.extend(
+		/** @lends Pages.prototype */
+		{
+			url: WP_API_Settings.root + 'wp/v2/pages',
+
+			model: wp.api.models.Page
+		}
+	);
+
+	/**
+	 * Backbone users collection.
+	 */
+	wp.api.collections.Users = BaseCollection.extend(
+		/** @lends Users.prototype */
+		{
+			url: WP_API_Settings.root + 'wp/v2/users',
+
+			model: wp.api.models.User
+		}
+	);
+
+	/**
+	 * Backbone post statuses collection.
+	 */
+	wp.api.collections.PostStatuses = BaseCollection.extend(
+		/** @lends PostStatuses.prototype */
+		{
+			url: WP_API_Settings.root + 'wp/v2/statuses',
+
+			model: wp.api.models.PostStatus,
+
+			parse: function( response ) {
+				var responseArray = [];
+
+				for ( var property in response ) {
+					if ( response.hasOwnProperty( property ) ) {
+						responseArray.push( response[property] );
+					}
+				}
+
+				return this.constructor.__super__.parse.call( this, responseArray );
+			}
+		}
+	);
+
+	/**
+	 * Backbone media library collection.
+	 */
+	wp.api.collections.MediaLibrary = BaseCollection.extend(
+		/** @lends MediaLibrary.prototype */
+		{
+			url: WP_API_Settings.root + 'wp/v2/media',
+
+			model: wp.api.models.Media
+		}
+	);
+
+	/**
+	 * Backbone taxonomy collection.
+	 */
+	wp.api.collections.Taxonomies = BaseCollection.extend(
+		/** @lends Taxonomies.prototype */
+		{
+			model: wp.api.models.Taxonomy,
+
+			url: WP_API_Settings.root + 'wp/v2/taxonomies'
+		}
+	);
+
+	/**
+	 * Backbone comment collection.
+	 */
+	wp.api.collections.Comments = BaseCollection.extend(
+		/** @lends Comments.prototype */
+		{
+			model: wp.api.models.Comment,
+
+			/**
+			 * Return URL for collection.
+			 *
+			 * @returns {string}.
+			 */
+			url: WP_API_Settings.root + 'wp/v2/comments'
+		}
+	);
+
+	/**
+	 * Backbone post type collection.
+	 */
+	wp.api.collections.PostTypes = BaseCollection.extend(
+		/** @lends PostTypes.prototype */
+		{
+			model: wp.api.models.PostType,
+
+			url: WP_API_Settings.root + 'wp/v2/types',
+
+			parse: function( response ) {
+				var responseArray = [];
+
+				for ( var property in response ) {
+					if ( response.hasOwnProperty( property ) ) {
+						responseArray.push( response[property] );
+					}
+				}
+
+				return this.constructor.__super__.parse.call( this, responseArray );
+			}
+		}
+	);
+
+	/**
+	 * Backbone terms collection.
+	 *
+	 * Usage: new wp.api.collections.Terms( {}, { taxonomy: 'taxonomy-slug' } )
+	 */
+	wp.api.collections.Terms = BaseCollection.extend(
+		/** @lends Terms.prototype */
+		{
+			model: wp.api.models.Term,
+
+			taxonomy: 'category',
+
+			/**
+			 * @class Represent an array of terms.
+			 * @augments Backbone.Collection.
+			 * @constructs
+			 */
+			initialize: function( models, options ) {
+				if ( 'undefined' !== typeof options && options.taxonomy ) {
 					this.taxonomy = options.taxonomy;
 				}
+
+				BaseCollection.prototype.initialize.apply( this, arguments );
+			},
+
+			/**
+			 * Return URL for collection.
+			 *
+			 * @returns {string}.
+			 */
+			url: function() {
+				return WP_API_Settings.root + 'wp/v2/terms/' + this.taxonomy;
 			}
-
-			this.on( 'add', _.bind( this.addModel, this ) );
-		},
-
-		addModel: function( model ) {
-			model.type = this.type;
-			model.taxonomy = this.taxonomy;
-		},
-
-		url: function() {
-			return WP_API_Settings.root + '/posts/types/' + this.type + '/taxonomies/' + this.taxonomy + '/terms/';
 		}
-	});
+	);
+
+	/**
+	 * Backbone revisions collection.
+	 *
+	 * Usage: new wp.api.collections.Revisions( {}, { parent: POST_ID } ).
+	 */
+	wp.api.collections.Revisions = BaseCollection.extend(
+		/** @lends Revisions.prototype */
+		{
+			model: wp.api.models.Revision,
+
+			parent: null,
+
+			/**
+			 * @class Represent an array of revisions.
+			 * @augments Backbone.Collection.
+			 * @constructs
+			 */
+			initialize: function( models, options ) {
+				BaseCollection.prototype.initialize.apply( this, arguments );
+
+				if ( options && options.parent ) {
+					this.parent = options.parent;
+				}
+			},
+
+			/**
+			 * return URL for collection.
+			 *
+			 * @returns {string}.
+			 */
+			url: function() {
+				return WP_API_Settings.root + 'wp/v2/posts/' + this.parent + '/revisions';
+			}
+		}
+	);
+
+	/**
+	 * Todo: Handle schema endpoints.
+	 */
+
+	/**
+	 * Todo: Handle post meta.
+	 */
 
 })( wp, WP_API_Settings, Backbone, _, window );
