@@ -517,4 +517,30 @@
 		}
 	);
 
+	/**
+	 * API Schema model.
+	 */
+	wp.api.models.Schema = wpApiBaseModel.extend(
+		{
+			url: WP_API_Settings.root + 'wp/v2',
+
+			defaults: {
+				namespace: '',
+				_links: '',
+				routes: {}
+			},
+
+			/**
+			 * Prevent model from being saved.
+			 *
+			 * @returns {boolean}.
+			 */
+			save: function() {
+				return false;
+			}
+
+		}
+	);
+
+
 })( wp, WP_API_Settings, Backbone, window );
