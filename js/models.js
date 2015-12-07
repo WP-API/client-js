@@ -147,6 +147,8 @@
 
 	/**
 	 * Backbone model for single users.
+	 *
+	 * Defaults to using 'me' for the id, resulting in fetching the current user.
 	 */
 	wp.api.models.User = WPApiBaseModel.extend(
 		/** @lends User.prototype  */
@@ -156,7 +158,7 @@
 			urlRoot: WP_API_Settings.root + 'wp/v2/users',
 
 			defaults: {
-				id: null,
+				id: 'me',
 				avatar_url: {},
 				capabilities: {},
 				description: '',
