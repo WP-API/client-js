@@ -218,7 +218,7 @@
 				var id = this.get( 'id' );
 				id = id || '';
 
-				return WP_API_Settings.root + 'wp/v2/taxonomies/' + this.get( 'taxonomy' ) + '/terms/' + id;
+				return WP_API_Settings.root + 'wp/v2/terms/tag/' + id;
 			},
 
 			defaults: {
