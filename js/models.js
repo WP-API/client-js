@@ -114,8 +114,8 @@
 	/**
 	 * Private Backbone base model for all models.
 	 */
-	var BaseModel = Backbone.Model.extend(
-		/** @lends BaseModel.prototype  */
+	var WPApiBaseModel = Backbone.Model.extend(
+		/** @lends WPApiBaseModel.prototype  */
 		{
 			/**
 			 * Set nonce header before every Backbone sync.
@@ -148,7 +148,7 @@
 	/**
 	 * Backbone model for single users.
 	 */
-	wp.api.models.User = BaseModel.extend(
+	wp.api.models.User = WPApiBaseModel.extend(
 		/** @lends User.prototype  */
 		{
 			idAttribute: 'id',
@@ -180,7 +180,7 @@
 	/**
 	 * Model for Taxonomy.
 	 */
-	wp.api.models.Taxonomy = BaseModel.extend(
+	wp.api.models.Taxonomy = WPApiBaseModel.extend(
 		/** @lends Taxonomy.prototype  */
 		{
 			idAttribute: 'slug',
@@ -202,7 +202,7 @@
 	/**
 	 * Backbone model for term.
 	 */
-	wp.api.models.Term = BaseModel.extend(
+	wp.api.models.Term = WPApiBaseModel.extend(
 		/** @lends Term.prototype */
 		{
 			idAttribute: 'id',
@@ -237,7 +237,7 @@
 	/**
 	 * Backbone model for single posts.
 	 */
-	wp.api.models.Post = BaseModel.extend( _.extend(
+	wp.api.models.Post = WPApiBaseModel.extend( _.extend(
 		/** @lends Post.prototype  */
 		{
 			idAttribute: 'id',
@@ -273,7 +273,7 @@
 	/**
 	 * Backbone model for pages.
 	 */
-	wp.api.models.Page = BaseModel.extend( _.extend(
+	wp.api.models.Page = WPApiBaseModel.extend( _.extend(
 		/** @lends Page.prototype  */
 		{
 			idAttribute: 'id',
@@ -309,7 +309,7 @@
 	/**
 	 * Backbone model for revisions.
 	 */
-	wp.api.models.Revision = BaseModel.extend( _.extend(
+	wp.api.models.Revision = WPApiBaseModel.extend( _.extend(
 		/** @lends Revision.prototype */
 		{
 			idAttribute: 'id',
@@ -347,7 +347,7 @@
 	/**
 	 * Backbone model for media items.
 	 */
-	wp.api.models.Media = BaseModel.extend( _.extend(
+	wp.api.models.Media = WPApiBaseModel.extend( _.extend(
 		/** @lends Media.prototype */
 		{
 			idAttribute: 'id',
@@ -396,7 +396,7 @@
 	/**
 	 * Backbone model for comments.
 	 */
-	wp.api.models.Comment = BaseModel.extend( _.extend(
+	wp.api.models.Comment = WPApiBaseModel.extend( _.extend(
 		/** @lends Comment.prototype */
 		{
 			idAttribute: 'id',
@@ -441,7 +441,7 @@
 	/**
 	 * Backbone model for single post types.
 	 */
-	wp.api.models.PostType = BaseModel.extend(
+	wp.api.models.PostType = WPApiBaseModel.extend(
 		/** @lends PostType.prototype */
 		{
 			idAttribute: 'slug',
@@ -479,7 +479,7 @@
 	/**
 	 * Backbone model for a post status.
 	 */
-	wp.api.models.PostStatus = BaseModel.extend(
+	wp.api.models.PostStatus = WPApiBaseModel.extend(
 		/** @lends PostStatus.prototype */
 		{
 			idAttribute: 'slug',
@@ -520,7 +520,7 @@
 	/**
 	 * API Schema model.
 	 */
-	wp.api.models.Schema = wpApiBaseModel.extend(
+	wp.api.models.Schema = WPApiBaseModel.extend(
 		{
 			url: WP_API_Settings.root + 'wp/v2',
 
