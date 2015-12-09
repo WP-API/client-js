@@ -322,9 +322,10 @@
 			 * @returns {string}.
 			 */
 			url: function() {
-				var id = this.get( 'id' ) || '';
+				var id     = this.get( 'id' )     || '',
+					parent = this.get( 'parent' ) || '';
 
-				return WP_API_Settings.root + 'wp/v2/posts/' + id + '/revisions';
+				return WP_API_Settings.root + 'wp/v2/posts/' + parent + '/revisions/' + id;
 			},
 
 			defaults: {
