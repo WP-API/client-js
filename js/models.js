@@ -481,7 +481,7 @@
 			 *
 			 * @returns {boolean}.
 			 */
-			'delete': function() {
+			delete: function() {
 				return false;
 			}
 		}
