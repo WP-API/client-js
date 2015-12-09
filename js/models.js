@@ -436,6 +436,7 @@
 
 				return WP_API_Settings.root + 'wp/v2/comments/' + id;
 			}
+
 		}, TimeStampedMixin, HierarchicalMixin )
 	);
 
@@ -447,14 +448,23 @@
 		{
 			idAttribute: 'slug',
 
-			urlRoot: WP_API_Settings.root + 'wp/v2/posts/types',
-
 			defaults: {
 				slug: null,
 				name: '',
 				description: '',
 				labels: {},
 				hierarchical: false
+			},
+
+			/**
+			 * Return URL for model.
+			 *
+			 * @returns {string}.
+			 */
+			url: function() {
+				var slug = this.get( 'slug' ) || '';
+
+				return WP_API_Settings.root + 'wp/v2/types/' + slug;
 			},
 
 			/**
@@ -471,7 +481,7 @@
 			 *
 			 * @returns {boolean}.
 			 */
-			'delete': function() {
+			delete: function() {
 				return false;
 			}
 		}
