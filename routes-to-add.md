@@ -2,6 +2,7 @@ Backbone.js App for WP-API
 ==============
 
 ## Route Work Tracking ##
+- [ ] /: {}
 - [x] /wp/v2: {}
 - [ ] /wp/v2/posts: {}
 - [x] /wp/v2/posts/(?P<id>[\d]+): {}
@@ -13,8 +14,8 @@ Backbone.js App for WP-API
 - [ ] /wp/v2/posts/(?P<post_id>[\d]+)/terms/category/(?P<term_id>[\d]+): {}
 - [ ] /wp/v2/posts/(?P<post_id>[\d]+)/terms/tag: {}
 - [ ] /wp/v2/posts/(?P<post_id>[\d]+)/terms/tag/(?P<term_id>[\d]+): {}
-- [x] /wp/v2/pages: {}
-- [ ] /wp/v2/pages/(?P<id>[\d]+): {}
+- [ ] /wp/v2/pages: {}
+- [x] /wp/v2/pages/(?P<id>[\d]+): {}
 - [ ] /wp/v2/pages/(?P<parent_id>[\d]+)/meta: {}
 - [ ] /wp/v2/pages/(?P<parent_id>[\d]+)/meta/(?P<id>[\d]+): {}
 - [ ] /wp/v2/pages/(?P<parent_id>[\d]+)/revisions: {}
