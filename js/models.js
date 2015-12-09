@@ -256,7 +256,6 @@
 				modified: new Date(),
 				modified_gmt: new Date(),
 				password: '',
-				slug: '',
 				status: 'draft',
 				type: 'post',
 				title: {},
