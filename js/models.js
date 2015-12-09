@@ -392,7 +392,7 @@
 				post: null,
 				source_url: '',
 				_links: {}
-			},
+			}
 
 		}, TimeStampedMixin )
 	);
@@ -428,7 +428,7 @@
 				status: 'hold',
 				type: '',
 				_links: {}
-			},
+			}
 
 		}, TimeStampedMixin, HierarchicalMixin )
 	);
@@ -468,7 +468,7 @@
 			 *
 			 * @returns {boolean}.
 			 */
-			delete: function() {
+			destroy: function() {
 				return false;
 			}
 		}
@@ -512,7 +512,7 @@
 			 *
 			 * @returns {boolean}.
 			 */
-			delete: function() {
+			destroy: function() {
 				return false;
 			}
 		}
@@ -546,7 +546,7 @@
 			 *
 			 * @returns {boolean}.
 			 */
-			delete: function() {
+			destroy: function() {
 				return false;
 			}
 		}
