@@ -309,10 +309,13 @@
 	);
 
 	/**
-	 * Backbone model for revisions.
+	 * Backbone model for post revisions.
+	 *
+	 * @param {int} parent The post id that this revision belongs to.
+	 * @param {int} id     The post revision id.
 	 */
-	wp.api.models.Revision = WPApiBaseModel.extend( _.extend(
-		/** @lends Revision.prototype */
+	wp.api.models.PostRevision = WPApiBaseModel.extend( _.extend(
+		/** @lends PostRevision.prototype */
 		{
 			idAttribute: 'id',
 
@@ -322,9 +325,10 @@
 			 * @returns {string}.
 			 */
 			url: function() {
-				var id = this.get( 'id' ) || '';
+				var id     = this.get( 'id' )     || '',
+					parent = this.get( 'parent' ) || '';
 
-				return WP_API_Settings.root + 'wp/v2/posts/' + id + '/revisions';
+				return WP_API_Settings.root + 'wp/v2/posts/' + parent + '/revisions/' + id;
 			},
 
 			defaults: {
@@ -417,7 +421,6 @@
 				karma: 0,
 				link: '',
 				parent: 0,
-				post: null,
 				status: 'hold',
 				type: '',
 				_links: {}
@@ -429,13 +432,9 @@
 			 * @returns {string}.
 			 */
 			url: function() {
-				var post_id = this.get( 'post' );
-				post_id = post_id || '';
+				var id = this.get( 'id' ) || '';
 
-				var id = this.get( 'id' );
-				id = id || '';
-
-				return WP_API_Settings.root + 'wp/v2/posts/' + post_id + '/comments/' + id;
+				return WP_API_Settings.root + 'wp/v2/comments/' + id;
 			}
 		}, TimeStampedMixin, HierarchicalMixin )
 	);
@@ -523,6 +522,7 @@
 	 * API Schema model.
 	 */
 	wp.api.models.Schema = WPApiBaseModel.extend(
+		/** @lends Shema.prototype  */
 		{
 			url: WP_API_Settings.root + 'wp/v2',
 
