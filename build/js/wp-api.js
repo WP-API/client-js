@@ -237,9 +237,11 @@
 	);
 
 	/**
-	 * Backbone model for single users.
+	 * Backbone model for a single user.
 	 *
-	 * Defaults to using 'me' for the id, resulting in fetching the current user.
+	 *
+	 * @param {Object} options
+	 * @param {int}    options.id The user id. Optional. Defaults to 'me', fetching the current user.
 	 */
 	wp.api.models.User = WPApiBaseModel.extend(
 		/** @lends User.prototype  */
@@ -271,7 +273,10 @@
 	);
 
 	/**
-	 * Model for Taxonomy.
+	 * Model for a single taxonomy.
+	 *
+	 * @param {Object} options
+	 * @param {string} options.slug The taxonomy slug.
 	 */
 	wp.api.models.Taxonomy = WPApiBaseModel.extend(
 		/** @lends Taxonomy.prototype  */
@@ -293,24 +298,17 @@
 	);
 
 	/**
-	 * Backbone model for term.
+	 * Backbone model for a single term.
+	 *
+	 * @param {Object} options
+	 * @param {int} id The term id.
 	 */
 	wp.api.models.Term = WPApiBaseModel.extend(
 		/** @lends Term.prototype */
 		{
 			idAttribute: 'id',
 
-			/**
-			 * Return URL for the model.
-			 *
-			 * @returns {string}
-			 */
-			url: function() {
-				var id = this.get( 'id' );
-				id = id || '';
-
-				return WP_API_Settings.root + 'wp/v2/terms/tag/' + id;
-			},
+			urlRoot: WP_API_Settings.root + 'wp/v2/terms/tag',
 
 			defaults: {
 				id: null,
@@ -328,7 +326,10 @@
 	);
 
 	/**
-	 * Backbone model for single posts.
+	 * Backbone model for a single post.
+	 *
+	 * @param {Object} options
+	 * @param {int}    options.id The post id.
 	 */
 	wp.api.models.Post = WPApiBaseModel.extend( _.extend(
 		/** @lends Post.prototype  */
@@ -364,7 +365,10 @@
 	);
 
 	/**
-	 * Backbone model for pages.
+	 * Backbone model for a single page.
+	 *
+	 * @param {Object} options
+	 * @param {int}    options.id The page id.
 	 */
 	wp.api.models.Page = WPApiBaseModel.extend( _.extend(
 		/** @lends Page.prototype  */
@@ -400,23 +404,16 @@
 	);
 
 	/**
-	 * Backbone model for revisions.
+	 * Backbone model for a single post revision.
+	 *
+	 * @param {Object} options
+	 * @param {int}    options.parent The id of the post that this revision belongs to.
+	 * @param {int}    options.id     The revision id.
 	 */
-	wp.api.models.Revision = WPApiBaseModel.extend( _.extend(
-		/** @lends Revision.prototype */
+	wp.api.models.PostRevision = WPApiBaseModel.extend( _.extend(
+		/** @lends PostRevision.prototype */
 		{
 			idAttribute: 'id',
-
-			/**
-			 * Return URL for the model.
-			 *
-			 * @returns {string}.
-			 */
-			url: function() {
-				var id = this.get( 'id' ) || '';
-
-				return WP_API_Settings.root + 'wp/v2/posts/' + id + '/revisions';
-			},
 
 			defaults: {
 				id: null,
@@ -432,13 +429,28 @@
 				content: {},
 				excerpt: {},
 				_links: {}
+			},
+
+			/**
+			 * Return URL for the model.
+			 *
+			 * @returns {string}.
+			 */
+			url: function() {
+				var id     = this.get( 'id' )     || '',
+					parent = this.get( 'parent' ) || '';
+
+				return WP_API_Settings.root + 'wp/v2/posts/' + parent + '/revisions/' + id;
 			}
 
 		}, TimeStampedMixin, HierarchicalMixin )
 	);
 
 	/**
-	 * Backbone model for media items.
+	 * Backbone model for a single media item.
+	 *
+	 * @param {Object} options
+	 * @param {int}    options.id The media item id.
 	 */
 	wp.api.models.Media = WPApiBaseModel.extend( _.extend(
 		/** @lends Media.prototype */
@@ -471,28 +483,24 @@
 				post: null,
 				source_url: '',
 				_links: {}
-			},
-
-			/**
-			 * @class Represent a media item.
-			 * @augments Backbone.Model.
-			 * @constructs
-			 */
-			initialize: function() {
-
-				// Todo: what of the parent model is a page?
-				this.parentModel = wp.api.models.Post;
 			}
-		}, TimeStampedMixin, HierarchicalMixin )
+
+		}, TimeStampedMixin )
 	);
 
 	/**
-	 * Backbone model for comments.
+	 * Backbone model for a single comment.
+	 *
+	 * @param {Object} options
+	 * @param {int}    options.id The comment id.
 	 */
 	wp.api.models.Comment = WPApiBaseModel.extend( _.extend(
 		/** @lends Comment.prototype */
 		{
 			idAttribute: 'id',
+
+			urlRoot: WP_API_Settings.root + 'wp/v2/comments',
+
 
 			defaults: {
 				id: null,
@@ -508,38 +516,26 @@
 				karma: 0,
 				link: '',
 				parent: 0,
-				post: null,
 				status: 'hold',
 				type: '',
 				_links: {}
-			},
-
-			/**
-			 * Return URL for model.
-			 *
-			 * @returns {string}.
-			 */
-			url: function() {
-				var post_id = this.get( 'post' );
-				post_id = post_id || '';
-
-				var id = this.get( 'id' );
-				id = id || '';
-
-				return WP_API_Settings.root + 'wp/v2/posts/' + post_id + '/comments/' + id;
 			}
+
 		}, TimeStampedMixin, HierarchicalMixin )
 	);
 
 	/**
-	 * Backbone model for single post types.
+	 * Backbone model for a single post type.
+	 *
+	 * @param {Object} options
+	 * @param {string} options.slug The post type slug.
 	 */
 	wp.api.models.PostType = WPApiBaseModel.extend(
 		/** @lends PostType.prototype */
 		{
 			idAttribute: 'slug',
 
-			urlRoot: WP_API_Settings.root + 'wp/v2/posts/types',
+			urlRoot: WP_API_Settings.root + 'wp/v2/types',
 
 			defaults: {
 				slug: null,
@@ -563,21 +559,24 @@
 			 *
 			 * @returns {boolean}.
 			 */
-			'delete': function() {
+			destroy: function() {
 				return false;
 			}
 		}
 	);
 
 	/**
-	 * Backbone model for a post status.
+	 * Backbone model for a a single post status.
+	 *
+	 * @param {Object} options
+	 * @param {string} options.slug The post status slug.
 	 */
 	wp.api.models.PostStatus = WPApiBaseModel.extend(
 		/** @lends PostStatus.prototype */
 		{
 			idAttribute: 'slug',
 
-			urlRoot: WP_API_Settings.root + 'wp/v2/posts/statuses',
+			urlRoot: WP_API_Settings.root + 'wp/v2/statuses',
 
 			defaults: {
 				slug: null,
@@ -604,16 +603,17 @@
 			 *
 			 * @returns {boolean}.
 			 */
-			'delete': function() {
+			destroy: function() {
 				return false;
 			}
 		}
 	);
 
 	/**
-	 * API Schema model.
+	 * API Schema model. Contains meta information about the API.
 	 */
 	wp.api.models.Schema = WPApiBaseModel.extend(
+		/** @lends Shema.prototype  */
 		{
 			url: WP_API_Settings.root + 'wp/v2',
 
@@ -630,8 +630,16 @@
 			 */
 			save: function() {
 				return false;
-			}
+			},
 
+			/**
+			 * Prevent model from being deleted.
+			 *
+			 * @returns {boolean}.
+			 */
+			destroy: function() {
+				return false;
+			}
 		}
 	);
 
