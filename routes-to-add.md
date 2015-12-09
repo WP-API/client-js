@@ -2,6 +2,7 @@ Backbone.js App for WP-API
 ==============
 
 ## Route Work Tracking ##
+* Models tested GET from the following endpoints:
 - [ ] /: {}
 - [x] /wp/v2: {}
 - [ ] /wp/v2/posts: {}
@@ -25,7 +26,7 @@ Backbone.js App for WP-API
 - [ ] /wp/v2/types: {}
 - [ ] /wp/v2/types/(?P<type>[\w-]+): {}
 - [ ] /wp/v2/statuses: {}
-- [ ] /wp/v2/statuses/(?P<status>[\w-]+): {}
+- [x] /wp/v2/statuses/(?P<status>[\w-]+): {}
 - [ ] /wp/v2/taxonomies: {}
 - [x] /wp/v2/taxonomies/(?P<taxonomy>[\w-]+): {}
 - [ ] /wp/v2/terms/category: {}

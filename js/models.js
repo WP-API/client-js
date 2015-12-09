@@ -209,17 +209,7 @@
 		{
 			idAttribute: 'id',
 
-			/**
-			 * Return URL for the model.
-			 *
-			 * @returns {string}
-			 */
-			url: function() {
-				var id = this.get( 'id' );
-				id = id || '';
-
-				return WP_API_Settings.root + 'wp/v2/terms/tag/' + id;
-			},
+			urlRoot: WP_API_Settings.root + 'wp/v2/terms/tag',
 
 			defaults: {
 				id: null,
@@ -407,6 +397,9 @@
 		{
 			idAttribute: 'id',
 
+			urlRoot: WP_API_Settings.root + 'wp/v2/comments',
+
+
 			defaults: {
 				id: null,
 				author: null,
@@ -426,17 +419,6 @@
 				_links: {}
 			},
 
-			/**
-			 * Return URL for model.
-			 *
-			 * @returns {string}.
-			 */
-			url: function() {
-				var id = this.get( 'id' ) || '';
-
-				return WP_API_Settings.root + 'wp/v2/comments/' + id;
-			}
-
 		}, TimeStampedMixin, HierarchicalMixin )
 	);
 
@@ -448,23 +430,14 @@
 		{
 			idAttribute: 'slug',
 
+			urlRoot: WP_API_Settings.root + 'wp/v2/types',
+
 			defaults: {
 				slug: null,
 				name: '',
 				description: '',
 				labels: {},
 				hierarchical: false
-			},
-
-			/**
-			 * Return URL for model.
-			 *
-			 * @returns {string}.
-			 */
-			url: function() {
-				var slug = this.get( 'slug' ) || '';
-
-				return WP_API_Settings.root + 'wp/v2/types/' + slug;
 			},
 
 			/**
@@ -495,7 +468,7 @@
 		{
 			idAttribute: 'slug',
 
-			urlRoot: WP_API_Settings.root + 'wp/v2/posts/statuses',
+			urlRoot: WP_API_Settings.root + 'wp/v2/statuses',
 
 			defaults: {
 				slug: null,
