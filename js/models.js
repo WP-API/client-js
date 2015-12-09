@@ -309,13 +309,13 @@
 	);
 
 	/**
-	 * Backbone model for revisions.
+	 * Backbone model for post revisions.
 	 *
-	 * @param {int} parent The post id.
-	 * @param {int} id     The revision id.
+	 * @param {int} parent The post id that this revision belongs to.
+	 * @param {int} id     The post revision id.
 	 */
-	wp.api.models.Revision = WPApiBaseModel.extend( _.extend(
-		/** @lends Revision.prototype */
+	wp.api.models.PostRevision = WPApiBaseModel.extend( _.extend(
+		/** @lends PostRevision.prototype */
 		{
 			idAttribute: 'id',
 
