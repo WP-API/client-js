@@ -392,7 +392,7 @@
 				post: null,
 				source_url: '',
 				_links: {}
-			},
+			}
 
 		}, TimeStampedMixin )
 	);
@@ -428,7 +428,7 @@
 				status: 'hold',
 				type: '',
 				_links: {}
-			},
+			}
 
 		}, TimeStampedMixin, HierarchicalMixin )
 	);
