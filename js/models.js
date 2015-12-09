@@ -468,7 +468,7 @@
 			 *
 			 * @returns {boolean}.
 			 */
-			delete: function() {
+			destroy: function() {
 				return false;
 			}
 		}
@@ -512,7 +512,7 @@
 			 *
 			 * @returns {boolean}.
 			 */
-			delete: function() {
+			destroy: function() {
 				return false;
 			}
 		}
@@ -546,7 +546,7 @@
 			 *
 			 * @returns {boolean}.
 			 */
-			delete: function() {
+			destroy: function() {
 				return false;
 			}
 		}
