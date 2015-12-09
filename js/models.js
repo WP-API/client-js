@@ -468,7 +468,7 @@
 		{
 			idAttribute: 'slug',
 
-			urlRoot: WP_API_Settings.root + 'wp/v2/posts/statuses',
+			urlRoot: WP_API_Settings.root + 'wp/v2/statuses',
 
 			defaults: {
 				slug: null,
