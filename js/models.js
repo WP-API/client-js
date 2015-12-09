@@ -310,6 +310,9 @@
 
 	/**
 	 * Backbone model for revisions.
+	 *
+	 * @param {int} parent The post id.
+	 * @param {int} id     The revision id.
 	 */
 	wp.api.models.Revision = WPApiBaseModel.extend( _.extend(
 		/** @lends Revision.prototype */
@@ -524,6 +527,7 @@
 	 * API Schema model.
 	 */
 	wp.api.models.Schema = WPApiBaseModel.extend(
+		/** @lends Shema.prototype  */
 		{
 			url: WP_API_Settings.root + 'wp/v2',
 
