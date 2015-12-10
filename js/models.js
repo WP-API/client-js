@@ -256,7 +256,6 @@
 				modified: new Date(),
 				modified_gmt: new Date(),
 				password: '',
-				status: 'draft',
 				type: 'post',
 				title: {},
 				content: {},
@@ -295,7 +294,6 @@
 				modified_gmt: new Date(),
 				password: '',
 				slug: '',
-				status: 'draft',
 				type: 'page',
 				title: {},
 				content: {},
@@ -377,7 +375,6 @@
 				modified_gmt: new Date(),
 				password: '',
 				slug: '',
-				status: 'draft',
 				type: 'attachment',
 				title: {},
 				author: null,
@@ -424,7 +421,6 @@
 				karma: 0,
 				link: '',
 				parent: 0,
-				status: 'hold',
 				type: '',
 				_links: {}
 			}
