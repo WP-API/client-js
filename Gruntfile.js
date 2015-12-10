@@ -52,7 +52,8 @@ module.exports = function( grunt ) {
 		},
 		watch: {
 			files: [
-				'js/*.js'
+				'js/*.js',
+				'tests/*.js'
 			],
 			tasks: [ 'jshint', 'uglify:js', 'concat:js' ]
 		}

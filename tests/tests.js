@@ -1,3 +1,4 @@
+/*global JSON */
 module( 'Post Model Tests' );
 
 var testDate = new Date();
