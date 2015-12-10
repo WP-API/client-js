@@ -34,8 +34,14 @@
     <script src="../bower_components/sinon-qunit-1.0.0/index.js" type="text/javascript"></script>
 
     <!-- Load local lib and tests. -->
+    <script type='text/javascript'>
+    /* <![CDATA[ */
+    var WP_API_Settings = {"root":"http:\/\/wpdev.localhost\/wp-json\/","nonce":"9b32589693"};
+    /* ]]> */
+    </script>
     <script src="../build/js/wp-api.js"></script>
     <script src="tests-post.js"></script>
+    <script src="run-tests.js"></script>
 
     </body>
 </html>
