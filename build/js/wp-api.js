@@ -240,8 +240,8 @@
 	 * Backbone model for a single user.
 	 *
 	 *
-	 * @param {Object} options
-	 * @param {int}    options.id The user id. Optional. Defaults to 'me', fetching the current user.
+	 * @param {Object} attributes
+	 * @param {int}    attributes.id The user id. Optional. Defaults to 'me', fetching the current user.
 	 */
 	wp.api.models.User = WPApiBaseModel.extend(
 		/** @lends User.prototype  */
@@ -275,8 +275,8 @@
 	/**
 	 * Model for a single taxonomy.
 	 *
-	 * @param {Object} options
-	 * @param {string} options.slug The taxonomy slug.
+	 * @param {Object} attributes
+	 * @param {string} attributes.slug The taxonomy slug.
 	 */
 	wp.api.models.Taxonomy = WPApiBaseModel.extend(
 		/** @lends Taxonomy.prototype  */
@@ -300,8 +300,8 @@
 	/**
 	 * Backbone model for a single term.
 	 *
-	 * @param {Object} options
-	 * @param {int} id The term id.
+	 * @param {Object} attributes
+	 * @param {int} id attributesm id.
 	 */
 	wp.api.models.Term = WPApiBaseModel.extend(
 		/** @lends Term.prototype */
@@ -328,8 +328,8 @@
 	/**
 	 * Backbone model for a single post.
 	 *
-	 * @param {Object} options
-	 * @param {int}    options.id The post id.
+	 * @param {Object} attributes
+	 * @param {int}    attributes.id The post id.
 	 */
 	wp.api.models.Post = WPApiBaseModel.extend( _.extend(
 		/** @lends Post.prototype  */
@@ -366,8 +366,8 @@
 	/**
 	 * Backbone model for a single page.
 	 *
-	 * @param {Object} options
-	 * @param {int}    options.id The page id.
+	 * @param {Object} attributes
+	 * @param {int}    attributes.id The page id.
 	 */
 	wp.api.models.Page = WPApiBaseModel.extend( _.extend(
 		/** @lends Page.prototype  */
@@ -405,9 +405,9 @@
 	/**
 	 * Backbone model for a single post revision.
 	 *
-	 * @param {Object} options
-	 * @param {int}    options.parent The id of the post that this revision belongs to.
-	 * @param {int}    options.id     The revision id.
+	 * @param {Object} attributes
+	 * @param {int}    attributes.parent The id of the post that this revision belongs to.
+	 * @param {int}    attributes.id     The revision id.
 	 */
 	wp.api.models.PostRevision = WPApiBaseModel.extend( _.extend(
 		/** @lends PostRevision.prototype */
@@ -448,8 +448,8 @@
 	/**
 	 * Backbone model for a single media item.
 	 *
-	 * @param {Object} options
-	 * @param {int}    options.id The media item id.
+	 * @param {Object} attributes
+	 * @param {int}    attributes.id The media item id.
 	 */
 	wp.api.models.Media = WPApiBaseModel.extend( _.extend(
 		/** @lends Media.prototype */
@@ -490,8 +490,8 @@
 	/**
 	 * Backbone model for a single comment.
 	 *
-	 * @param {Object} options
-	 * @param {int}    options.id The comment id.
+	 * @param {Object} attributes
+	 * @param {int}    attributes.id The comment id.
 	 */
 	wp.api.models.Comment = WPApiBaseModel.extend( _.extend(
 		/** @lends Comment.prototype */
@@ -526,8 +526,8 @@
 	/**
 	 * Backbone model for a single post type.
 	 *
-	 * @param {Object} options
-	 * @param {string} options.slug The post type slug.
+	 * @param {Object} attributes
+	 * @param {string} attributes.slug The post type slug.
 	 */
 	wp.api.models.PostType = WPApiBaseModel.extend(
 		/** @lends PostType.prototype */
@@ -567,8 +567,8 @@
 	/**
 	 * Backbone model for a a single post status.
 	 *
-	 * @param {Object} options
-	 * @param {string} options.slug The post status slug.
+	 * @param {Object} attributes
+	 * @param {string} attributes.slug The post status slug.
 	 */
 	wp.api.models.PostStatus = WPApiBaseModel.extend(
 		/** @lends PostStatus.prototype */
