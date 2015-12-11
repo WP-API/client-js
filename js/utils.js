@@ -6,6 +6,8 @@
 	wp.api = wp.api || {};
 	wp.api.utils = wp.api.utils || {};
 
+	wp.api.utils.WP_API_DEBUG_LOGGING = true;
+
 	/**
 	 * ECMAScript 5 shim, from MDN.
 	 * @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString
@@ -70,6 +72,72 @@
 		}
 
 		return timestamp;
+	};
+
+	/**
+	 * Helper logging function.
+	 *
+	 * @param  {string} message Message to log.
+	 */
+	wp.api.utils.log = function( message ) {
+		if ( wp.api.utils.WP_API_DEBUG_LOGGING ) {
+			window.console.log( message );
+		}
+	};
+
+	/**
+	 * Helper function for getting the root URL.
+	 * @return {[type]} [description]
+	 */
+	wp.api.utils.getRootUrl = function() {
+		return window.location.origin ?
+			window.location.origin + '/' :
+			window.location.protocol + '/' + window.location.host + '/';
+	};
+
+	/**
+	 * Helper for capitalizing strings.
+	 */
+	String.prototype.wpapiCapitalize = function() {
+		return this.charAt(0).toUpperCase() + this.slice(1);
+	};
+
+	/**
+	 * Extract a name from a passed route.
+	 *
+	 * @param {string} route The route to extract a name from.
+	 */
+	wp.api.utils.extractRouteName = function( route ) {
+		var name,
+			lastSlash = route.lastIndexOf( '/' );
+
+		if ( lastSlash < 0 ) {
+			return '';
+		}
+
+		name = route.substr( 0, lastSlash );
+		lastSlash = name.lastIndexOf( '/' );
+
+		return name.substr( lastSlash + 1 );
+	};
+
+	/**
+	 * Extract a parent name from a passed route.
+	 *
+	 * @param {string} route The route to extract a name from.
+	 */
+	wp.api.utils.extractParentName = function( route ) {
+		var name,
+			lastSlash = route.lastIndexOf( '_id>[\\d]+)/' );
+
+		if ( lastSlash < 0 ) {
+			return '';
+		}
+		name = route.substr( 0, lastSlash - 1 );
+		name = name.split( '/' );
+		name.pop();
+		name = name.pop();
+		return name;
 	};
 
 })( window );
