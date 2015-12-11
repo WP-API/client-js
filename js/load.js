@@ -33,7 +33,7 @@
 				var modelRoutes = [], collectionRoutes = [];
 				_.each( model.get( 'routes' ), function( route, index ) {
 					// Skip the schema root if included in the schema
-					if ( index !== versionString && index !== schemaRoot ) {
+					if ( index !== versionString && index !== schemaRoot && index !== ( '/' + versionString.slice( 0, -1 ) ) ) {
 						// Single item models end with an id or slug
 						if ( index.endsWith( '+)' ) ) {
 							modelRoutes.push( { index: index, route: route } );
@@ -44,16 +44,15 @@
 					}
 				} );
 
-				// Remove duplicates.
 				wp.api.utils.log( 'Building models.' );
 
 				_.each( modelRoutes, function( modelRoute ) {
-					//wp.api.utils.log( modelRoute.index );
+
 					var modelClassName,
 						routeName  = wp.api.utils.extractRouteName( modelRoute.index ),
 						parentName = wp.api.utils.extractParentName( modelRoute.index );
 
-					// If the model has a prent in its route, add that to its class name;
+					// If the model has a parent in its route, add that to its class name;
 					if ( '' !== parentName && parentName !== routeName ) {
 						modelClassName = parentName.wpapiCapitalize() + routeName.wpapiCapitalize();
 						wp.api.models[modelClassName] = wp.api.WPApiBaseModel.extend( {
@@ -61,22 +60,59 @@
 								return apiRoot + versionString +
 									parentName +  '/' + this.get( 'parent' ) + '/' +
 									routeName  +  '/' + this.get( 'id' );
-							}
+							},
+							route: modelRoute
 						} );
 					} else {
 						modelClassName = routeName.wpapiCapitalize();
 						wp.api.models[modelClassName] = wp.api.WPApiBaseModel.extend( {
-							urlRoot: apiRoot + versionString + routeName
+							url: function() {
+								return apiRoot + versionString + routeName +  '/' + this.get( 'id' );
+							},
+							route: modelRoute
 						} );
 					}
 				} );
+
+				wp.api.utils.log( 'Building collections.' );
+				_.each( collectionRoutes, function( collectionRoute ) {
+
+					var collectionClassName,
+						routeName  = collectionRoute.index.slice( collectionRoute.index.lastIndexOf( '/' ) + 1 ),
+						parentName = wp.api.utils.extractParentName( collectionRoute.index );
+
+					// If the model has a parent in its route, add that to its class name;
+					if ( '' !== parentName && parentName !== routeName ) {
+
+						collectionClassName = parentName.wpapiCapitalize() + routeName.wpapiCapitalize();
+						wp.api.collections[collectionClassName] = wp.api.WPApiBaseCollection.extend( {
+							url: function() {
+								return apiRoot + versionString +
+								parentName +  '/' + this.get( 'parent' ) + '/' +
+								routeName;
+							},
+							route: collectionRoute,
+							model: wp.api.models[collectionClassName]
+						} );
+
+
+					} else {
+						collectionClassName = routeName.wpapiCapitalize();
+						wp.api.collections[collectionClassName] = wp.api.WPApiBaseModel.extend( {
+							url: apiRoot + versionString + routeName,
+							route: collectionRoute,
+							model: wp.api.models[collectionClassName]
+						} );
+					}
+				} );
+
+
 			},
 			error: function() {
 				wp.api.utils.log( 'Schema load error.' );
 			}
 		} );
 
-		wp.api.utils.log();
 	};
 
 	wp.api.init();
