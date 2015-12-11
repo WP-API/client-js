@@ -112,9 +112,9 @@
 	};
 
 	/**
-	 * Private Backbone base model for all models.
+	 * Backbone base model for all models.
 	 */
-	var WPApiBaseModel = Backbone.Model.extend(
+	wp.api.WPApiBaseModel = Backbone.Model.extend(
 		/** @lends WPApiBaseModel.prototype  */
 		{
 			/**
