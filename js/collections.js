@@ -128,16 +128,4 @@
 		}
 	);
 
-	/**
-	 * Backbone collection for posts.
-	 */
-	wp.api.collections.Posts = wp.api.WPApiBaseCollection.extend(
-		/** @lends Posts.prototype */
-		{
-			url: WP_API_Settings.root + 'wp/v2/posts',
-
-			model: wp.api.models.Posts
-		}
-	);
-
 })( wp, WP_API_Settings, Backbone, _, window );

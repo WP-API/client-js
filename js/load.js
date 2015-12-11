@@ -88,20 +88,19 @@
 						wp.api.collections[collectionClassName] = wp.api.WPApiBaseCollection.extend( {
 							url: function() {
 								return apiRoot + versionString +
-								parentName +  '/' + this.get( 'parent' ) + '/' +
+								parentName + '/' + this.get( 'parent' ) + '/' +
 								routeName;
 							},
-							route: collectionRoute,
-							model: wp.api.models[collectionClassName]
+							model: wp.api.models[collectionClassName],
+							route: collectionRoute
 						} );
 
 
 					} else {
 						collectionClassName = routeName.wpapiCapitalize();
-						wp.api.collections[collectionClassName] = wp.api.WPApiBaseModel.extend( {
-							url: apiRoot + versionString + routeName,
-							route: collectionRoute,
-							model: wp.api.models[collectionClassName]
+						wp.api.collections[collectionClassName] = wp.api.WPApiBaseCollection.extend( {
+							url:  apiRoot + versionString + routeName,
+							route: collectionRoute
 						} );
 					}
 				} );
