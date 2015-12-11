@@ -30,7 +30,8 @@ module.exports = function( grunt ) {
 						'js/utils.js',
 						'js/models.js',
 						'js/views.js',
-						'js/collections.js'
+						'js/collections.js',
+						'js/load.js'
 					]
 				}
 			}
@@ -42,7 +43,8 @@ module.exports = function( grunt ) {
 					'js/utils.js',
 					'js/models.js',
 					'js/views.js',
-					'js/collections.js'
+					'js/collections.js',
+					'js/load.js'
 				],
 				dest: 'build/js/wp-api.js'
 			}
