@@ -159,25 +159,6 @@
 
 			urlRoot: WP_API_Settings.root + 'wp/v2/users',
 
-			defaults: {
-				id: 'me',
-				avatar_url: {},
-				capabilities: {},
-				description: '',
-				email: '',
-				extra_capabilities: {},
-				first_name: '',
-				last_name: '',
-				link: '',
-				name: '',
-				nickname: '',
-				registered_date: new Date(),
-				roles: [],
-				slug: '',
-				url: '',
-				username: '',
-				_links: {}
-			}
 		}
 	);
 
@@ -194,15 +175,6 @@
 
 			urlRoot: WP_API_Settings.root + 'wp/v2/taxonomies',
 
-			defaults: {
-				name: '',
-				slug: null,
-				description: '',
-				labels: {},
-				types: [],
-				show_cloud: false,
-				hierarchical: false
-			}
 		}
 	);
 
@@ -218,18 +190,6 @@
 			idAttribute: 'id',
 
 			urlRoot: WP_API_Settings.root + 'wp/v2/terms/tag',
-
-			defaults: {
-				id: null,
-				name: '',
-				slug: '',
-				description: '',
-				parent: null,
-				count: 0,
-				link: '',
-				taxonomy: '',
-				_links: {}
-			}
 
 		}
 	);
@@ -247,28 +207,6 @@
 
 			urlRoot: WP_API_Settings.root + 'wp/v2/posts',
 
-			defaults: {
-				id: null,
-				date: new Date(),
-				date_gmt: new Date(),
-				guid: {},
-				link: '',
-				modified: new Date(),
-				modified_gmt: new Date(),
-				password: '',
-				status: 'draft',
-				type: 'post',
-				title: {},
-				content: {},
-				author: null,
-				excerpt: {},
-				featured_image: null,
-				comment_status: 'open',
-				ping_status: 'open',
-				sticky: false,
-				format: 'standard',
-				_links: {}
-			}
 		}, TimeStampedMixin, HierarchicalMixin )
 	);
 
@@ -285,29 +223,6 @@
 
 			urlRoot: WP_API_Settings.root + 'wp/v2/pages',
 
-			defaults: {
-				id: null,
-				date: new Date(),
-				date_gmt: new Date(),
-				guid: {},
-				link: '',
-				modified: new Date(),
-				modified_gmt: new Date(),
-				password: '',
-				slug: '',
-				status: 'draft',
-				type: 'page',
-				title: {},
-				content: {},
-				author: null,
-				excerpt: {},
-				featured_image: null,
-				comment_status: 'closed',
-				ping_status: 'closed',
-				menu_order: null,
-				template: '',
-				_links: {}
-			}
 		}, TimeStampedMixin, HierarchicalMixin )
 	);
 
@@ -322,22 +237,6 @@
 		/** @lends PostRevision.prototype */
 		{
 			idAttribute: 'id',
-
-			defaults: {
-				id: null,
-				author: null,
-				date: new Date(),
-				date_gmt: new Date(),
-				guid: {},
-				modified: new Date(),
-				modified_gmt: new Date(),
-				parent: 0,
-				slug: '',
-				title: {},
-				content: {},
-				excerpt: {},
-				_links: {}
-			},
 
 			/**
 			 * Return URL for the model.
@@ -367,32 +266,6 @@
 
 			urlRoot: WP_API_Settings.root + 'wp/v2/media',
 
-			defaults: {
-				id: null,
-				date: new Date(),
-				date_gmt: new Date(),
-				guid: {},
-				link: '',
-				modified: new Date(),
-				modified_gmt: new Date(),
-				password: '',
-				slug: '',
-				status: 'draft',
-				type: 'attachment',
-				title: {},
-				author: null,
-				comment_status: 'open',
-				ping_status: 'open',
-				alt_text: '',
-				caption: '',
-				description: '',
-				media_type: '',
-				media_details: {},
-				post: null,
-				source_url: '',
-				_links: {}
-			}
-
 		}, TimeStampedMixin )
 	);
 
@@ -409,26 +282,6 @@
 
 			urlRoot: WP_API_Settings.root + 'wp/v2/comments',
 
-
-			defaults: {
-				id: null,
-				author: null,
-				author_email: '',
-				author_ip: '',
-				author_name: '',
-				author_url: '',
-				author_user_agent: '',
-				content: {},
-				date: new Date(),
-				date_gmt: new Date(),
-				karma: 0,
-				link: '',
-				parent: 0,
-				status: 'hold',
-				type: '',
-				_links: {}
-			}
-
 		}, TimeStampedMixin, HierarchicalMixin )
 	);
 
@@ -444,14 +297,6 @@
 			idAttribute: 'slug',
 
 			urlRoot: WP_API_Settings.root + 'wp/v2/types',
-
-			defaults: {
-				slug: null,
-				name: '',
-				description: '',
-				labels: {},
-				hierarchical: false
-			},
 
 			/**
 			 * Prevent model from being saved.
@@ -486,17 +331,6 @@
 
 			urlRoot: WP_API_Settings.root + 'wp/v2/statuses',
 
-			defaults: {
-				slug: null,
-				name: '',
-				'public': true,
-				'protected': false,
-				'private': false,
-				queryable: true,
-				show_in_list: true,
-				_links: {}
-			},
-
 			/**
 			 * Prevent model from being saved.
 			 *
@@ -524,12 +358,6 @@
 		/** @lends Shema.prototype  */
 		{
 			url: WP_API_Settings.root + 'wp/v2',
-
-			defaults: {
-				namespace: '',
-				_links: '',
-				routes: {}
-			},
 
 			/**
 			 * Prevent model from being saved.
