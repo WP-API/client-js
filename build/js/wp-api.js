@@ -21,8 +21,6 @@
 	wp.api = wp.api || {};
 	wp.api.utils = wp.api.utils || {};
 
-	wp.api.utils.WP_API_DEBUG_LOGGING = true;
-
 	/**
 	 * ECMAScript 5 shim, from MDN.
 	 * @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString
@@ -87,17 +85,6 @@
 		}
 
 		return timestamp;
-	};
-
-	/**
-	 * Helper logging function.
-	 *
-	 * @param  {string} message Message to log.
-	 */
-	wp.api.utils.log = function( message ) {
-		if ( wp.api.utils.WP_API_DEBUG_LOGGING ) {
-			window.console.log( message );
-		}
 	};
 
 	/**
@@ -485,26 +472,21 @@
 	 * @param {string} apiRoot The api root. Optional, defaults to WP_API_Settings.root.
 	 */
 	wp.api.init = function( apiRoot, versionString ) {
-		wp.api.utils.log( 'Starting up wp-api.' );
 
 		apiRoot       = apiRoot || WP_API_Settings.root;
 		versionString = versionString || 'wp/v2/';
 
-		wp.api.utils.log( 'Loading schema from WP_API_Settings.root - ' + apiRoot + versionString );
-
 		/**
 		 * Construct and fetch the API schema.
 		 */
-		wp.api.utils.log( 'Building out schema');
-
 		var schema = new wp.api.models.Schema(),
 			schemaRoot = apiRoot.replace( wp.api.utils.getRootUrl(), '' );
 
 		schema.fetch( {
 			success: function( model ) {
-				wp.api.utils.log( 'Schema loaded, processing.' );
 				/**
-				 * Iterate thru the routes, picking up models and collections to build.
+				 * Iterate thru the routes, picking up models and collections to build. Builds two arrays,
+				 * one for models and one for collections.
 				 */
 				var modelRoutes = [], collectionRoutes = [];
 				_.each( model.get( 'routes' ), function( route, index ) {
@@ -520,48 +502,63 @@
 					}
 				} );
 
-				wp.api.utils.log( 'Building models.' );
-
+				/**
+				 * Construct the models.
+				 *
+				 * Base the class name on the route endpoint.
+				 */
 				_.each( modelRoutes, function( modelRoute ) {
 
+					// Extract the name and any parent from the route.
 					var modelClassName,
 						routeName  = wp.api.utils.extractRouteName( modelRoute.index ),
 						parentName = wp.api.utils.extractParentName( modelRoute.index );
 
-					// If the model has a parent in its route, add that to its class name;
+					// If the model has a parent in its route, add that to its class name.
 					if ( '' !== parentName && parentName !== routeName ) {
 						modelClassName = parentName.wpapiCapitalize() + routeName.wpapiCapitalize();
 						wp.api.models[modelClassName] = wp.api.WPApiBaseModel.extend( {
+							// Function that returns a constructed url based on the parent and id.
 							url: function() {
 								return apiRoot + versionString +
 									parentName +  '/' + this.get( 'parent' ) + '/' +
 									routeName  +  '/' + this.get( 'id' );
 							},
+							// Incldue a refence to the original route object.
 							route: modelRoute
 						} );
 					} else {
+						// This is a model without a parent in its route
 						modelClassName = routeName.wpapiCapitalize();
 						wp.api.models[modelClassName] = wp.api.WPApiBaseModel.extend( {
+							// Function that returns a constructed url based on the id.
 							url: function() {
 								return apiRoot + versionString + routeName +  '/' + this.get( 'id' );
 							},
+							// Incldue a refence to the original route object.
 							route: modelRoute
 						} );
 					}
 				} );
 
-				wp.api.utils.log( 'Building collections.' );
+				/**
+				 * Construct the collections.
+				 *
+				 * Base the class name on the route endpoint.
+				 */
 				_.each( collectionRoutes, function( collectionRoute ) {
 
+					// Extract the name and any parent from the route.
 					var collectionClassName,
 						routeName  = collectionRoute.index.slice( collectionRoute.index.lastIndexOf( '/' ) + 1 ),
 						parentName = wp.api.utils.extractParentName( collectionRoute.index );
 
-					// If the model has a parent in its route, add that to its class name;
+					// If the collection has a parent in its route, add that to its class name/
 					if ( '' !== parentName && parentName !== routeName ) {
 
 						collectionClassName = parentName.wpapiCapitalize() + routeName.wpapiCapitalize();
 						wp.api.collections[collectionClassName] = wp.api.WPApiBaseCollection.extend( {
+							// Function that returns a constructed url pased on the parent.
 							url: function() {
 								return apiRoot + versionString +
 								parentName + '/' + this.parent + '/' +
@@ -570,21 +567,18 @@
 							model: wp.api.models[collectionClassName],
 							route: collectionRoute
 						} );
-
-
 					} else {
+						// This is a collection without a parent in its route.
 						collectionClassName = routeName.wpapiCapitalize();
 						wp.api.collections[collectionClassName] = wp.api.WPApiBaseCollection.extend( {
-							url:  apiRoot + versionString + routeName,
-							route: collectionRoute
-						} );
+							// For the url of a root level collection, use a string.
+							url: apiRoot + versionString + routeName,
+									route: collectionRoute
+								} );
 					}
 				} );
-
-
 			},
 			error: function() {
-				wp.api.utils.log( 'Schema load error.' );
 			}
 		} );
 
