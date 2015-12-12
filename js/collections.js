@@ -20,7 +20,11 @@
 					totalPages: null,
 					totalObjects: null
 				};
-				this.parent = options.parent || '';
+				if ( _.isUndefined( options ) ) {
+					this.parent = '';
+				} else {
+					this.parent = options.parent;
+				}
 			},
 
 			/**
