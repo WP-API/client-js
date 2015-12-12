@@ -95,8 +95,8 @@
 
 			// Extract the name and any parent from the route.
 			var modelClassName,
-				routeName  = wp.api.utils.extractRouteName( modelRoute.index ),
-				parentName = wp.api.utils.extractParentName( modelRoute.index );
+				routeName  = wp.api.utils.extractRoutePart( modelRoute.index, 2 ),
+				parentName = wp.api.utils.extractRoutePart( modelRoute.index, 4 );
 
 			// If the model has a parent in its route, add that to its class name.
 			if ( '' !== parentName && parentName !== routeName ) {
@@ -144,7 +144,7 @@
 			// Extract the name and any parent from the route.
 			var collectionClassName,
 				routeName  = collectionRoute.index.slice( collectionRoute.index.lastIndexOf( '/' ) + 1 ),
-				parentName = wp.api.utils.extractParentName( collectionRoute.index );
+				parentName = wp.api.utils.extractRoutePart( collectionRoute.index, 4 );
 
 			// If the collection has a parent in its route, add that to its class name/
 			if ( '' !== parentName && parentName !== routeName ) {
