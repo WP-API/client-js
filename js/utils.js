@@ -6,8 +6,6 @@
 	wp.api = wp.api || {};
 	wp.api.utils = wp.api.utils || {};
 
-	wp.api.utils.WP_API_DEBUG_LOGGING = true;
-
 	/**
 	 * ECMAScript 5 shim, from MDN.
 	 * @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString
@@ -72,17 +70,6 @@
 		}
 
 		return timestamp;
-	};
-
-	/**
-	 * Helper logging function.
-	 *
-	 * @param  {string} message Message to log.
-	 */
-	wp.api.utils.log = function( message ) {
-		if ( wp.api.utils.WP_API_DEBUG_LOGGING ) {
-			window.console.log( message );
-		}
 	};
 
 	/**
