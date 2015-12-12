@@ -100,27 +100,30 @@
 	/**
 	 * Helper for capitalizing strings.
 	 */
-	String.prototype.wpapiCapitalize = function() {
-		return this.charAt(0).toUpperCase() + this.slice(1);
+	wp.api.utils.capitalize = function( str ) {
+		if ( _.isUndefined( str ) ) {
+			return str;
+		}
+		return str.charAt( 0 ).toUpperCase() + str.slice( 1 );
 	};
 
 	/**
-	 * Extract a name from a passed route.
+	 * Extract a route part based on negitive index.
 	 *
-	 * @param {string} route The route to extract a name from.
+	 * @param {string} route The endpoint route.
+	 * @param {int}    part  The number of parts from the end of the route to retrieve. Default 1.
+	 *                       Example route `/a/b/c`: part 1 is `c`, part 2 is `b`, part 3 is `a`.
 	 */
-	wp.api.utils.extractRouteName = function( route ) {
-		var name,
-			lastSlash = route.lastIndexOf( '/' );
+	wp.api.utils.extractRoutePart = function( route, part ) {
+		part  = part || 1;
 
-		if ( lastSlash < 0 ) {
-			return '';
-		}
-
-		name = route.substr( 0, lastSlash );
-		lastSlash = name.lastIndexOf( '/' );
-
-		return name.substr( lastSlash + 1 );
+		// Remove versions string from route to avoid returning it.
+		route = route.replace( wp.api.versionString, '' );
+		var routeParts = route.split( '/' ).reverse();
+			if ( _.isUndefined( routeParts[ --part ] ) ) {
+				return '';
+			}
+			return routeParts[ part ];
 	};
 
 	/**
@@ -473,115 +476,166 @@
 	 */
 	wp.api.init = function( apiRoot, versionString ) {
 
-		apiRoot       = apiRoot || WP_API_Settings.root;
-		versionString = versionString || 'wp/v2/';
+		wp.api.apiRoot       = apiRoot || WP_API_Settings.root;
+		wp.api.versionString = versionString || 'wp/v2/';
 
 		/**
 		 * Construct and fetch the API schema.
+		 *
+		 * Used a session Storage cached version if available.
 		 */
-		var schema = new wp.api.models.Schema(),
-			schemaRoot = apiRoot.replace( wp.api.utils.getRootUrl(), '' );
+		var schemaModel;
 
-		schema.fetch( {
-			success: function( model ) {
+		// Used a cached copy of the schema model if available.
+		if ( ! _.isUndefined( sessionStorage ) && sessionStorage.getItem( 'wp-api-schema-model' ) ) {
+
+			// Grab the schema model from the sessionStorage cache.
+			schemaModel = new wp.api.models.Schema( JSON.parse( sessionStorage.getItem( 'wp-api-schema-model' ) ) );
+
+			// Contruct the models and collections from the Schema model.
+			wp.api.constructFromSchema( schemaModel );
+		} else {
+			// Construct a new Schema model.
+			schemaModel = new wp.api.models.Schema(),
+
+			// Fetch the schema information from the API.
+			schemaModel.fetch( {
 				/**
-				 * Iterate thru the routes, picking up models and collections to build. Builds two arrays,
-				 * one for models and one for collections.
+				 * When the server return the schema model data, store the data in a sessionCache so we don't
+				 * have to retrieve it again for this session. Then, construct the models and collections based
+				 * on the schema model data.
 				 */
-				var modelRoutes = [], collectionRoutes = [];
-				_.each( model.get( 'routes' ), function( route, index ) {
-					// Skip the schema root if included in the schema
-					if ( index !== versionString && index !== schemaRoot && index !== ( '/' + versionString.slice( 0, -1 ) ) ) {
-						// Single item models end with an id or slug
-						if ( index.endsWith( '+)' ) ) {
-							modelRoutes.push( { index: index, route: route } );
-						} else {
-							// Collections contain a number or slug inside their route
-							collectionRoutes.push( { index: index, route: route } );
-						}
+				success: function( newSchemaModel ) {
+					// Store a copy of the schema model in the session cache if available.
+					if ( ! _.isUndefined( sessionStorage ) ) {
+						sessionStorage.setItem( 'wp-api-schema-model', JSON.stringify( newSchemaModel ) );
 					}
-				} );
-
+					// Contruct the models and collections from the Schema model.
+					wp.api.constructFromSchema( newSchemaModel );
+				},
 				/**
-				 * Construct the models.
-				 *
-				 * Base the class name on the route endpoint.
+				 * @todo Handle the error condition.
 				 */
-				_.each( modelRoutes, function( modelRoute ) {
+				error: function() {
+				}
+			} );
+		}
+	};
 
-					// Extract the name and any parent from the route.
-					var modelClassName,
-						routeName  = wp.api.utils.extractRouteName( modelRoute.index ),
-						parentName = wp.api.utils.extractParentName( modelRoute.index );
+	/**
+	 * Construct the models and collections from the Schema model.
+	 *
+	 * @param {wp.api.models.Schema} Backbone model of the API schema.
+	 */
+	wp.api.constructFromSchema = function( model ) {
+		/**
+		 * Iterate thru the routes, picking up models and collections to build. Builds two arrays,
+		 * one for models and one for collections.
+		 */
+		var modelRoutes = [],
+			collectionRoutes = [],
+			schemaRoot = wp.api.apiRoot.replace( wp.api.utils.getRootUrl(), '' );
 
-					// If the model has a parent in its route, add that to its class name.
-					if ( '' !== parentName && parentName !== routeName ) {
-						modelClassName = parentName.wpapiCapitalize() + routeName.wpapiCapitalize();
-						wp.api.models[modelClassName] = wp.api.WPApiBaseModel.extend( {
-							// Function that returns a constructed url based on the parent and id.
-							url: function() {
-								return apiRoot + versionString +
-									parentName +  '/' + this.get( 'parent' ) + '/' +
-									routeName  +  '/' + this.get( 'id' );
-							},
-							// Incldue a refence to the original route object.
-							route: modelRoute
-						} );
-					} else {
-						// This is a model without a parent in its route
-						modelClassName = routeName.wpapiCapitalize();
-						wp.api.models[modelClassName] = wp.api.WPApiBaseModel.extend( {
-							// Function that returns a constructed url based on the id.
-							url: function() {
-								return apiRoot + versionString + routeName +  '/' + this.get( 'id' );
-							},
-							// Incldue a refence to the original route object.
-							route: modelRoute
-						} );
-					}
-				} );
-
-				/**
-				 * Construct the collections.
-				 *
-				 * Base the class name on the route endpoint.
-				 */
-				_.each( collectionRoutes, function( collectionRoute ) {
-
-					// Extract the name and any parent from the route.
-					var collectionClassName,
-						routeName  = collectionRoute.index.slice( collectionRoute.index.lastIndexOf( '/' ) + 1 ),
-						parentName = wp.api.utils.extractParentName( collectionRoute.index );
-
-					// If the collection has a parent in its route, add that to its class name/
-					if ( '' !== parentName && parentName !== routeName ) {
-
-						collectionClassName = parentName.wpapiCapitalize() + routeName.wpapiCapitalize();
-						wp.api.collections[collectionClassName] = wp.api.WPApiBaseCollection.extend( {
-							// Function that returns a constructed url pased on the parent.
-							url: function() {
-								return apiRoot + versionString +
-								parentName + '/' + this.parent + '/' +
-								routeName;
-							},
-							model: wp.api.models[collectionClassName],
-							route: collectionRoute
-						} );
-					} else {
-						// This is a collection without a parent in its route.
-						collectionClassName = routeName.wpapiCapitalize();
-						wp.api.collections[collectionClassName] = wp.api.WPApiBaseCollection.extend( {
-							// For the url of a root level collection, use a string.
-							url: apiRoot + versionString + routeName,
-									route: collectionRoute
-								} );
-					}
-				} );
-			},
-			error: function() {
+		_.each( model.get( 'routes' ), function( route, index ) {
+			// Skip the schema root if included in the schema
+			if ( index !== wp.api.versionString &&
+				 index !== schemaRoot &&
+				 index !== ( '/' + wp.api.versionString.slice( 0, -1 ) )
+			) {
+				// Single item models end with an id or slug
+				if ( index.endsWith( '+)' ) ) {
+					modelRoutes.push( { index: index, route: route } );
+				} else {
+					// Collections contain a number or slug inside their route
+					collectionRoutes.push( { index: index, route: route } );
+				}
 			}
 		} );
 
+		/**
+		 * Construct the models.
+		 *
+		 * Base the class name on the route endpoint.
+		 */
+		_.each( modelRoutes, function( modelRoute ) {
+
+			// Extract the name and any parent from the route.
+			var modelClassName,
+				routeName  = wp.api.utils.extractRoutePart( modelRoute.index, 2 ),
+				parentName = wp.api.utils.extractRoutePart( modelRoute.index, 4 );
+
+			// If the model has a parent in its route, add that to its class name.
+			if ( '' !== parentName && parentName !== routeName ) {
+				modelClassName = wp.api.utils.capitalize( parentName ) + wp.api.utils.capitalize( routeName );
+				wp.api.models[modelClassName] = wp.api.WPApiBaseModel.extend( {
+					// Function that returns a constructed url based on the parent and id.
+					url: function() {
+						var url = wp.api.apiRoot + wp.api.versionString +
+							parentName +  '/' + this.get( 'parent' ) + '/' +
+							routeName;
+						if ( ! _.isUndefined( this.get( 'id' ) ) ) {
+							url +=  '/' + this.get( 'id' );
+						}
+						return url;
+					},
+					// Incldue a refence to the original route object.
+					route: modelRoute
+				} );
+			} else {
+				// This is a model without a parent in its route
+				modelClassName = wp.api.utils.capitalize( routeName );
+				wp.api.models[modelClassName] = wp.api.WPApiBaseModel.extend( {
+					// Function that returns a constructed url based on the id.
+					url: function() {
+						var url = wp.api.apiRoot + wp.api.versionString + routeName;
+						if ( ! _.isUndefined( this.get( 'id' ) ) ) {
+							url +=  '/' + this.get( 'id' );
+						}
+						return url;
+					},
+					// Incldue a refence to the original route object.
+					route: modelRoute
+				} );
+
+			}
+		} );
+
+		/**
+		 * Construct the collections.
+		 *
+		 * Base the class name on the route endpoint.
+		 */
+		_.each( collectionRoutes, function( collectionRoute ) {
+
+			// Extract the name and any parent from the route.
+			var collectionClassName,
+				routeName  = collectionRoute.index.slice( collectionRoute.index.lastIndexOf( '/' ) + 1 ),
+				parentName = wp.api.utils.extractRoutePart( collectionRoute.index, 4 );
+
+			// If the collection has a parent in its route, add that to its class name/
+			if ( '' !== parentName && parentName !== routeName ) {
+
+				collectionClassName = wp.api.utils.capitalize( parentName ) + wp.api.utils.capitalize( routeName );
+				wp.api.collections[collectionClassName] = wp.api.WPApiBaseCollection.extend( {
+					// Function that returns a constructed url pased on the parent.
+					url: function() {
+						return wp.api.apiRoot + wp.api.versionString +
+						parentName + '/' + this.parent + '/' +
+						routeName;
+					},
+					model: wp.api.models[collectionClassName],
+					route: collectionRoute
+				} );
+			} else {
+				// This is a collection without a parent in its route.
+				collectionClassName = wp.api.utils.capitalize( routeName );
+				wp.api.collections[collectionClassName] = wp.api.WPApiBaseCollection.extend( {
+					// For the url of a root level collection, use a string.
+					url: wp.api.apiRoot + wp.api.versionString + routeName,
+							route: collectionRoute
+						} );
+			}
+		} );
 	};
 
 	wp.api.init();
