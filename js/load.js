@@ -88,7 +88,7 @@
 						wp.api.collections[collectionClassName] = wp.api.WPApiBaseCollection.extend( {
 							url: function() {
 								return apiRoot + versionString +
-								parentName + '/' + this.get( 'parent' ) + '/' +
+								parentName + '/' + this.parent + '/' +
 								routeName;
 							},
 							model: wp.api.models[collectionClassName],

@@ -13,13 +13,14 @@
 			/**
 			 * Setup default state.
 			 */
-			initialize: function() {
+			initialize: function( models, options ) {
 				this.state = {
 					data: {},
 					currentPage: null,
 					totalPages: null,
 					totalObjects: null
 				};
+				this.parent = options.parent || '';
 			},
 
 			/**
