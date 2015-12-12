@@ -12,16 +12,16 @@
 		/**
 		 * Post
 		 */
-		postTests = function() {
-			console.log( 'running postTests' )
+		var postTests = function() {
+			console.log( 'running postTests' );
 			// Create a post.
 			console.log( 'Create a post using wp.api.models.Post' );
-			var post = new wp.api.models.Post();
+			var post = new wp.api.models.Posts();
 			var data = {
 					title: 'This is a test post'
 				};
 
-			success = function( response ) {
+			var success = function( response ) {
 				// Created the post.
 				console.log ( 'Created post ID: ' + response.id );
 
@@ -31,7 +31,7 @@
 					id: response.id
 				};
 
-				var post2 = new wp.api.models.Post( data );
+				var post2 = new wp.api.models.Posts( data );
 				post2.fetch( {
 					success: function( model, response ) {
 
@@ -67,10 +67,10 @@
 
 
 
-			}
+			};
 
 			post.save( data, { success: success } );
-		}
+		};
 		postTests();
 
 	} );
