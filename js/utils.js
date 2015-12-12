@@ -85,7 +85,7 @@
 	/**
 	 * Helper for capitalizing strings.
 	 */
-	String.prototype.wpapiCapitalize = function() {
+	wp.api.utils.capitalize = function() {
 		return this.charAt(0).toUpperCase() + this.slice(1);
 	};
 

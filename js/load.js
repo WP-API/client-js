@@ -100,7 +100,7 @@
 
 			// If the model has a parent in its route, add that to its class name.
 			if ( '' !== parentName && parentName !== routeName ) {
-				modelClassName = parentName.wpapiCapitalize() + routeName.wpapiCapitalize();
+				modelClassName = wp.api.utils.capitalize( parentName ) + wp.api.utils.capitalize( routeName );
 				wp.api.models[modelClassName] = wp.api.WPApiBaseModel.extend( {
 					// Function that returns a constructed url based on the parent and id.
 					url: function() {
@@ -117,7 +117,7 @@
 				} );
 			} else {
 				// This is a model without a parent in its route
-				modelClassName = routeName.wpapiCapitalize();
+				modelClassName = wp.api.utils.capitalize( routeName );
 				wp.api.models[modelClassName] = wp.api.WPApiBaseModel.extend( {
 					// Function that returns a constructed url based on the id.
 					url: function() {
@@ -149,7 +149,7 @@
 			// If the collection has a parent in its route, add that to its class name/
 			if ( '' !== parentName && parentName !== routeName ) {
 
-				collectionClassName = parentName.wpapiCapitalize() + routeName.wpapiCapitalize();
+				collectionClassName = wp.api.utils.capitalize( parentName ) + wp.api.utils.capitalize( routeName );
 				wp.api.collections[collectionClassName] = wp.api.WPApiBaseCollection.extend( {
 					// Function that returns a constructed url pased on the parent.
 					url: function() {
@@ -162,7 +162,7 @@
 				} );
 			} else {
 				// This is a collection without a parent in its route.
-				collectionClassName = routeName.wpapiCapitalize();
+				collectionClassName = wp.api.utils.capitalize( routeName );
 				wp.api.collections[collectionClassName] = wp.api.WPApiBaseCollection.extend( {
 					// For the url of a root level collection, use a string.
 					url: wp.api.apiRoot + wp.api.versionString + routeName,
