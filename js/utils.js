@@ -85,27 +85,30 @@
 	/**
 	 * Helper for capitalizing strings.
 	 */
-	String.prototype.wpapiCapitalize = function() {
-		return this.charAt(0).toUpperCase() + this.slice(1);
+	wp.api.utils.capitalize = function( str ) {
+		if ( _.isUndefined( str ) ) {
+			return str;
+		}
+		return str.charAt( 0 ).toUpperCase() + str.slice( 1 );
 	};
 
 	/**
-	 * Extract a name from a passed route.
+	 * Extract a route part based on negitive index.
 	 *
-	 * @param {string} route The route to extract a name from.
+	 * @param {string} route The endpoint route.
+	 * @param {int}    part  The number of parts from the end of the route to retrieve. Default 1.
+	 *                       Example route `/a/b/c`: part 1 is `c`, part 2 is `b`, part 3 is `a`.
 	 */
-	wp.api.utils.extractRouteName = function( route ) {
-		var name,
-			lastSlash = route.lastIndexOf( '/' );
+	wp.api.utils.extractRoutePart = function( route, part ) {
+		part  = part || 1;
 
-		if ( lastSlash < 0 ) {
-			return '';
-		}
-
-		name = route.substr( 0, lastSlash );
-		lastSlash = name.lastIndexOf( '/' );
-
-		return name.substr( lastSlash + 1 );
+		// Remove versions string from route to avoid returning it.
+		route = route.replace( wp.api.versionString, '' );
+		var routeParts = route.split( '/' ).reverse();
+			if ( _.isUndefined( routeParts[ --part ] ) ) {
+				return '';
+			}
+			return routeParts[ part ];
 	};
 
 	/**
