@@ -541,16 +541,20 @@
 			schemaRoot = wp.api.apiRoot.replace( wp.api.utils.getRootUrl(), '' );
 
 		_.each( model.get( 'routes' ), function( route, index ) {
-			// Skip the schema root if included in the schema
+			// Skip the schema root if included in the schema.
 			if ( index !== wp.api.versionString &&
 				 index !== schemaRoot &&
 				 index !== ( '/' + wp.api.versionString.slice( 0, -1 ) )
 			) {
-				// Single item models end with an id or slug
+				/**
+				 * Single item models end with a regex/variable.
+				 *
+				 * @todo make model/collection logic more robust.
+				 */
 				if ( index.endsWith( '+)' ) ) {
 					modelRoutes.push( { index: index, route: route } );
 				} else {
-					// Collections contain a number or slug inside their route
+					// Collections end in a name.
 					collectionRoutes.push( { index: index, route: route } );
 				}
 			}
@@ -571,7 +575,7 @@
 			// If the model has a parent in its route, add that to its class name.
 			if ( '' !== parentName && parentName !== routeName ) {
 				modelClassName = wp.api.utils.capitalize( parentName ) + wp.api.utils.capitalize( routeName );
-				wp.api.models[modelClassName] = wp.api.WPApiBaseModel.extend( {
+				wp.api.models[ modelClassName ] = wp.api.WPApiBaseModel.extend( {
 					// Function that returns a constructed url based on the parent and id.
 					url: function() {
 						var url = wp.api.apiRoot + wp.api.versionString +
@@ -588,7 +592,7 @@
 			} else {
 				// This is a model without a parent in its route
 				modelClassName = wp.api.utils.capitalize( routeName );
-				wp.api.models[modelClassName] = wp.api.WPApiBaseModel.extend( {
+				wp.api.models[ modelClassName ] = wp.api.WPApiBaseModel.extend( {
 					// Function that returns a constructed url based on the id.
 					url: function() {
 						var url = wp.api.apiRoot + wp.api.versionString + routeName;
@@ -601,6 +605,25 @@
 					route: modelRoute
 				} );
 
+				// Add the route endpoints as model attributes.
+				_.each( modelRoute.route.endpoints, function( routeEndpoint ) {
+					if ( _.contains( routeEndpoint.methods, 'POST' ) || _.contains( routeEndpoint.methods, 'PUT' ) ) {
+
+						// Add any non empty args, merging them into the defaults object.
+						if ( ! _.isEmpty( routeEndpoint.args ) ) {
+
+							// Set as defauls if no defaults yet.
+							if ( _.isEmpty( wp.api.models[ modelClassName ].defaults ) ) {
+								wp.api.models[ modelClassName ].defaults = routeEndpoint.args;
+							} else {
+								// We already have defauls, merge these new args in.
+								wp.api.models[ modelClassName ].defaults =
+								_.union( routeEndpoint.args, wp.api.models[ modelClassName ].defaults );
+							}
+						}
+					}
+
+				} );
 			}
 		} );
 
