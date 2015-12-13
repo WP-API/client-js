@@ -146,7 +146,7 @@
 							if ( _.isEmpty( wp.api.models[ modelClassName ].defaults ) ) {
 								wp.api.models[ modelClassName ].defaults = routeEndpoint.args;
 							} else {
-								// We already have defauls, merge these new args in.
+								// We already have defaults, merge these new args in.
 								wp.api.models[ modelClassName ].defaults =
 								_.union( routeEndpoint.args, wp.api.models[ modelClassName ].defaults );
 							}
