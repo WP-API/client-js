@@ -135,7 +135,7 @@
 					route: modelRoute
 				} );
 
-				// Add the route endpoints as model attributes.
+				// Add the route endpoints as model defaults.
 				_.each( modelRoute.route.endpoints, function( routeEndpoint ) {
 					if ( _.contains( routeEndpoint.methods, 'POST' ) || _.contains( routeEndpoint.methods, 'PUT' ) ) {
 
@@ -153,6 +153,15 @@
 						}
 					}
 
+				} );
+
+				// Clean up the defaults, assigning actual defaults if available or null as default.
+				_.each( wp.api.models[ modelClassName ].defaults, function( theDefault, index ) {
+					if ( _.isUndefined( theDefault['default'] ) ) {
+						wp.api.models[ modelClassName ].defaults[ index ] = null;
+					} else {
+						wp.api.models[ modelClassName ].defaults[ index ] = theDefault['default'];
+					}
 				} );
 			}
 		} );
