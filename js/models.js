@@ -131,6 +131,9 @@
 				if ( ! _.isUndefined( WP_API_Settings.nonce ) && ! _.isNull( WP_API_Settings.nonce ) ) {
 					var beforeSend = options.beforeSend;
 
+					// @todo enable option for jsonp endpoints
+					// options.dataType = 'jsonp';
+
 					options.beforeSend = function( xhr ) {
 						xhr.setRequestHeader( 'X-WP-Nonce', WP_API_Settings.nonce );
 
