@@ -87,6 +87,61 @@
 		return timestamp;
 	};
 
+	/**
+	 * Helper function for getting the root URL.
+	 * @return {[type]} [description]
+	 */
+	wp.api.utils.getRootUrl = function() {
+		return window.location.origin ?
+			window.location.origin + '/' :
+			window.location.protocol + '/' + window.location.host + '/';
+	};
+
+	/**
+	 * Helper for capitalizing strings.
+	 */
+	String.prototype.wpapiCapitalize = function() {
+		return this.charAt(0).toUpperCase() + this.slice(1);
+	};
+
+	/**
+	 * Extract a name from a passed route.
+	 *
+	 * @param {string} route The route to extract a name from.
+	 */
+	wp.api.utils.extractRouteName = function( route ) {
+		var name,
+			lastSlash = route.lastIndexOf( '/' );
+
+		if ( lastSlash < 0 ) {
+			return '';
+		}
+
+		name = route.substr( 0, lastSlash );
+		lastSlash = name.lastIndexOf( '/' );
+
+		return name.substr( lastSlash + 1 );
+	};
+
+	/**
+	 * Extract a parent name from a passed route.
+	 *
+	 * @param {string} route The route to extract a name from.
+	 */
+	wp.api.utils.extractParentName = function( route ) {
+		var name,
+			lastSlash = route.lastIndexOf( '_id>[\\d]+)/' );
+
+		if ( lastSlash < 0 ) {
+			return '';
+		}
+		name = route.substr( 0, lastSlash - 1 );
+		name = name.split( '/' );
+		name.pop();
+		name = name.pop();
+		return name;
+	};
+
 })( window );
 
 /* global WP_API_Settings:false */
@@ -203,9 +258,9 @@
 	};
 
 	/**
-	 * Private Backbone base model for all models.
+	 * Backbone base model for all models.
 	 */
-	var WPApiBaseModel = Backbone.Model.extend(
+	wp.api.WPApiBaseModel = Backbone.Model.extend(
 		/** @lends WPApiBaseModel.prototype  */
 		{
 			/**
@@ -237,381 +292,9 @@
 	);
 
 	/**
-	 * Backbone model for a single user.
-	 *
-	 *
-	 * @param {Object} attributes
-	 * @param {int}    attributes.id The user id. Optional. Defaults to 'me', fetching the current user.
-	 */
-	wp.api.models.User = WPApiBaseModel.extend(
-		/** @lends User.prototype  */
-		{
-			idAttribute: 'id',
-
-			urlRoot: WP_API_Settings.root + 'wp/v2/users',
-
-			defaults: {
-				id: 'me',
-				avatar_url: {},
-				capabilities: {},
-				description: '',
-				email: '',
-				extra_capabilities: {},
-				first_name: '',
-				last_name: '',
-				link: '',
-				name: '',
-				nickname: '',
-				registered_date: new Date(),
-				roles: [],
-				slug: '',
-				url: '',
-				username: '',
-				_links: {}
-			}
-		}
-	);
-
-	/**
-	 * Model for a single taxonomy.
-	 *
-	 * @param {Object} attributes
-	 * @param {string} attributes.slug The taxonomy slug.
-	 */
-	wp.api.models.Taxonomy = WPApiBaseModel.extend(
-		/** @lends Taxonomy.prototype  */
-		{
-			idAttribute: 'slug',
-
-			urlRoot: WP_API_Settings.root + 'wp/v2/taxonomies',
-
-			defaults: {
-				name: '',
-				slug: null,
-				description: '',
-				labels: {},
-				types: [],
-				show_cloud: false,
-				hierarchical: false
-			}
-		}
-	);
-
-	/**
-	 * Backbone model for a single term.
-	 *
-	 * @param {Object} attributes
-	 * @param {int} id attributesm id.
-	 */
-	wp.api.models.Term = WPApiBaseModel.extend(
-		/** @lends Term.prototype */
-		{
-			idAttribute: 'id',
-
-			urlRoot: WP_API_Settings.root + 'wp/v2/terms/tag',
-
-			defaults: {
-				id: null,
-				name: '',
-				slug: '',
-				description: '',
-				parent: null,
-				count: 0,
-				link: '',
-				taxonomy: '',
-				_links: {}
-			}
-
-		}
-	);
-
-	/**
-	 * Backbone model for a single post.
-	 *
-	 * @param {Object} attributes
-	 * @param {int}    attributes.id The post id.
-	 */
-	wp.api.models.Post = WPApiBaseModel.extend( _.extend(
-		/** @lends Post.prototype  */
-		{
-			idAttribute: 'id',
-
-			urlRoot: WP_API_Settings.root + 'wp/v2/posts',
-
-			defaults: {
-				id: null,
-				date: new Date(),
-				date_gmt: new Date(),
-				guid: {},
-				link: '',
-				modified: new Date(),
-				modified_gmt: new Date(),
-				password: '',
-				status: 'draft',
-				type: 'post',
-				title: {},
-				content: {},
-				author: null,
-				excerpt: {},
-				featured_image: null,
-				comment_status: 'open',
-				ping_status: 'open',
-				sticky: false,
-				format: 'standard',
-				_links: {}
-			}
-		}, TimeStampedMixin, HierarchicalMixin )
-	);
-
-	/**
-	 * Backbone model for a single page.
-	 *
-	 * @param {Object} attributes
-	 * @param {int}    attributes.id The page id.
-	 */
-	wp.api.models.Page = WPApiBaseModel.extend( _.extend(
-		/** @lends Page.prototype  */
-		{
-			idAttribute: 'id',
-
-			urlRoot: WP_API_Settings.root + 'wp/v2/pages',
-
-			defaults: {
-				id: null,
-				date: new Date(),
-				date_gmt: new Date(),
-				guid: {},
-				link: '',
-				modified: new Date(),
-				modified_gmt: new Date(),
-				password: '',
-				slug: '',
-				status: 'draft',
-				type: 'page',
-				title: {},
-				content: {},
-				author: null,
-				excerpt: {},
-				featured_image: null,
-				comment_status: 'closed',
-				ping_status: 'closed',
-				menu_order: null,
-				template: '',
-				_links: {}
-			}
-		}, TimeStampedMixin, HierarchicalMixin )
-	);
-
-	/**
-	 * Backbone model for a single post revision.
-	 *
-	 * @param {Object} attributes
-	 * @param {int}    attributes.parent The id of the post that this revision belongs to.
-	 * @param {int}    attributes.id     The revision id.
-	 */
-	wp.api.models.PostRevision = WPApiBaseModel.extend( _.extend(
-		/** @lends PostRevision.prototype */
-		{
-			idAttribute: 'id',
-
-			defaults: {
-				id: null,
-				author: null,
-				date: new Date(),
-				date_gmt: new Date(),
-				guid: {},
-				modified: new Date(),
-				modified_gmt: new Date(),
-				parent: 0,
-				slug: '',
-				title: {},
-				content: {},
-				excerpt: {},
-				_links: {}
-			},
-
-			/**
-			 * Return URL for the model.
-			 *
-			 * @returns {string}.
-			 */
-			url: function() {
-				var id     = this.get( 'id' )     || '',
-					parent = this.get( 'parent' ) || '';
-
-				return WP_API_Settings.root + 'wp/v2/posts/' + parent + '/revisions/' + id;
-			}
-
-		}, TimeStampedMixin, HierarchicalMixin )
-	);
-
-	/**
-	 * Backbone model for a single media item.
-	 *
-	 * @param {Object} attributes
-	 * @param {int}    attributes.id The media item id.
-	 */
-	wp.api.models.Media = WPApiBaseModel.extend( _.extend(
-		/** @lends Media.prototype */
-		{
-			idAttribute: 'id',
-
-			urlRoot: WP_API_Settings.root + 'wp/v2/media',
-
-			defaults: {
-				id: null,
-				date: new Date(),
-				date_gmt: new Date(),
-				guid: {},
-				link: '',
-				modified: new Date(),
-				modified_gmt: new Date(),
-				password: '',
-				slug: '',
-				status: 'draft',
-				type: 'attachment',
-				title: {},
-				author: null,
-				comment_status: 'open',
-				ping_status: 'open',
-				alt_text: '',
-				caption: '',
-				description: '',
-				media_type: '',
-				media_details: {},
-				post: null,
-				source_url: '',
-				_links: {}
-			}
-
-		}, TimeStampedMixin )
-	);
-
-	/**
-	 * Backbone model for a single comment.
-	 *
-	 * @param {Object} attributes
-	 * @param {int}    attributes.id The comment id.
-	 */
-	wp.api.models.Comment = WPApiBaseModel.extend( _.extend(
-		/** @lends Comment.prototype */
-		{
-			idAttribute: 'id',
-
-			urlRoot: WP_API_Settings.root + 'wp/v2/comments',
-
-
-			defaults: {
-				id: null,
-				author: null,
-				author_email: '',
-				author_ip: '',
-				author_name: '',
-				author_url: '',
-				author_user_agent: '',
-				content: {},
-				date: new Date(),
-				date_gmt: new Date(),
-				karma: 0,
-				link: '',
-				parent: 0,
-				status: 'hold',
-				type: '',
-				_links: {}
-			}
-
-		}, TimeStampedMixin, HierarchicalMixin )
-	);
-
-	/**
-	 * Backbone model for a single post type.
-	 *
-	 * @param {Object} attributes
-	 * @param {string} attributes.slug The post type slug.
-	 */
-	wp.api.models.PostType = WPApiBaseModel.extend(
-		/** @lends PostType.prototype */
-		{
-			idAttribute: 'slug',
-
-			urlRoot: WP_API_Settings.root + 'wp/v2/types',
-
-			defaults: {
-				slug: null,
-				name: '',
-				description: '',
-				labels: {},
-				hierarchical: false
-			},
-
-			/**
-			 * Prevent model from being saved.
-			 *
-			 * @returns {boolean}.
-			 */
-			save: function() {
-				return false;
-			},
-
-			/**
-			 * Prevent model from being deleted.
-			 *
-			 * @returns {boolean}.
-			 */
-			destroy: function() {
-				return false;
-			}
-		}
-	);
-
-	/**
-	 * Backbone model for a a single post status.
-	 *
-	 * @param {Object} attributes
-	 * @param {string} attributes.slug The post status slug.
-	 */
-	wp.api.models.PostStatus = WPApiBaseModel.extend(
-		/** @lends PostStatus.prototype */
-		{
-			idAttribute: 'slug',
-
-			urlRoot: WP_API_Settings.root + 'wp/v2/statuses',
-
-			defaults: {
-				slug: null,
-				name: '',
-				'public': true,
-				'protected': false,
-				'private': false,
-				queryable: true,
-				show_in_list: true,
-				_links: {}
-			},
-
-			/**
-			 * Prevent model from being saved.
-			 *
-			 * @returns {boolean}.
-			 */
-			save: function() {
-				return false;
-			},
-
-			/**
-			 * Prevent model from being deleted.
-			 *
-			 * @returns {boolean}.
-			 */
-			destroy: function() {
-				return false;
-			}
-		}
-	);
-
-	/**
 	 * API Schema model. Contains meta information about the API.
 	 */
-	wp.api.models.Schema = WPApiBaseModel.extend(
+	wp.api.models.Schema = wp.api.WPApiBaseModel.extend(
 		/** @lends Shema.prototype  */
 		{
 			url: WP_API_Settings.root + 'wp/v2',
@@ -653,20 +336,21 @@
 	/**
 	 * Contains basic collection functionality such as pagination.
 	 */
-	var BaseCollection = Backbone.Collection.extend(
+	wp.api.WPApiBaseCollection = Backbone.Collection.extend(
 		/** @lends BaseCollection.prototype  */
 		{
 
 			/**
 			 * Setup default state.
 			 */
-			initialize: function() {
+			initialize: function( models, options ) {
 				this.state = {
 					data: {},
 					currentPage: null,
 					totalPages: null,
 					totalObjects: null
 				};
+				this.parent = options.parent || '';
 			},
 
 			/**
@@ -775,209 +459,131 @@
 		}
 	);
 
-	/**
-	 * Backbone collection for posts.
-	 */
-	wp.api.collections.Posts = BaseCollection.extend(
-		/** @lends Posts.prototype */
-		{
-			url: WP_API_Settings.root + 'wp/v2/posts',
-
-			model: wp.api.models.Post
-		}
-	);
-
-	/**
-	 * Backbone collection for pages.
-	 */
-	wp.api.collections.Pages = BaseCollection.extend(
-		/** @lends Pages.prototype */
-		{
-			url: WP_API_Settings.root + 'wp/v2/pages',
-
-			model: wp.api.models.Page
-		}
-	);
-
-	/**
-	 * Backbone users collection.
-	 */
-	wp.api.collections.Users = BaseCollection.extend(
-		/** @lends Users.prototype */
-		{
-			url: WP_API_Settings.root + 'wp/v2/users',
-
-			model: wp.api.models.User
-		}
-	);
-
-	/**
-	 * Backbone post statuses collection.
-	 */
-	wp.api.collections.PostStatuses = BaseCollection.extend(
-		/** @lends PostStatuses.prototype */
-		{
-			url: WP_API_Settings.root + 'wp/v2/statuses',
-
-			model: wp.api.models.PostStatus,
-
-			parse: function( response ) {
-				var responseArray = [];
-
-				for ( var property in response ) {
-					if ( response.hasOwnProperty( property ) ) {
-						responseArray.push( response[property] );
-					}
-				}
-
-				return this.constructor.__super__.parse.call( this, responseArray );
-			}
-		}
-	);
-
-	/**
-	 * Backbone media library collection.
-	 */
-	wp.api.collections.MediaLibrary = BaseCollection.extend(
-		/** @lends MediaLibrary.prototype */
-		{
-			url: WP_API_Settings.root + 'wp/v2/media',
-
-			model: wp.api.models.Media
-		}
-	);
-
-	/**
-	 * Backbone taxonomy collection.
-	 */
-	wp.api.collections.Taxonomies = BaseCollection.extend(
-		/** @lends Taxonomies.prototype */
-		{
-			model: wp.api.models.Taxonomy,
-
-			url: WP_API_Settings.root + 'wp/v2/taxonomies'
-		}
-	);
-
-	/**
-	 * Backbone comment collection.
-	 */
-	wp.api.collections.Comments = BaseCollection.extend(
-		/** @lends Comments.prototype */
-		{
-			model: wp.api.models.Comment,
-
-			/**
-			 * Return URL for collection.
-			 *
-			 * @returns {string}.
-			 */
-			url: WP_API_Settings.root + 'wp/v2/comments'
-		}
-	);
-
-	/**
-	 * Backbone post type collection.
-	 */
-	wp.api.collections.PostTypes = BaseCollection.extend(
-		/** @lends PostTypes.prototype */
-		{
-			model: wp.api.models.PostType,
-
-			url: WP_API_Settings.root + 'wp/v2/types',
-
-			parse: function( response ) {
-				var responseArray = [];
-
-				for ( var property in response ) {
-					if ( response.hasOwnProperty( property ) ) {
-						responseArray.push( response[property] );
-					}
-				}
-
-				return this.constructor.__super__.parse.call( this, responseArray );
-			}
-		}
-	);
-
-	/**
-	 * Backbone terms collection.
-	 *
-	 * Usage: new wp.api.collections.Terms( {}, { taxonomy: 'taxonomy-slug' } )
-	 */
-	wp.api.collections.Terms = BaseCollection.extend(
-		/** @lends Terms.prototype */
-		{
-			model: wp.api.models.Term,
-
-			taxonomy: 'category',
-
-			/**
-			 * @class Represent an array of terms.
-			 * @augments Backbone.Collection.
-			 * @constructs
-			 */
-			initialize: function( models, options ) {
-				if ( 'undefined' !== typeof options && options.taxonomy ) {
-					this.taxonomy = options.taxonomy;
-				}
-
-				BaseCollection.prototype.initialize.apply( this, arguments );
-			},
-
-			/**
-			 * Return URL for collection.
-			 *
-			 * @returns {string}.
-			 */
-			url: function() {
-				return WP_API_Settings.root + 'wp/v2/terms/' + this.taxonomy;
-			}
-		}
-	);
-
-	/**
-	 * Backbone revisions collection.
-	 *
-	 * Usage: new wp.api.collections.Revisions( {}, { parent: POST_ID } ).
-	 */
-	wp.api.collections.Revisions = BaseCollection.extend(
-		/** @lends Revisions.prototype */
-		{
-			model: wp.api.models.Revision,
-
-			parent: null,
-
-			/**
-			 * @class Represent an array of revisions.
-			 * @augments Backbone.Collection.
-			 * @constructs
-			 */
-			initialize: function( models, options ) {
-				BaseCollection.prototype.initialize.apply( this, arguments );
-
-				if ( options && options.parent ) {
-					this.parent = options.parent;
-				}
-			},
-
-			/**
-			 * return URL for collection.
-			 *
-			 * @returns {string}.
-			 */
-			url: function() {
-				return WP_API_Settings.root + 'wp/v2/posts/' + this.parent + '/revisions';
-			}
-		}
-	);
-
-	/**
-	 * Todo: Handle schema endpoints.
-	 */
-
-	/**
-	 * Todo: Handle post meta.
-	 */
-
 })( wp, WP_API_Settings, Backbone, _, window );
+
+/* global WP_API_Settings */
+(function( window, undefined ) {
+
+	'use strict';
+
+	/**
+	 * Initialize the wp-api, optionally passing the API root.
+	 *
+	 * @param {string} apiRoot The api root. Optional, defaults to WP_API_Settings.root.
+	 */
+	wp.api.init = function( apiRoot, versionString ) {
+
+		apiRoot       = apiRoot || WP_API_Settings.root;
+		versionString = versionString || 'wp/v2/';
+
+		/**
+		 * Construct and fetch the API schema.
+		 */
+		var schema = new wp.api.models.Schema(),
+			schemaRoot = apiRoot.replace( wp.api.utils.getRootUrl(), '' );
+
+		schema.fetch( {
+			success: function( model ) {
+				/**
+				 * Iterate thru the routes, picking up models and collections to build. Builds two arrays,
+				 * one for models and one for collections.
+				 */
+				var modelRoutes = [], collectionRoutes = [];
+				_.each( model.get( 'routes' ), function( route, index ) {
+					// Skip the schema root if included in the schema
+					if ( index !== versionString && index !== schemaRoot && index !== ( '/' + versionString.slice( 0, -1 ) ) ) {
+						// Single item models end with an id or slug
+						if ( index.endsWith( '+)' ) ) {
+							modelRoutes.push( { index: index, route: route } );
+						} else {
+							// Collections contain a number or slug inside their route
+							collectionRoutes.push( { index: index, route: route } );
+						}
+					}
+				} );
+
+				/**
+				 * Construct the models.
+				 *
+				 * Base the class name on the route endpoint.
+				 */
+				_.each( modelRoutes, function( modelRoute ) {
+
+					// Extract the name and any parent from the route.
+					var modelClassName,
+						routeName  = wp.api.utils.extractRouteName( modelRoute.index ),
+						parentName = wp.api.utils.extractParentName( modelRoute.index );
+
+					// If the model has a parent in its route, add that to its class name.
+					if ( '' !== parentName && parentName !== routeName ) {
+						modelClassName = parentName.wpapiCapitalize() + routeName.wpapiCapitalize();
+						wp.api.models[modelClassName] = wp.api.WPApiBaseModel.extend( {
+							// Function that returns a constructed url based on the parent and id.
+							url: function() {
+								return apiRoot + versionString +
+									parentName +  '/' + this.get( 'parent' ) + '/' +
+									routeName  +  '/' + this.get( 'id' );
+							},
+							// Incldue a refence to the original route object.
+							route: modelRoute
+						} );
+					} else {
+						// This is a model without a parent in its route
+						modelClassName = routeName.wpapiCapitalize();
+						wp.api.models[modelClassName] = wp.api.WPApiBaseModel.extend( {
+							// Function that returns a constructed url based on the id.
+							url: function() {
+								return apiRoot + versionString + routeName +  '/' + this.get( 'id' );
+							},
+							// Incldue a refence to the original route object.
+							route: modelRoute
+						} );
+					}
+				} );
+
+				/**
+				 * Construct the collections.
+				 *
+				 * Base the class name on the route endpoint.
+				 */
+				_.each( collectionRoutes, function( collectionRoute ) {
+
+					// Extract the name and any parent from the route.
+					var collectionClassName,
+						routeName  = collectionRoute.index.slice( collectionRoute.index.lastIndexOf( '/' ) + 1 ),
+						parentName = wp.api.utils.extractParentName( collectionRoute.index );
+
+					// If the collection has a parent in its route, add that to its class name/
+					if ( '' !== parentName && parentName !== routeName ) {
+
+						collectionClassName = parentName.wpapiCapitalize() + routeName.wpapiCapitalize();
+						wp.api.collections[collectionClassName] = wp.api.WPApiBaseCollection.extend( {
+							// Function that returns a constructed url pased on the parent.
+							url: function() {
+								return apiRoot + versionString +
+								parentName + '/' + this.parent + '/' +
+								routeName;
+							},
+							model: wp.api.models[collectionClassName],
+							route: collectionRoute
+						} );
+					} else {
+						// This is a collection without a parent in its route.
+						collectionClassName = routeName.wpapiCapitalize();
+						wp.api.collections[collectionClassName] = wp.api.WPApiBaseCollection.extend( {
+							// For the url of a root level collection, use a string.
+							url: apiRoot + versionString + routeName,
+									route: collectionRoute
+								} );
+					}
+				} );
+			},
+			error: function() {
+			}
+		} );
+
+	};
+
+	wp.api.init();
+
+})( window );
