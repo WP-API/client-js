@@ -251,7 +251,6 @@
 			}
 		} );
 	};
-	WP_API_Settings.nonce = null ;
 
 	wp.api.init();
 
