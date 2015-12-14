@@ -604,27 +604,12 @@
 					// Incldue a refence to the original route object.
 					route: modelRoute
 				} );
-
-				// Add the route endpoints as model attributes.
-				_.each( modelRoute.route.endpoints, function( routeEndpoint ) {
-					if ( _.contains( routeEndpoint.methods, 'POST' ) || _.contains( routeEndpoint.methods, 'PUT' ) ) {
-
-						// Add any non empty args, merging them into the defaults object.
-						if ( ! _.isEmpty( routeEndpoint.args ) ) {
-
-							// Set as defauls if no defaults yet.
-							if ( _.isEmpty( wp.api.models[ modelClassName ].defaults ) ) {
-								wp.api.models[ modelClassName ].defaults = routeEndpoint.args;
-							} else {
-								// We already have defauls, merge these new args in.
-								wp.api.models[ modelClassName ].defaults =
-								_.union( routeEndpoint.args, wp.api.models[ modelClassName ].defaults );
-							}
-						}
-					}
-
-				} );
 			}
+
+			// Add defaults to the new model, pulled form the endpoint
+			wp.api.decorateFromRoute( modelRoute.route.endpoints, wp.api.models[ modelClassName ] );
+
+			// @todo add
 		} );
 
 		/**
@@ -643,7 +628,7 @@
 			if ( '' !== parentName && parentName !== routeName ) {
 
 				collectionClassName = wp.api.utils.capitalize( parentName ) + wp.api.utils.capitalize( routeName );
-				wp.api.collections[collectionClassName] = wp.api.WPApiBaseCollection.extend( {
+				wp.api.collections[ collectionClassName ] = wp.api.WPApiBaseCollection.extend( {
 					// Function that returns a constructed url pased on the parent.
 					url: function() {
 						return wp.api.apiRoot + wp.api.versionString +
@@ -656,11 +641,79 @@
 			} else {
 				// This is a collection without a parent in its route.
 				collectionClassName = wp.api.utils.capitalize( routeName );
-				wp.api.collections[collectionClassName] = wp.api.WPApiBaseCollection.extend( {
+				wp.api.collections[ collectionClassName ] = wp.api.WPApiBaseCollection.extend( {
 					// For the url of a root level collection, use a string.
 					url: wp.api.apiRoot + wp.api.versionString + routeName,
 							route: collectionRoute
 						} );
+			}
+			// Add defaults to the new model, pulled form the endpoint
+			wp.api.decorateFromRoute( collectionRoute.route.endpoints, wp.api.collections[ collectionClassName ] );
+		} );
+
+
+	};
+
+	/**
+	 * Add defaults to a model from a route's endpoints.
+	 *
+	 * @param {array}  routeEndpoints Array of route endpoints.
+	 * @param {Object} modelInstance  An instance of the model (or collection)
+	 *                                to add the defaults to.
+	 */
+	wp.api.decorateFromRoute = function ( routeEndpoints, modelInstance ) {
+
+		/**
+		 * Build the defaults based on route endpoint data.
+		 */
+		_.each( routeEndpoints, function( routeEndpoint ) {
+			// Add post and edit endpoints as model defaults.
+			if ( _.contains( routeEndpoint.methods, 'POST' ) || _.contains( routeEndpoint.methods, 'PUT' ) ) {
+
+				// Add any non empty args, merging them into the defaults object.
+				if ( ! _.isEmpty( routeEndpoint.args ) ) {
+
+					// Set as defauls if no defaults yet.
+					if ( _.isEmpty( modelInstance.defaults ) ) {
+						modelInstance.defaults = routeEndpoint.args;
+					} else {
+						// We already have defaults, merge these new args in.
+						modelInstance.defaults = _.union( routeEndpoint.args, modelInstance.defaults );
+					}
+				}
+			} else {
+				// Add GET method as model options.
+				if ( _.contains( routeEndpoint.methods, 'GET' ) ) {
+					// Add any non empty args, merging them into the defaults object.
+					if ( ! _.isEmpty( routeEndpoint.args ) ) {
+
+						// Set as defauls if no defaults yet.
+						if ( _.isEmpty( modelInstance.options ) ) {
+							modelInstance.options = routeEndpoint.args;
+						} else {
+							// We already have options, merge these new args in.
+							modelInstance.options = _.union( routeEndpoint.args, modelInstance.options );
+						}
+					}
+
+				}
+			}
+
+		} );
+
+		/**
+		 * Finish processing the defaults, assigning `defaults` if available,
+		 * otherwise null.
+		 *
+		 * @todo required arguments
+		 *
+		 */
+		//
+		_.each( modelInstance.defaults, function( theDefault, index ) {
+			if ( _.isUndefined( theDefault['default'] ) ) {
+				modelInstance.defaults[ index ] = null;
+			} else {
+				modelInstance.defaults[ index ] = theDefault['default'];
 			}
 		} );
 	};
