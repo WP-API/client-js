@@ -128,7 +128,7 @@
 			sync: function( method, model, options ) {
 				options = options || {};
 
-				if ( 'undefined' !== typeof WP_API_Settings.nonce ) {
+				if ( ! _.isUndefined( WP_API_Settings.nonce ) && ! _.isNull( WP_API_Settings.nonce ) ) {
 					var beforeSend = options.beforeSend;
 
 					options.beforeSend = function( xhr ) {
@@ -151,30 +151,8 @@
 	wp.api.models.Schema = wp.api.WPApiBaseModel.extend(
 		/** @lends Shema.prototype  */
 		{
-			url: WP_API_Settings.root + 'wp/v2',
-
-			defaults: {
-				namespace: '',
-				_links: '',
-				routes: {}
-			},
-
-			/**
-			 * Prevent model from being saved.
-			 *
-			 * @returns {boolean}.
-			 */
-			save: function() {
-				return false;
-			},
-
-			/**
-			 * Prevent model from being deleted.
-			 *
-			 * @returns {boolean}.
-			 */
-			destroy: function() {
-				return false;
+			url: function() {
+				return WP_API_Settings.root + wp.api.versionString;
 			}
 		}
 	);

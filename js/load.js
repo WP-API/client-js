@@ -3,6 +3,9 @@
 
 	'use strict';
 
+	window.wp = window.wp || {};
+	wp.api = wp.api || {};
+
 	/**
 	 * Initialize the wp-api, optionally passing the API root.
 	 *
@@ -11,7 +14,8 @@
 	wp.api.init = function( apiRoot, versionString ) {
 
 		wp.api.apiRoot       = apiRoot || WP_API_Settings.root;
-		wp.api.versionString = versionString || 'wp/v2/';
+		wp.api.versionString = versionString || wp.api.versionString;
+		WP_API_Settings.root = wp.api.apiRoot;
 
 		/**
 		 * Construct and fetch the API schema.
@@ -247,6 +251,7 @@
 			}
 		} );
 	};
+	WP_API_Settings.nonce = null ;
 
 	wp.api.init();
 
