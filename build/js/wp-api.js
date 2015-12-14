@@ -8,8 +8,9 @@
 		this.views = {};
 	}
 
-	window.wp = window.wp || {};
-	wp.api = wp.api || new WP_API();
+	window.wp            = window.wp || {};
+	wp.api               = wp.api || new WP_API();
+	wp.api.versionString = wp.api.versionString || 'wp/v2';
 
 })( window );
 
@@ -277,7 +278,7 @@
 			sync: function( method, model, options ) {
 				options = options || {};
 
-				if ( 'undefined' !== typeof WP_API_Settings.nonce ) {
+				if ( ! _.isUndefined( WP_API_Settings.nonce ) && ! _.isNull( WP_API_Settings.nonce ) ) {
 					var beforeSend = options.beforeSend;
 
 					options.beforeSend = function( xhr ) {
@@ -300,30 +301,8 @@
 	wp.api.models.Schema = wp.api.WPApiBaseModel.extend(
 		/** @lends Shema.prototype  */
 		{
-			url: WP_API_Settings.root + 'wp/v2',
-
-			defaults: {
-				namespace: '',
-				_links: '',
-				routes: {}
-			},
-
-			/**
-			 * Prevent model from being saved.
-			 *
-			 * @returns {boolean}.
-			 */
-			save: function() {
-				return false;
-			},
-
-			/**
-			 * Prevent model from being deleted.
-			 *
-			 * @returns {boolean}.
-			 */
-			destroy: function() {
-				return false;
+			url: function() {
+				return WP_API_Settings.root + wp.api.versionString;
 			}
 		}
 	);
@@ -473,6 +452,9 @@
 
 	'use strict';
 
+	window.wp = window.wp || {};
+	wp.api = wp.api || {};
+
 	/**
 	 * Initialize the wp-api, optionally passing the API root.
 	 *
@@ -481,7 +463,8 @@
 	wp.api.init = function( apiRoot, versionString ) {
 
 		wp.api.apiRoot       = apiRoot || WP_API_Settings.root;
-		wp.api.versionString = versionString || 'wp/v2/';
+		wp.api.versionString = versionString || wp.api.versionString;
+		WP_API_Settings.root = wp.api.apiRoot;
 
 		/**
 		 * Construct and fetch the API schema.
@@ -717,6 +700,7 @@
 			}
 		} );
 	};
+	WP_API_Settings.nonce = null ;
 
 	wp.api.init();
 
