@@ -147,11 +147,11 @@
 			},
 
 			/**
-			 * Save is only allowed when the PUT method is available for the endpoint.
+			 * Save is only allowed when the PUT OR POST methods are available for the endpoint.
 			 */
 			save: function( attrs, options ) {
 				// Do we have the put method, then execute the save.
-				if ( _.contains( this.methods, 'PUT' ) ) {
+				if ( _.contains( this.methods, 'PUT' ) || _.contains( this.methods, 'POST' ) ) {
 					// Proxy the call to the original save function.
 					return Backbone.Model.prototype.save.call( this, attrs, options );
 				} else {
