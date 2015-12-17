@@ -132,7 +132,9 @@
 						return url;
 					},
 					// Incldue a refence to the original route object.
-					route: modelRoute
+					route: modelRoute,
+					// Include the array of route methods for easy reference.
+					methods: modelRoute.route.methods
 				} );
 			} else {
 				// This is a model without a parent in its route
@@ -147,7 +149,9 @@
 						return url;
 					},
 					// Incldue a refence to the original route object.
-					route: modelRoute
+					route: modelRoute,
+					// Include the array of route methods for easy reference.
+					methods: modelRoute.route.methods
 				} );
 			}
 
@@ -181,7 +185,10 @@
 						routeName;
 					},
 					model: loadingObjects.models[collectionClassName],
-					route: collectionRoute
+					// Incldue a refence to the original route object.
+					route: collectionRoute,
+					// Include the array of route methods for easy reference.
+					methods: collectionRoute.route.methods
 				} );
 			} else {
 				// This is a collection without a parent in its route.
@@ -189,7 +196,10 @@
 				loadingObjects.collections[ collectionClassName ] = wp.api.WPApiBaseCollection.extend( {
 					// For the url of a root level collection, use a string.
 					url: wp.api.apiRoot + wp.api.versionString + routeName,
-							route: collectionRoute
+							// Incldue a refence to the original route object.
+							route: collectionRoute,
+							// Include the array of route methods for easy reference.
+							methods: collectionRoute.route.methods
 						} );
 			}
 			// Add defaults to the new model, pulled form the endpoint
