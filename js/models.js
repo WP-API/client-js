@@ -144,7 +144,36 @@
 				}
 
 				return Backbone.sync( method, model, options );
+			},
+
+			/**
+			 * Save is only allowed when the PUT method is available for the endpoint.
+			 */
+			save: function( attrs, options ) {
+				// Do we have the put method, then execute the save.
+				if ( _.contains( this.methods, 'PUT' ) ) {
+					// Proxy the call to the original save function.
+					return Backbone.Model.prototype.save.call( this, attrs, options );
+				} else {
+					// Otherwise bail, disallowing action.
+					return false;
+				}
+			},
+
+			/**
+			 * Delete is only allowed when the DELETE method is available for the endpoint.
+			 */
+			destroy: function( options ) {
+				// Do we have the DELETE method, then execute the destroy.
+				if ( _.contains( this.methods, 'DELETE' ) ) {
+					// Proxy the call to the original save function.
+					return Backbone.Model.prototype.destroy.call( this, options );
+				} else {
+					// Otherwise bail, disallowing action.
+					return false;
+				}
 			}
+
 		}
 	);
 
