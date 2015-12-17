@@ -294,7 +294,36 @@
 				}
 
 				return Backbone.sync( method, model, options );
+			},
+
+			/**
+			 * Save is only allowed when the PUT method is available for the endpoint.
+			 */
+			save: function( attrs, options ) {
+				// Do we have the put method, then execute the save.
+				if ( _.contains( this.methods, 'PUT' ) ) {
+					// Proxy the call to the original save function.
+					return Backbone.Model.prototype.save.call( this, attrs, options );
+				} else {
+					// Otherwise bail, disallowing action.
+					return false;
+				}
+			},
+
+			/**
+			 * Delete is only allowed when the DELETE method is available for the endpoint.
+			 */
+			destroy: function( options ) {
+				// Do we have the DELETE method, then execute the destroy.
+				if ( _.contains( this.methods, 'DELETE' ) ) {
+					// Proxy the call to the original save function.
+					return Backbone.Model.prototype.destroy.call( this, options );
+				} else {
+					// Otherwise bail, disallowing action.
+					return false;
+				}
 			}
+
 		}
 	);
 
@@ -584,7 +613,9 @@
 						return url;
 					},
 					// Incldue a refence to the original route object.
-					route: modelRoute
+					route: modelRoute,
+					// Include the array of route methods for easy reference.
+					methods: modelRoute.route.methods
 				} );
 			} else {
 				// This is a model without a parent in its route
@@ -599,7 +630,9 @@
 						return url;
 					},
 					// Incldue a refence to the original route object.
-					route: modelRoute
+					route: modelRoute,
+					// Include the array of route methods for easy reference.
+					methods: modelRoute.route.methods
 				} );
 			}
 
@@ -633,7 +666,10 @@
 						routeName;
 					},
 					model: loadingObjects.models[collectionClassName],
-					route: collectionRoute
+					// Incldue a refence to the original route object.
+					route: collectionRoute,
+					// Include the array of route methods for easy reference.
+					methods: collectionRoute.route.methods
 				} );
 			} else {
 				// This is a collection without a parent in its route.
@@ -641,7 +677,10 @@
 				loadingObjects.collections[ collectionClassName ] = wp.api.WPApiBaseCollection.extend( {
 					// For the url of a root level collection, use a string.
 					url: wp.api.apiRoot + wp.api.versionString + routeName,
-							route: collectionRoute
+							// Incldue a refence to the original route object.
+							route: collectionRoute,
+							// Include the array of route methods for easy reference.
+							methods: collectionRoute.route.methods
 						} );
 			}
 			// Add defaults to the new model, pulled form the endpoint
