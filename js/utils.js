@@ -72,4 +72,62 @@
 		return timestamp;
 	};
 
+	/**
+	 * Helper function for getting the root URL.
+	 * @return {[type]} [description]
+	 */
+	wp.api.utils.getRootUrl = function() {
+		return window.location.origin ?
+			window.location.origin + '/' :
+			window.location.protocol + '/' + window.location.host + '/';
+	};
+
+	/**
+	 * Helper for capitalizing strings.
+	 */
+	wp.api.utils.capitalize = function( str ) {
+		if ( _.isUndefined( str ) ) {
+			return str;
+		}
+		return str.charAt( 0 ).toUpperCase() + str.slice( 1 );
+	};
+
+	/**
+	 * Extract a route part based on negitive index.
+	 *
+	 * @param {string} route The endpoint route.
+	 * @param {int}    part  The number of parts from the end of the route to retrieve. Default 1.
+	 *                       Example route `/a/b/c`: part 1 is `c`, part 2 is `b`, part 3 is `a`.
+	 */
+	wp.api.utils.extractRoutePart = function( route, part ) {
+		part  = part || 1;
+
+		// Remove versions string from route to avoid returning it.
+		route = route.replace( wp.api.versionString, '' );
+		var routeParts = route.split( '/' ).reverse();
+			if ( _.isUndefined( routeParts[ --part ] ) ) {
+				return '';
+			}
+			return routeParts[ part ];
+	};
+
+	/**
+	 * Extract a parent name from a passed route.
+	 *
+	 * @param {string} route The route to extract a name from.
+	 */
+	wp.api.utils.extractParentName = function( route ) {
+		var name,
+			lastSlash = route.lastIndexOf( '_id>[\\d]+)/' );
+
+		if ( lastSlash < 0 ) {
+			return '';
+		}
+		name = route.substr( 0, lastSlash - 1 );
+		name = name.split( '/' );
+		name.pop();
+		name = name.pop();
+		return name;
+	};
+
 })( window );

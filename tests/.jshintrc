@@ -16,7 +16,7 @@
 		"stop"           : false,
 		"strictEqual"    : false,
 		"test"           : false,
-
+		"JSON"           : false,
 		"_"              : false,
 		"jQuery"         : false,
 		"wp"             : false

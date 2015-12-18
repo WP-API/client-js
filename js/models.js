@@ -112,9 +112,9 @@
 	};
 
 	/**
-	 * Private Backbone base model for all models.
+	 * Backbone base model for all models.
 	 */
-	var WPApiBaseModel = Backbone.Model.extend(
+	wp.api.WPApiBaseModel = Backbone.Model.extend(
 		/** @lends WPApiBaseModel.prototype  */
 		{
 			/**
@@ -128,8 +128,11 @@
 			sync: function( method, model, options ) {
 				options = options || {};
 
-				if ( 'undefined' !== typeof WP_API_Settings.nonce ) {
+				if ( ! _.isUndefined( WP_API_Settings.nonce ) && ! _.isNull( WP_API_Settings.nonce ) ) {
 					var beforeSend = options.beforeSend;
+
+					// @todo enable option for jsonp endpoints
+					// options.dataType = 'jsonp';
 
 					options.beforeSend = function( xhr ) {
 						xhr.setRequestHeader( 'X-WP-Nonce', WP_API_Settings.nonce );
@@ -141,412 +144,47 @@
 				}
 
 				return Backbone.sync( method, model, options );
-			}
-		}
-	);
-
-	/**
-	 * Backbone model for a single user.
-	 *
-	 *
-	 * @param {Object} attributes
-	 * @param {int}    attributes.id The user id. Optional. Defaults to 'me', fetching the current user.
-	 */
-	wp.api.models.User = WPApiBaseModel.extend(
-		/** @lends User.prototype  */
-		{
-			idAttribute: 'id',
-
-			urlRoot: WP_API_Settings.root + 'wp/v2/users',
-
-			defaults: {
-				id: 'me',
-				avatar_url: {},
-				capabilities: {},
-				description: '',
-				email: '',
-				extra_capabilities: {},
-				first_name: '',
-				last_name: '',
-				link: '',
-				name: '',
-				nickname: '',
-				registered_date: new Date(),
-				roles: [],
-				slug: '',
-				url: '',
-				username: '',
-				_links: {}
-			}
-		}
-	);
-
-	/**
-	 * Model for a single taxonomy.
-	 *
-	 * @param {Object} attributes
-	 * @param {string} attributes.slug The taxonomy slug.
-	 */
-	wp.api.models.Taxonomy = WPApiBaseModel.extend(
-		/** @lends Taxonomy.prototype  */
-		{
-			idAttribute: 'slug',
-
-			urlRoot: WP_API_Settings.root + 'wp/v2/taxonomies',
-
-			defaults: {
-				name: '',
-				slug: null,
-				description: '',
-				labels: {},
-				types: [],
-				show_cloud: false,
-				hierarchical: false
-			}
-		}
-	);
-
-	/**
-	 * Backbone model for a single term.
-	 *
-	 * @param {Object} attributes
-	 * @param {int} id attributesm id.
-	 */
-	wp.api.models.Term = WPApiBaseModel.extend(
-		/** @lends Term.prototype */
-		{
-			idAttribute: 'id',
-
-			urlRoot: WP_API_Settings.root + 'wp/v2/terms/tag',
-
-			defaults: {
-				id: null,
-				name: '',
-				slug: '',
-				description: '',
-				parent: null,
-				count: 0,
-				link: '',
-				taxonomy: '',
-				_links: {}
-			}
-
-		}
-	);
-
-	/**
-	 * Backbone model for a single post.
-	 *
-	 * @param {Object} attributes
-	 * @param {int}    attributes.id The post id.
-	 */
-	wp.api.models.Post = WPApiBaseModel.extend( _.extend(
-		/** @lends Post.prototype  */
-		{
-			idAttribute: 'id',
-
-			urlRoot: WP_API_Settings.root + 'wp/v2/posts',
-
-			defaults: {
-				id: null,
-				date: new Date(),
-				date_gmt: new Date(),
-				guid: {},
-				link: '',
-				modified: new Date(),
-				modified_gmt: new Date(),
-				password: '',
-				status: 'draft',
-				type: 'post',
-				title: {},
-				content: {},
-				author: null,
-				excerpt: {},
-				featured_image: null,
-				comment_status: 'open',
-				ping_status: 'open',
-				sticky: false,
-				format: 'standard',
-				_links: {}
-			}
-		}, TimeStampedMixin, HierarchicalMixin )
-	);
-
-	/**
-	 * Backbone model for a single page.
-	 *
-	 * @param {Object} attributes
-	 * @param {int}    attributes.id The page id.
-	 */
-	wp.api.models.Page = WPApiBaseModel.extend( _.extend(
-		/** @lends Page.prototype  */
-		{
-			idAttribute: 'id',
-
-			urlRoot: WP_API_Settings.root + 'wp/v2/pages',
-
-			defaults: {
-				id: null,
-				date: new Date(),
-				date_gmt: new Date(),
-				guid: {},
-				link: '',
-				modified: new Date(),
-				modified_gmt: new Date(),
-				password: '',
-				slug: '',
-				status: 'draft',
-				type: 'page',
-				title: {},
-				content: {},
-				author: null,
-				excerpt: {},
-				featured_image: null,
-				comment_status: 'closed',
-				ping_status: 'closed',
-				menu_order: null,
-				template: '',
-				_links: {}
-			}
-		}, TimeStampedMixin, HierarchicalMixin )
-	);
-
-	/**
-	 * Backbone model for a single post revision.
-	 *
-	 * @param {Object} attributes
-	 * @param {int}    attributes.parent The id of the post that this revision belongs to.
-	 * @param {int}    attributes.id     The revision id.
-	 */
-	wp.api.models.PostRevision = WPApiBaseModel.extend( _.extend(
-		/** @lends PostRevision.prototype */
-		{
-			idAttribute: 'id',
-
-			defaults: {
-				id: null,
-				author: null,
-				date: new Date(),
-				date_gmt: new Date(),
-				guid: {},
-				modified: new Date(),
-				modified_gmt: new Date(),
-				parent: 0,
-				slug: '',
-				title: {},
-				content: {},
-				excerpt: {},
-				_links: {}
 			},
 
 			/**
-			 * Return URL for the model.
-			 *
-			 * @returns {string}.
+			 * Save is only allowed when the PUT OR POST methods are available for the endpoint.
 			 */
-			url: function() {
-				var id     = this.get( 'id' )     || '',
-					parent = this.get( 'parent' ) || '';
-
-				return WP_API_Settings.root + 'wp/v2/posts/' + parent + '/revisions/' + id;
-			}
-
-		}, TimeStampedMixin, HierarchicalMixin )
-	);
-
-	/**
-	 * Backbone model for a single media item.
-	 *
-	 * @param {Object} attributes
-	 * @param {int}    attributes.id The media item id.
-	 */
-	wp.api.models.Media = WPApiBaseModel.extend( _.extend(
-		/** @lends Media.prototype */
-		{
-			idAttribute: 'id',
-
-			urlRoot: WP_API_Settings.root + 'wp/v2/media',
-
-			defaults: {
-				id: null,
-				date: new Date(),
-				date_gmt: new Date(),
-				guid: {},
-				link: '',
-				modified: new Date(),
-				modified_gmt: new Date(),
-				password: '',
-				slug: '',
-				status: 'draft',
-				type: 'attachment',
-				title: {},
-				author: null,
-				comment_status: 'open',
-				ping_status: 'open',
-				alt_text: '',
-				caption: '',
-				description: '',
-				media_type: '',
-				media_details: {},
-				post: null,
-				source_url: '',
-				_links: {}
-			}
-
-		}, TimeStampedMixin )
-	);
-
-	/**
-	 * Backbone model for a single comment.
-	 *
-	 * @param {Object} attributes
-	 * @param {int}    attributes.id The comment id.
-	 */
-	wp.api.models.Comment = WPApiBaseModel.extend( _.extend(
-		/** @lends Comment.prototype */
-		{
-			idAttribute: 'id',
-
-			urlRoot: WP_API_Settings.root + 'wp/v2/comments',
-
-
-			defaults: {
-				id: null,
-				author: null,
-				author_email: '',
-				author_ip: '',
-				author_name: '',
-				author_url: '',
-				author_user_agent: '',
-				content: {},
-				date: new Date(),
-				date_gmt: new Date(),
-				karma: 0,
-				link: '',
-				parent: 0,
-				status: 'hold',
-				type: '',
-				_links: {}
-			}
-
-		}, TimeStampedMixin, HierarchicalMixin )
-	);
-
-	/**
-	 * Backbone model for a single post type.
-	 *
-	 * @param {Object} attributes
-	 * @param {string} attributes.slug The post type slug.
-	 */
-	wp.api.models.PostType = WPApiBaseModel.extend(
-		/** @lends PostType.prototype */
-		{
-			idAttribute: 'slug',
-
-			urlRoot: WP_API_Settings.root + 'wp/v2/types',
-
-			defaults: {
-				slug: null,
-				name: '',
-				description: '',
-				labels: {},
-				hierarchical: false
+			save: function( attrs, options ) {
+				// Do we have the put method, then execute the save.
+				if ( _.contains( this.methods, 'PUT' ) || _.contains( this.methods, 'POST' ) ) {
+					// Proxy the call to the original save function.
+					return Backbone.Model.prototype.save.call( this, attrs, options );
+				} else {
+					// Otherwise bail, disallowing action.
+					return false;
+				}
 			},
 
 			/**
-			 * Prevent model from being saved.
-			 *
-			 * @returns {boolean}.
+			 * Delete is only allowed when the DELETE method is available for the endpoint.
 			 */
-			save: function() {
-				return false;
-			},
-
-			/**
-			 * Prevent model from being deleted.
-			 *
-			 * @returns {boolean}.
-			 */
-			destroy: function() {
-				return false;
+			destroy: function( options ) {
+				// Do we have the DELETE method, then execute the destroy.
+				if ( _.contains( this.methods, 'DELETE' ) ) {
+					// Proxy the call to the original save function.
+					return Backbone.Model.prototype.destroy.call( this, options );
+				} else {
+					// Otherwise bail, disallowing action.
+					return false;
+				}
 			}
-		}
-	);
 
-	/**
-	 * Backbone model for a a single post status.
-	 *
-	 * @param {Object} attributes
-	 * @param {string} attributes.slug The post status slug.
-	 */
-	wp.api.models.PostStatus = WPApiBaseModel.extend(
-		/** @lends PostStatus.prototype */
-		{
-			idAttribute: 'slug',
-
-			urlRoot: WP_API_Settings.root + 'wp/v2/statuses',
-
-			defaults: {
-				slug: null,
-				name: '',
-				'public': true,
-				'protected': false,
-				'private': false,
-				queryable: true,
-				show_in_list: true,
-				_links: {}
-			},
-
-			/**
-			 * Prevent model from being saved.
-			 *
-			 * @returns {boolean}.
-			 */
-			save: function() {
-				return false;
-			},
-
-			/**
-			 * Prevent model from being deleted.
-			 *
-			 * @returns {boolean}.
-			 */
-			destroy: function() {
-				return false;
-			}
 		}
 	);
 
 	/**
 	 * API Schema model. Contains meta information about the API.
 	 */
-	wp.api.models.Schema = WPApiBaseModel.extend(
+	wp.api.models.Schema = wp.api.WPApiBaseModel.extend(
 		/** @lends Shema.prototype  */
 		{
-			url: WP_API_Settings.root + 'wp/v2',
-
-			defaults: {
-				namespace: '',
-				_links: '',
-				routes: {}
-			},
-
-			/**
-			 * Prevent model from being saved.
-			 *
-			 * @returns {boolean}.
-			 */
-			save: function() {
-				return false;
-			},
-
-			/**
-			 * Prevent model from being deleted.
-			 *
-			 * @returns {boolean}.
-			 */
-			destroy: function() {
-				return false;
+			url: function() {
+				return WP_API_Settings.root + wp.api.versionString;
 			}
 		}
 	);
