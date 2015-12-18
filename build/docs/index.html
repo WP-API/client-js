@@ -1,0 +1,1592 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title> | ExplainJS by grunt-explainjs</title>
+  <link rel="stylesheet" type="text/css" href="css/unsemantic.css"/>
+  <link rel="stylesheet" type="text/css" href="css/explain.css"/>
+  <link href='http://fonts.googleapis.com/css?family=Inconsolata|Open+Sans:300italic,300,700' rel='stylesheet' type='text/css'>
+  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1" />
+</head>
+
+<body>
+  <div class='page-menu'>
+    <div class='grid-container'>
+      <div class='grid-60 mobile-grid-100'>
+        <a class='logo' href='http://www.explainjs.com'>ExplainJS</a> by <a class='logo' href='https://github.com/collinforrester/grunt-explainjs'>grunt-explainjs</a>
+        
+      </div>
+    </div>
+  </div>
+  <div class='sections grid-container'>
+    <div class='code-bg hide-on-mobile'>
+    </div>
+    <br />
+    <br />
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>(function( window, undefined ) {
+
+  'use strict';
+
+  function WP_API() {
+    this.models = {};
+    this.collections = {};
+    this.views = {};
+  }
+
+  window.wp            = window.wp || {};
+  wp.api               = wp.api || new WP_API();
+  wp.api.versionString = wp.api.versionString || 'wp/v2/';
+
+})( window );
+
+(function( window, undefined ) {
+
+  'use strict';
+
+  window.wp = window.wp || {};
+  wp.api = wp.api || {};
+  wp.api.utils = wp.api.utils || {};
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>ECMAScript 5 shim, from MDN.</p> <p>@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>  if ( ! Date.prototype.toISOString ) {
+    var pad = function( number ) {
+      var r = String( number );
+      if ( r.length === 1 ) {
+        r = '0' + r;
+      }
+
+      return r;
+    };
+
+    Date.prototype.toISOString = function() {
+      return this.getUTCFullYear() +
+        '-' + pad( this.getUTCMonth() + 1 ) +
+        '-' + pad( this.getUTCDate() ) +
+        'T' + pad( this.getUTCHours() ) +
+        ':' + pad( this.getUTCMinutes() ) +
+        ':' + pad( this.getUTCSeconds() ) +
+        '.' + String( ( this.getUTCMilliseconds() / 1000 ).toFixed( 3 ) ).slice( 2, 5 ) +
+        'Z';
+    };
+  }
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Parse date into ISO8601 format.</p> <p>@param {Date} date.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>  wp.api.utils.parseISO8601 = function( date ) {
+    var timestamp, struct, i, k,
+      minutesOffset = 0,
+      numericKeys = [ 1, 4, 5, 6, 7, 10, 11 ];
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>ES5 §15.9.4.2 states that the string should attempt to be parsed as a Date Time String Format string  before falling back to any implementation-specific date parsing, so that’s what we do, even if native  implementations could be faster.               1 YYYY                2 MM       3 DD           4 HH    5 mm       6 ss        7 msec        8 Z 9 ±    10 tzHH    11 tzmm</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>    if ( ( struct = /^(\d{4}|[+\-]\d{6})(?:-(\d{2})(?:-(\d{2}))?)?(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{3}))?)?(?:(Z)|([+\-])(\d{2})(?::(\d{2}))?)?)?$/.exec( date ) ) ) {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Avoid NaN timestamps caused by “undefined” values being passed to Date.UTC.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      for ( i = 0; ( k = numericKeys[i] ); ++i ) {
+        struct[k] = +struct[k] || 0;
+      }
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Allow undefined days and months.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      struct[2] = ( +struct[2] || 1 ) - 1;
+      struct[3] = +struct[3] || 1;
+
+      if ( struct[8] !== 'Z' && struct[9] !== undefined ) {
+        minutesOffset = struct[10] * 60 + struct[11];
+
+        if ( struct[9] === '+' ) {
+          minutesOffset = 0 - minutesOffset;
+        }
+      }
+
+      timestamp = Date.UTC( struct[1], struct[2], struct[3], struct[4], struct[5] + minutesOffset, struct[6], struct[7] );
+    } else {
+      timestamp = Date.parse ? Date.parse( date ) : NaN;
+    }
+
+    return timestamp;
+  };
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Helper function for getting the root URL.</p> <p>@return {[type]} [description]</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>  wp.api.utils.getRootUrl = function() {
+    return window.location.origin ?
+      window.location.origin + '/' :
+      window.location.protocol + '/' + window.location.host + '/';
+  };
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Helper for capitalizing strings.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>  wp.api.utils.capitalize = function( str ) {
+    if ( _.isUndefined( str ) ) {
+      return str;
+    }
+    return str.charAt( 0 ).toUpperCase() + str.slice( 1 );
+  };
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Extract a route part based on negitive index.</p> <p>@param {string} route The endpoint route.</p> <p>@param {int}    part  The number of parts from the end of the route to retrieve. Default 1.                        Example route <code>/a/b/c</code>: part 1 is <code>c</code>, part 2 is <code>b</code>, part 3 is <code>a</code>.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>  wp.api.utils.extractRoutePart = function( route, part ) {
+    part  = part || 1;
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Remove versions string from route to avoid returning it.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>    route = route.replace( wp.api.versionString, '' );
+    var routeParts = route.split( '/' ).reverse();
+      if ( _.isUndefined( routeParts[ --part ] ) ) {
+        return '';
+      }
+      return routeParts[ part ];
+  };
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Extract a parent name from a passed route.</p> <p>@param {string} route The route to extract a name from.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>  wp.api.utils.extractParentName = function( route ) {
+    var name,
+      lastSlash = route.lastIndexOf( '_id>[\\d]+)/' );
+
+    if ( lastSlash < 0 ) {
+      return '';
+    }
+    name = route.substr( 0, lastSlash - 1 );
+    name = name.split( '/' );
+    name.pop();
+    name = name.pop();
+    return name;
+  };
+
+})( window );
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>global WP<em>API</em>Settings:false  Suppress warning about parse function&#39;s unused &quot;options&quot; argument:  jshint unused:false</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>(function( wp, WP_API_Settings, Backbone, window, undefined ) {
+
+  'use strict';
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Array of parseable dates.</p> <p>@type {string[]}.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>  var parseable_dates = [ 'date', 'modified', 'date_gmt', 'modified_gmt' ];
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Mixin for all content that is time stamped.</p> <p>@type {{toJSON: toJSON, parse: parse}}.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>  var TimeStampedMixin = {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Serialize the entity pre-sync.</p> <p>@returns {*}.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>    toJSON: function() {
+      var attributes = _.clone( this.attributes );
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Serialize Date objects back into 8601 strings.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      _.each( parseable_dates, function( key ) {
+        if ( key in attributes ) {
+          attributes[key] = attributes[key].toISOString();
+        }
+      });
+
+      return attributes;
+    },
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Unserialize the fetched response.</p> <p>@param {*} response.</p> <p>@returns {*}.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>    parse: function( response ) {
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Parse dates into native Date objects.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      _.each( parseable_dates, function ( key ) {
+        if ( ! ( key in response ) ) {
+          return;
+        }
+
+        var timestamp = wp.api.utils.parseISO8601( response[key] );
+        response[key] = new Date( timestamp );
+      });
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Parse the author into a User object.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      if ( 'undefined' !== typeof response.author ) {
+        response.author = new wp.api.models.User( response.author );
+      }
+
+      return response;
+    }
+  };
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Mixin for all hierarchical content types such as posts.</p> <p>@type {{parent: parent}}.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>  var HierarchicalMixin = {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Get parent object.</p> <p>@returns {Backbone.Model}</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>    parent: function() {
+
+      var object, parent = this.get( 'parent' );
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Return null if we don&#39;t have a parent.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      if ( parent === 0 ) {
+        return null;
+      }
+
+      var parentModel = this;
+
+      if ( 'undefined' !== typeof this.parentModel ) {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Probably a better way to do this. Perhaps grab a cached version of the  instantiated model?</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>        parentModel = new this.parentModel();
+      }
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Can we get this from its collection?</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      if ( parentModel.collection ) {
+        return parentModel.collection.get( parent );
+      } else {
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Otherwise, get the object directly.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>        object = new parentModel.constructor( {
+          id: parent
+        });
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Note that this acts asynchronously.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>        object.fetch();
+
+        return object;
+      }
+    }
+  };
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Backbone base model for all models.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>  wp.api.WPApiBaseModel = Backbone.Model.extend(</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>@lends WPApiBaseModel.prototype</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>    {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Set nonce header before every Backbone sync.</p> <p>@param {string} method.</p> <p>@param {Backbone.Model} model.</p> <p>@param {{beforeSend}, *} options.</p> <p>@returns {*}.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      sync: function( method, model, options ) {
+        options = options || {};
+
+        if ( ! _.isUndefined( WP_API_Settings.nonce ) && ! _.isNull( WP_API_Settings.nonce ) ) {
+          var beforeSend = options.beforeSend;
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>@todo enable option for jsonp endpoints  options.dataType = &#39;jsonp&#39;;</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>          options.beforeSend = function( xhr ) {
+            xhr.setRequestHeader( 'X-WP-Nonce', WP_API_Settings.nonce );
+
+            if ( beforeSend ) {
+              return beforeSend.apply( this, arguments );
+            }
+          };
+        }
+
+        return Backbone.sync( method, model, options );
+      },
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Save is only allowed when the PUT OR POST methods are available for the endpoint.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      save: function( attrs, options ) {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Do we have the put method, then execute the save.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>        if ( _.contains( this.methods, 'PUT' ) || _.contains( this.methods, 'POST' ) ) {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Proxy the call to the original save function.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>          return Backbone.Model.prototype.save.call( this, attrs, options );
+        } else {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Otherwise bail, disallowing action.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>          return false;
+        }
+      },
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Delete is only allowed when the DELETE method is available for the endpoint.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      destroy: function( options ) {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Do we have the DELETE method, then execute the destroy.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>        if ( _.contains( this.methods, 'DELETE' ) ) {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Proxy the call to the original save function.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>          return Backbone.Model.prototype.destroy.call( this, options );
+        } else {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Otherwise bail, disallowing action.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>          return false;
+        }
+      }
+
+    }
+  );
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>API Schema model. Contains meta information about the API.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>  wp.api.models.Schema = wp.api.WPApiBaseModel.extend(</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>@lends Shema.prototype</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>    {
+      url: function() {
+        return WP_API_Settings.root + wp.api.versionString;
+      }
+    }
+  );
+
+
+})( wp, WP_API_Settings, Backbone, window );
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>global WP<em>API</em>Settings:false</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>(function( wp, WP_API_Settings, Backbone, _, window, undefined ) {
+
+  'use strict';
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Contains basic collection functionality such as pagination.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>  wp.api.WPApiBaseCollection = Backbone.Collection.extend(</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>@lends BaseCollection.prototype</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>    {
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Setup default state.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      initialize: function( models, options ) {
+        this.state = {
+          data: {},
+          currentPage: null,
+          totalPages: null,
+          totalObjects: null
+        };
+        if ( _.isUndefined( options ) ) {
+          this.parent = '';
+        } else {
+          this.parent = options.parent;
+        }
+      },
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Overwrite Backbone.Collection.sync to pagination state based on response headers.</p> <p>Set nonce header before every Backbone sync.</p> <p>@param {string} method.</p> <p>@param {Backbone.Model} model.</p> <p>@param {{success}, *} options.</p> <p>@returns {*}.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      sync: function( method, model, options ) {
+        options = options || {};
+        var beforeSend = options.beforeSend,
+          self = this;
+
+        if ( 'undefined' !== typeof WP_API_Settings.nonce ) {
+          options.beforeSend = function( xhr ) {
+            xhr.setRequestHeader( 'X-WP-Nonce', WP_API_Settings.nonce );
+
+            if ( beforeSend ) {
+              return beforeSend.apply( self, arguments );
+            }
+          };
+        }
+
+        if ( 'read' === method ) {
+          if ( options.data ) {
+            self.state.data = _.clone( options.data );
+
+            delete self.state.data.page;
+          } else {
+            self.state.data = options.data = {};
+          }
+
+          if ( 'undefined' === typeof options.data.page ) {
+            self.state.currentPage = null;
+            self.state.totalPages = null;
+            self.state.totalObjects = null;
+          } else {
+            self.state.currentPage = options.data.page - 1;
+          }
+
+          var success = options.success;
+          options.success = function( data, textStatus, request ) {
+            self.state.totalPages = parseInt( request.getResponseHeader( 'x-wp-totalpages' ), 10 );
+            self.state.totalObjects = parseInt( request.getResponseHeader( 'x-wp-total' ), 10 );
+
+            if ( self.state.currentPage === null ) {
+              self.state.currentPage = 1;
+            } else {
+              self.state.currentPage++;
+            }
+
+            if ( success ) {
+              return success.apply( this, arguments );
+            }
+          };
+        }
+
+        return Backbone.sync( method, model, options );
+      },
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Fetches the next page of objects if a new page exists.</p> <p>@param {data: {page}} options.</p> <p>@returns {*}.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      more: function( options ) {
+        options = options || {};
+        options.data = options.data || {};
+
+        _.extend( options.data, this.state.data );
+
+        if ( 'undefined' === typeof options.data.page ) {
+          if ( ! this.hasMore() ) {
+            return false;
+          }
+
+          if ( this.state.currentPage === null || this.state.currentPage <= 1 ) {
+            options.data.page = 2;
+          } else {
+            options.data.page = this.state.currentPage + 1;
+          }
+        }
+
+        return this.fetch( options );
+      },
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Returns true if there are more pages of objects available.</p> <p>@returns null|boolean.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      hasMore: function() {
+        if ( this.state.totalPages === null ||
+           this.state.totalObjects === null ||
+           this.state.currentPage === null ) {
+          return null;
+        } else {
+          return ( this.state.currentPage < this.state.totalPages );
+        }
+      }
+    }
+  );
+
+})( wp, WP_API_Settings, Backbone, _, window );
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>global WP<em>API</em>Settings</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>(function( window, undefined ) {
+
+  'use strict';
+
+  window.wp = window.wp || {};
+  wp.api = wp.api || {};
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Initialize the wp-api, optionally passing the API root.</p> <p>@param {string} apiRoot The api root. Optional, defaults to WP<em>API</em>Settings.root.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>  wp.api.init = function( apiRoot, versionString ) {
+
+    wp.api.apiRoot       = apiRoot || WP_API_Settings.root;
+    wp.api.versionString = versionString || wp.api.versionString;
+    WP_API_Settings.root = wp.api.apiRoot;
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Construct and fetch the API schema.</p> <p>Used a session Storage cached version if available.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>    var schemaModel,
+      apiConstructor = new jQuery.Deferred();
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Used a cached copy of the schema model if available.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>    if ( ! _.isUndefined( sessionStorage ) && sessionStorage.getItem( 'wp-api-schema-model' + apiRoot ) ) {
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Grab the schema model from the sessionStorage cache.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      schemaModel = new wp.api.models.Schema( JSON.parse( sessionStorage.getItem( 'wp-api-schema-model' + apiRoot ) ) );
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Contruct the models and collections from the Schema model.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      wp.api.constructFromSchema( schemaModel, apiConstructor );
+    } else {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Construct a new Schema model.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      schemaModel = new wp.api.models.Schema(),
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Fetch the schema information from the API.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      schemaModel.fetch( {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>When the server return the schema model data, store the data in a sessionCache so we don&#39;t  have to retrieve it again for this session. Then, construct the models and collections based  on the schema model data.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>        success: function( newSchemaModel ) {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Store a copy of the schema model in the session cache if available.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>          if ( ! _.isUndefined( sessionStorage ) ) {
+            sessionStorage.setItem( 'wp-api-schema-model' + apiRoot, JSON.stringify( newSchemaModel ) );
+          }</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Contruct the models and collections from the Schema model.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>          wp.api.constructFromSchema( newSchemaModel, apiConstructor );
+        },</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>@todo Handle the error condition.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>        error: function() {
+        }
+      } );
+    }
+
+    return apiConstructor.promise();
+
+  };
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Construct the models and collections from the Schema model.</p> <p>@param {wp.api.models.Schema}    Backbone model of the API schema.</p> <p>@param {jQuery.Deferred.promise} A promise to send api load updates.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>  wp.api.constructFromSchema = function( model, apiConstructor ) {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Iterate thru the routes, picking up models and collections to build. Builds two arrays,  one for models and one for collections.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>    var modelRoutes                = [],
+      collectionRoutes           = [],
+      schemaRoot                 = wp.api.apiRoot.replace( wp.api.utils.getRootUrl(), '' ),
+      loadingObjects             = {};
+
+    loadingObjects.models      = {};
+    loadingObjects.collections = {};
+
+
+
+    _.each( model.get( 'routes' ), function( route, index ) {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Skip the schema root if included in the schema.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      if ( index !== wp.api.versionString &&
+         index !== schemaRoot &&
+         index !== ( '/' + wp.api.versionString.slice( 0, -1 ) )
+      ) {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Single item models end with a regex/variable.</p> <p>@todo make model/collection logic more robust.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>        if ( index.endsWith( '+)' ) ) {
+          modelRoutes.push( { index: index, route: route } );
+        } else {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Collections end in a name.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>          collectionRoutes.push( { index: index, route: route } );
+        }
+      }
+    } );
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Construct the models.</p> <p>Base the class name on the route endpoint.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>    _.each( modelRoutes, function( modelRoute ) {
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Extract the name and any parent from the route.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      var modelClassName,
+        routeName  = wp.api.utils.extractRoutePart( modelRoute.index, 2 ),
+        parentName = wp.api.utils.extractRoutePart( modelRoute.index, 4 );
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>If the model has a parent in its route, add that to its class name.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      if ( '' !== parentName && parentName !== routeName ) {
+        modelClassName = wp.api.utils.capitalize( parentName ) + wp.api.utils.capitalize( routeName );
+        loadingObjects.models[ modelClassName ] = wp.api.WPApiBaseModel.extend( {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Function that returns a constructed url based on the parent and id.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>          url: function() {
+            var url = wp.api.apiRoot + wp.api.versionString +
+              parentName +  '/' + this.get( 'parent' ) + '/' +
+              routeName;
+            if ( ! _.isUndefined( this.get( 'id' ) ) ) {
+              url +=  '/' + this.get( 'id' );
+            }
+            return url;
+          },</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Incldue a refence to the original route object.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>          route: modelRoute,</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Include the array of route methods for easy reference.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>          methods: modelRoute.route.methods
+        } );
+      } else {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>This is a model without a parent in its route</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>        modelClassName = wp.api.utils.capitalize( routeName );
+        loadingObjects.models[ modelClassName ] = wp.api.WPApiBaseModel.extend( {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Function that returns a constructed url based on the id.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>          url: function() {
+            var url = wp.api.apiRoot + wp.api.versionString + routeName;
+            if ( ! _.isUndefined( this.get( 'id' ) ) ) {
+              url +=  '/' + this.get( 'id' );
+            }
+            return url;
+          },</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Incldue a refence to the original route object.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>          route: modelRoute,</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Include the array of route methods for easy reference.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>          methods: modelRoute.route.methods
+        } );
+      }
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Add defaults to the new model, pulled form the endpoint</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      wp.api.decorateFromRoute( modelRoute.route.endpoints, loadingObjects.models[ modelClassName ] );
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>@todo add</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>    } );
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Construct the collections.</p> <p>Base the class name on the route endpoint.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>    _.each( collectionRoutes, function( collectionRoute ) {
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Extract the name and any parent from the route.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      var collectionClassName,
+        routeName  = collectionRoute.index.slice( collectionRoute.index.lastIndexOf( '/' ) + 1 ),
+        parentName = wp.api.utils.extractRoutePart( collectionRoute.index, 4 );
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>If the collection has a parent in its route, add that to its class name/</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      if ( '' !== parentName && parentName !== routeName ) {
+
+        collectionClassName = wp.api.utils.capitalize( parentName ) + wp.api.utils.capitalize( routeName );
+        loadingObjects.collections[ collectionClassName ] = wp.api.WPApiBaseCollection.extend( {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Function that returns a constructed url pased on the parent.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>          url: function() {
+            return wp.api.apiRoot + wp.api.versionString +
+            parentName + '/' + this.parent + '/' +
+            routeName;
+          },
+          model: loadingObjects.models[collectionClassName],</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Incldue a refence to the original route object.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>          route: collectionRoute,</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Include the array of route methods for easy reference.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>          methods: collectionRoute.route.methods
+        } );
+      } else {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>This is a collection without a parent in its route.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>        collectionClassName = wp.api.utils.capitalize( routeName );
+        loadingObjects.collections[ collectionClassName ] = wp.api.WPApiBaseCollection.extend( {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>For the url of a root level collection, use a string.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>          url: wp.api.apiRoot + wp.api.versionString + routeName,</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Incldue a refence to the original route object.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>              route: collectionRoute,</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Include the array of route methods for easy reference.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>              methods: collectionRoute.route.methods
+            } );
+      }</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Add defaults to the new model, pulled form the endpoint</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      wp.api.decorateFromRoute( collectionRoute.route.endpoints, loadingObjects.collections[ collectionClassName ] );
+    } );
+
+    _.defer( function() {
+      apiConstructor.resolve( loadingObjects );
+    } );
+
+
+  };
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Add defaults to a model from a route&#39;s endpoints.</p> <p>@param {array}  routeEndpoints Array of route endpoints.</p> <p>@param {Object} modelInstance  An instance of the model (or collection)                                 to add the defaults to.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>  wp.api.decorateFromRoute = function ( routeEndpoints, modelInstance ) {
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Build the defaults based on route endpoint data.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>    _.each( routeEndpoints, function( routeEndpoint ) {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Add post and edit endpoints as model defaults.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>      if ( _.contains( routeEndpoint.methods, 'POST' ) || _.contains( routeEndpoint.methods, 'PUT' ) ) {
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Add any non empty args, merging them into the defaults object.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>        if ( ! _.isEmpty( routeEndpoint.args ) ) {
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Set as defauls if no defaults yet.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>          if ( _.isEmpty( modelInstance.defaults ) ) {
+            modelInstance.defaults = routeEndpoint.args;
+          } else {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>We already have defaults, merge these new args in.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>            modelInstance.defaults = _.union( routeEndpoint.args, modelInstance.defaults );
+          }
+        }
+      } else {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Add GET method as model options.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>        if ( _.contains( routeEndpoint.methods, 'GET' ) ) {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Add any non empty args, merging them into the defaults object.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>          if ( ! _.isEmpty( routeEndpoint.args ) ) {
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Set as defauls if no defaults yet.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>            if ( _.isEmpty( modelInstance.options ) ) {
+              modelInstance.options = routeEndpoint.args;
+            } else {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>We already have options, merge these new args in.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>              modelInstance.options = _.union( routeEndpoint.args, modelInstance.options );
+            }
+          }
+
+        }
+      }
+
+    } );
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Finish processing the defaults, assigning <code>defaults</code> if available,  otherwise null.</p> <p>@todo required arguments</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>    _.each( modelInstance.defaults, function( theDefault, index ) {
+      if ( _.isUndefined( theDefault['default'] ) ) {
+        modelInstance.defaults[ index ] = null;
+      } else {
+        modelInstance.defaults[ index ] = theDefault['default'];
+      }
+    } );
+  };
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Construct the default endpoints and add to an endpoints collection.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>  wp.api.endpoints = new Backbone.Collection();
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>wp.api.init returns a deferred promise that will resolve with the endpoint once it is completely parsed.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>  var endpointLoading = wp.api.init();
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>When the endpoint is loaded, complete the setup process.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>  endpointLoading.done( function( endpoint ) {</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Map the default endpoints, extending any already present items (including Schema model).</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>    wp.api.models      = _.extend( endpoint.models, wp.api.models );
+    wp.api.collections = _.extend( endpoint.collections, wp.api.collections );
+</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+      <div class='section'>
+        <div class='comment grid-40 mobile-grid-100 not-empty'>
+          <p>Add the endpoint to the endpoints collection.</p>
+        </div>
+        <div class='code grid-60 mobile-grid-100 not-empty'>
+          <pre>    wp.api.endpoints.push( endpoint );
+  } );
+
+})( window );
+.</pre>
+        </div>
+      </div>
+      <div class='clear'>
+      </div>
+    
+  </div>
+</body>
+</html>

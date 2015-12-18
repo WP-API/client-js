@@ -1,0 +1,186 @@
+html {
+  height: 100%;
+}
+body {
+  font-family: 'Open Sans', "Lucida Grande", verdana, sans-serif;
+  font-size: 11pt;
+  color: #555;
+  height: 100%;
+  padding: 50px 0 0 0;
+  margin: 0;
+}
+.page-menu {
+  position: fixed;
+  background-color: #000;
+  height: 50px;
+  line-height: 50px;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+.page-menu a.logo {
+  font-size: 18pt;
+  color: #FFF;
+  text-decoration: none;
+}
+.page-menu a.logo:hover {
+  text-decoration: underline;
+}
+.page-menu a.src-title {
+  font-size: 14pt;
+  color: #5cf;
+}
+.page-menu a.src-title:hover {
+  color: #FFF;
+}
+.page-menu a.explain-own {
+  font-size: 11pt;
+  color: #FFF;
+  float: right;
+}
+.page-menu a.explain-own:hover {
+  color: #5cf;
+}
+@media screen and (max-width: 766px) {
+  body {
+    padding-top: 0;
+  }
+  .page-menu {
+    position: static;
+    text-align: center;
+  }
+}
+.error {
+  text-align: center;
+  color: #888;
+}
+.error img {
+  margin-top: 40px;
+}
+.error .title {
+  margin-top: 20px;
+  font-size: 32pt;
+  color: #333;
+}
+.error .src {
+  font-size: 20pt;
+  color: #f60;
+}
+.error .message {
+  margin-top: 25px;
+  font-size: 14pt;
+}
+.error .try-harder {
+  color: #06f;
+  font-size: 18pt;
+}
+.sections {
+  min-height: 100%;
+  position: relative;
+}
+.code-bg {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 60%;
+  background-color: #f8f8f8;
+  z-index: -1;
+}
+.empty {
+  visibility: hidden;
+}
+.comment {
+  margin: 0;
+  padding: 20px 20px 20px 10px ;
+  font-family: 'Open Sans';
+  overflow: hidden;
+}
+.comment h1,
+.comment h2,
+.comment h3,
+.comment h4 {
+  color: #000;
+  text-transform: uppercase;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.comment p {
+  padding: 0;
+  margin: 0;
+  margin-top: 1em;
+}
+.comment p:first-child {
+  margin-top: 0;
+}
+.code {
+  margin: 0;
+  padding: 20px 20px 20px 10px;
+  border-top: solid 1px #eee;
+}
+.code pre, .comment code {
+  font-family: 'Inconsolata', Menlo, Monaco, Consolas, "Lucida Console", monospace;
+}
+.code pre {
+  color: #333;
+  letter-spacing: -1px;
+  line-height: 1em;
+  margin: 0;
+}
+@media screen and (max-width: 400px) {
+  div.code pre {
+    font-size: 10pt;
+  }
+}
+@media screen and (min-width: 401px) and (max-width: 559px) {
+  div.code pre {
+    font-size: 11pt;
+  }
+}
+@media screen and (min-width: 560px) and (max-width: 766px) {
+  div.code pre {
+    font-size: 12pt;
+  }
+}
+@media screen and (min-width: 767px) and (max-width: 847px) {
+  div.code pre {
+    font-size: 10pt;
+  }
+}
+@media screen and (min-width: 848px) and (max-width: 930px) {
+  div.code pre {
+    font-size: 11pt;
+  }
+}
+@media screen and (min-width: 931px) {
+  div.code pre {
+    font-size: 12pt;
+  }
+}
+@media screen and (max-width: 766px) {
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-align: center;
+  }
+  .comment {
+    margin: 20px 0 5px;
+    padding: 0 0 0 3px !important;
+  }
+  div.code {
+    background-color: #f8f8f8;
+    padding: 10px 10px 10px 3px !important;
+    overflow-x: scroll;
+  }
+}
+.footer {
+  text-align: center;
+  color: #666;
+  margin: 40px 0;
+  font-size: 10pt;
+}
+.footer a {
+  color: #555;
+}

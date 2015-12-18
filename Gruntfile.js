@@ -52,6 +52,12 @@ module.exports = function( grunt ) {
 		qunit: {
 			all: [ 'tests/*.html' ]
 		},
+		explainjs: {
+			files: {
+				src: ['build/js/wp-api.js'],
+				dest: 'build/docs/index.html'
+			}
+		},
 		watch: {
 			files: [
 				'js/*.js'
@@ -64,6 +70,7 @@ module.exports = function( grunt ) {
 	grunt.loadNpmTasks( 'grunt-contrib-concat' );
 	grunt.loadNpmTasks( 'grunt-contrib-watch' );
 	grunt.loadNpmTasks( 'grunt-contrib-qunit' );
-	grunt.registerTask( 'default', [ 'jshint', 'uglify:js', 'concat:js' ] );
+	grunt.loadNpmTasks( 'grunt-explainjs' );
+	grunt.registerTask( 'default', [ 'jshint', 'uglify:js', 'concat:js', 'explainjs' ] );
 	grunt.registerTask( 'test', [ 'qunit:all' ] );
 };
