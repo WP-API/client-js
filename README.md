@@ -91,6 +91,12 @@ wp.api.models.Posts.defaults
  * title: null
 ```
 
+Each model and collection contains a list of methods the corrosponding endpoint supports. For example, models created from `wp.api.models.Posts` have a method array of:
+
+```
+["GET", "POST", "PUT", "PATCH", "DELETE"]
+```
+
 Each model and collection contains a list of options the corrosponding endpoint accepts (passed as a second parameter), for example `wp.api.collections.Posts.options`:
 
 ```
