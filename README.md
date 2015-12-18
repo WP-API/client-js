@@ -1,9 +1,9 @@
-Backbone library for WP-API
+Backbone library for the WordPress REST API or "WP-API"
 ==============
 
 ## Summary
 
-This library provides an interface for the [WP REST API](https://github.com/WP-API/WP-API) for WordPress by creating Backbone Models and Collections for all endpoints in the API.
+This library provides an interface for the [WP REST API](https://github.com/WP-API/WP-API) by providing Backbone Models and Collections for all endpoints in the API.
 
 ## Using
 
