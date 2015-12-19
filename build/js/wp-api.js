@@ -561,10 +561,11 @@
 			schemaRoot                 = wp.api.apiRoot.replace( wp.api.utils.getRootUrl(), '' ),
 			loadingObjects             = {};
 
+		/**
+		 * Tracking objects for models and collections.
+		 */
 		loadingObjects.models      = {};
 		loadingObjects.collections = {};
-
-
 
 		_.each( model.get( 'routes' ), function( route, index ) {
 			// Skip the schema root if included in the schema.
@@ -581,7 +582,9 @@
 					modelRoutes.push( { index: index, route: route } );
 				} else {
 					// Collections end in a name.
-					collectionRoutes.push( { index: index, route: route } );
+					if ( ! index.endsWith( 'me' ) ) {
+						collectionRoutes.push( { index: index, route: route } );
+					}
 				}
 			}
 		} );
