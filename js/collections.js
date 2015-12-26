@@ -1,5 +1,5 @@
-/* global WP_API_Settings:false */
-(function( wp, WP_API_Settings, Backbone, _, window, undefined ) {
+/* global wpApiSettings:false */
+(function( wp, wpApiSettings, Backbone, _, window, undefined ) {
 
 	'use strict';
 
@@ -38,13 +38,15 @@
 			 * @returns {*}.
 			 */
 			sync: function( method, model, options ) {
-				options = options || {};
-				var beforeSend = options.beforeSend,
+				var beforeSend, success,
 					self = this;
 
-				if ( 'undefined' !== typeof WP_API_Settings.nonce ) {
+				options    = options || {};
+				beforeSend = options.beforeSend;
+
+				if ( 'undefined' !== typeof wpApiSettings.nonce ) {
 					options.beforeSend = function( xhr ) {
-						xhr.setRequestHeader( 'X-WP-Nonce', WP_API_Settings.nonce );
+						xhr.setRequestHeader( 'X-WP-Nonce', wpApiSettings.nonce );
 
 						if ( beforeSend ) {
 							return beforeSend.apply( self, arguments );
@@ -69,12 +71,12 @@
 						self.state.currentPage = options.data.page - 1;
 					}
 
-					var success = options.success;
+					success = options.success;
 					options.success = function( data, textStatus, request ) {
 						self.state.totalPages = parseInt( request.getResponseHeader( 'x-wp-totalpages' ), 10 );
 						self.state.totalObjects = parseInt( request.getResponseHeader( 'x-wp-total' ), 10 );
 
-						if ( self.state.currentPage === null ) {
+						if ( null === self.state.currentPage ) {
 							self.state.currentPage = 1;
 						} else {
 							self.state.currentPage++;
@@ -106,7 +108,7 @@
 						return false;
 					}
 
-					if ( this.state.currentPage === null || this.state.currentPage <= 1 ) {
+					if ( null === this.state.currentPage || this.state.currentPage <= 1 ) {
 						options.data.page = 2;
 					} else {
 						options.data.page = this.state.currentPage + 1;
@@ -122,9 +124,9 @@
 			 * @returns null|boolean.
 			 */
 			hasMore: function() {
-				if ( this.state.totalPages === null ||
-					 this.state.totalObjects === null ||
-					 this.state.currentPage === null ) {
+				if ( null === this.state.totalPages ||
+					 null === this.state.totalObjects ||
+					 null === this.state.currentPage ) {
 					return null;
 				} else {
 					return ( this.state.currentPage < this.state.totalPages );
@@ -133,4 +135,4 @@
 		}
 	);
 
-})( wp, WP_API_Settings, Backbone, _, window );
+})( wp, wpApiSettings, Backbone, _, window );

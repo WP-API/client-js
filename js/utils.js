@@ -2,18 +2,20 @@
 
 	'use strict';
 
+	var pad, r;
+
 	window.wp = window.wp || {};
 	wp.api = wp.api || {};
 	wp.api.utils = wp.api.utils || {};
 
 	/**
-	 * ECMAScript 5 shim, from MDN.
+	 * ECMAScript 5 shim, adapted from MDN.
 	 * @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString
 	 */
 	if ( ! Date.prototype.toISOString ) {
-		var pad = function( number ) {
-			var r = String( number );
-			if ( r.length === 1 ) {
+		pad = function( number ) {
+			r = String( number );
+			if ( 1 === r.length ) {
 				r = '0' + r;
 			}
 
@@ -47,6 +49,7 @@
 		// implementations could be faster.
 		//              1 YYYY                2 MM       3 DD           4 HH    5 mm       6 ss        7 msec        8 Z 9 ±    10 tzHH    11 tzmm
 		if ( ( struct = /^(\d{4}|[+\-]\d{6})(?:-(\d{2})(?:-(\d{2}))?)?(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{3}))?)?(?:(Z)|([+\-])(\d{2})(?::(\d{2}))?)?)?$/.exec( date ) ) ) {
+
 			// Avoid NaN timestamps caused by “undefined” values being passed to Date.UTC.
 			for ( i = 0; ( k = numericKeys[i] ); ++i ) {
 				struct[k] = +struct[k] || 0;
@@ -56,10 +59,10 @@
 			struct[2] = ( +struct[2] || 1 ) - 1;
 			struct[3] = +struct[3] || 1;
 
-			if ( struct[8] !== 'Z' && struct[9] !== undefined ) {
+			if ( 'Z' !== struct[8]  && undefined !== struct[9] ) {
 				minutesOffset = struct[10] * 60 + struct[11];
 
-				if ( struct[9] === '+' ) {
+				if ( '+' === struct[9] ) {
 					minutesOffset = 0 - minutesOffset;
 				}
 			}
@@ -100,15 +103,17 @@
 	 *                       Example route `/a/b/c`: part 1 is `c`, part 2 is `b`, part 3 is `a`.
 	 */
 	wp.api.utils.extractRoutePart = function( route, part ) {
+		var routeParts;
+
 		part  = part || 1;
 
 		// Remove versions string from route to avoid returning it.
 		route = route.replace( wp.api.versionString, '' );
-		var routeParts = route.split( '/' ).reverse();
-			if ( _.isUndefined( routeParts[ --part ] ) ) {
-				return '';
-			}
-			return routeParts[ part ];
+		routeParts = route.split( '/' ).reverse();
+		if ( _.isUndefined( routeParts[ --part ] ) ) {
+			return '';
+		}
+		return routeParts[ part ];
 	};
 
 	/**
