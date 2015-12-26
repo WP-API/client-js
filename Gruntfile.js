@@ -57,13 +57,22 @@ module.exports = function( grunt ) {
 				'js/*.js'
 			],
 			tasks: [ 'jshint', 'uglify:js', 'concat:js' ]
-		}
+		},
+		jscs: {
+			src: "js/*.js",
+				options: {
+					config: ".jscsrc",
+					verbose: true,
+					preset: "wordpress"
+				}
+			}
 	});
 	grunt.loadNpmTasks( 'grunt-contrib-jshint' );
 	grunt.loadNpmTasks( 'grunt-contrib-uglify' );
 	grunt.loadNpmTasks( 'grunt-contrib-concat' );
 	grunt.loadNpmTasks( 'grunt-contrib-watch' );
 	grunt.loadNpmTasks( 'grunt-contrib-qunit' );
-	grunt.registerTask( 'default', [ 'jshint', 'uglify:js', 'concat:js' ] );
+	grunt.loadNpmTasks( 'grunt-jscs' );
+	grunt.registerTask( 'default', [ 'jshint', 'jscs', 'uglify:js', 'concat:js' ] );
 	grunt.registerTask( 'test', [ 'qunit:all' ] );
 };
