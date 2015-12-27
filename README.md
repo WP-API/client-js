@@ -122,8 +122,8 @@ postsCollection.fetch();
 to get the last 25 posts:
 
 ```
-var postsCollection = new wp.api.collections.Posts( {}. { per_page: '25' } );
-postsCollection.fetch();
+var postsCollection = new wp.api.collections.Posts();
+postsCollection.fetch( { data: { per_page: 25 } } );
 ```
 
 All collections support pagination automatically, and you can get the next page of results using `more`:
