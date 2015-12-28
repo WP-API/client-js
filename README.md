@@ -112,6 +112,8 @@ wp.api.collections.Posts.options
  * status
 ```
 
+### Some example Collection uses:
+
 to get the last 10 posts:
 
 ```
@@ -122,8 +124,13 @@ postsCollection.fetch();
 to get the last 25 posts:
 
 ```
-var postsCollection = new wp.api.collections.Posts();
 postsCollection.fetch( { data: { per_page: 25 } } );
+```
+
+use filter to change the order & orderby options:
+
+```
+postsCollection.fetch( { data: { 'filter[orderby]': 'title', 'filter[order]': 'ASC' } } );
 ```
 
 All collections support pagination automatically, and you can get the next page of results using `more`:
