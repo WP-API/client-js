@@ -21,7 +21,7 @@ before_script:
 
 script:
     - $DEV_LIB_PATH/travis.script.sh
-    - grunt qunit
+    - grunt
 
 after_script:
     - $DEV_LIB_PATH/travis.after_script.sh
