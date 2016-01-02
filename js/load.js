@@ -11,7 +11,8 @@
 	/**
 	 * Initialize the wp-api, optionally passing the API root.
 	 *
-	 * @param {string} apiRoot The api root. Optional, defaults to wpApiSettings.root.
+	 * @param {string} [apiRoot] The api root. Optional, defaults to wpApiSettings.root.
+	 * @param {string} [versionString] The version string. Optional, defaults to wpApiSettings.root.
 	 */
 	wp.api.init = function( apiRoot, versionString ) {
 		var schemaModel,
