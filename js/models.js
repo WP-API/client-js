@@ -193,8 +193,23 @@
 	wp.api.models.Schema = wp.api.WPApiBaseModel.extend(
 		/** @lends Schema.prototype  */
 		{
+			defaults: {
+				_links: {},
+				namespace: null,
+				routes: {}
+			},
+
+			initialize: function( attributes, options ) {
+				var model = this;
+
+				wp.api.WPApiBaseModel.prototype.initialize.call( model, attributes, options );
+
+				model.apiRoot = options.apiRoot || wpApiSettings.root;
+				model.versionString = options.versionString || wpApiSettings.versionString;
+			},
+
 			url: function() {
-				return wpApiSettings.root + wp.api.versionString;
+				return this.apiRoot + this.versionString;
 			}
 		}
 	);

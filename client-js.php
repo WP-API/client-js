@@ -13,7 +13,11 @@ function json_api_client_js() {
 		wp_register_script( 'wp-api', $src, array( 'jquery', 'underscore', 'backbone' ), '1.0', true );
 	}
 
-	$settings = array( 'root' => esc_url_raw( get_rest_url() ), 'nonce' => wp_create_nonce( 'wp_rest' ) );
+	$settings = array(
+		'root' => esc_url_raw( get_rest_url() ),
+		'nonce' => wp_create_nonce( 'wp_rest' ),
+		'versionString' => 'wp/v2/',
+	);
 	wp_localize_script( 'wp-api', 'wpApiSettings', $settings );
 
 }
