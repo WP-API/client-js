@@ -16,7 +16,6 @@ function json_api_client_js() {
 	$settings = array( 'root' => esc_url_raw( get_rest_url() ), 'nonce' => wp_create_nonce( 'wp_rest' ) );
 	wp_localize_script( 'wp-api', 'wpApiSettings', $settings );
 
-	wp_enqueue_script( 'wp-api' );
 }
 
 if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) {
