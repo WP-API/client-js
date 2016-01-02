@@ -191,7 +191,7 @@
 	 * API Schema model. Contains meta information about the API.
 	 */
 	wp.api.models.Schema = wp.api.WPApiBaseModel.extend(
-		/** @lends Shema.prototype  */
+		/** @lends Schema.prototype  */
 		{
 			url: function() {
 				return wpApiSettings.root + wp.api.versionString;
