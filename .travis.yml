@@ -1,0 +1,27 @@
+sudo: false
+
+language:
+    - php
+    - node_js
+
+php:
+    - 5.6
+
+node_js:
+    - 0.10
+
+env:
+    - WP_VERSION=latest WP_MULTISITE=0
+
+before_script:
+    - export DEV_LIB_PATH=dev-lib
+    - if [ ! -e "$DEV_LIB_PATH" ] && [ -L .travis.yml ]; then export DEV_LIB_PATH=$( dirname $( readlink .travis.yml ) ); fi
+    - source $DEV_LIB_PATH/travis.before_script.sh
+    - npm install
+
+script:
+    - $DEV_LIB_PATH/travis.script.sh
+    - grunt
+
+after_script:
+    - $DEV_LIB_PATH/travis.after_script.sh

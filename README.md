@@ -9,13 +9,13 @@ This library provides an interface for the [WP REST API](https://github.com/WP-A
 
 Activate the WP-API plugin. Enqueue the script directly:
 
-```
+```php
 wp_enqueue_script( 'wp-api' );
 ```
 
 or as a dependency for your script:
 
-```
+```php
 wp_enqueue_script( 'my_script', 'path_to_my_script', array( 'wp-api' ) );
 ```
 
