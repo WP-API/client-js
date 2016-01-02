@@ -59,11 +59,11 @@ module.exports = function( grunt ) {
 			tasks: [ 'jshint', 'uglify:js', 'concat:js' ]
 		},
 		jscs: {
-			src: "js/*.js",
+			src: 'js/*.js',
 				options: {
-					config: ".jscsrc",
+					config: '.jscsrc',
 					verbose: true,
-					preset: "wordpress"
+					preset: 'wordpress'
 				}
 			}
 	});

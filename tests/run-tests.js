@@ -1,7 +1,7 @@
-/* global console, WP_API_Settings:false */
+/* global console, wpApiSettings:false */
 // Suppress warning about parse function's unused "options" argument:
 /* jshint unused:false */
-(function( wp, WP_API_Settings, window, undefined ) {
+(function( wp, wpApiSettings, window, undefined ) {
 	/**
 	 * Test the endpoints.
 	 *
@@ -74,4 +74,4 @@
 		postTests();
 
 	} );
-})( wp, WP_API_Settings, window );
+})( wp, wpApiSettings, window );

@@ -1,7 +1,8 @@
-/* global WP_API_Settings:false */
+/* global wpApiSettings:false */
+
 // Suppress warning about parse function's unused "options" argument:
 /* jshint unused:false */
-(function( wp, WP_API_Settings, Backbone, window, undefined ) {
+(function( wp, wpApiSettings, Backbone, window, undefined ) {
 
 	'use strict';
 
@@ -10,14 +11,14 @@
 	 *
 	 * @type {string[]}.
 	 */
-	var parseable_dates = [ 'date', 'modified', 'date_gmt', 'modified_gmt' ];
+	var parseableDates = [ 'date', 'modified', 'date_gmt', 'modified_gmt' ],
 
 	/**
 	 * Mixin for all content that is time stamped.
 	 *
 	 * @type {{toJSON: toJSON, parse: parse}}.
 	 */
-	var TimeStampedMixin = {
+	TimeStampedMixin = {
 		/**
 		 * Serialize the entity pre-sync.
 		 *
@@ -27,7 +28,7 @@
 			var attributes = _.clone( this.attributes );
 
 			// Serialize Date objects back into 8601 strings.
-			_.each( parseable_dates, function( key ) {
+			_.each( parseableDates, function( key ) {
 				if ( key in attributes ) {
 					attributes[key] = attributes[key].toISOString();
 				}
@@ -43,14 +44,15 @@
 		 * @returns {*}.
 		 */
 		parse: function( response ) {
+			var timestamp;
 
 			// Parse dates into native Date objects.
-			_.each( parseable_dates, function ( key ) {
+			_.each( parseableDates, function( key ) {
 				if ( ! ( key in response ) ) {
 					return;
 				}
 
-				var timestamp = wp.api.utils.parseISO8601( response[key] );
+				timestamp = wp.api.utils.parseISO8601( response[key] );
 				response[key] = new Date( timestamp );
 			});
 
@@ -61,14 +63,14 @@
 
 			return response;
 		}
-	};
+	},
 
 	/**
 	 * Mixin for all hierarchical content types such as posts.
 	 *
 	 * @type {{parent: parent}}.
 	 */
-	var HierarchicalMixin = {
+	HierarchicalMixin = {
 		/**
 		 * Get parent object.
 		 *
@@ -76,14 +78,14 @@
 		 */
 		parent: function() {
 
-			var object, parent = this.get( 'parent' );
+			var object,
+				parent      = this.get( 'parent' ),
+				parentModel = this;
 
 			// Return null if we don't have a parent.
-			if ( parent === 0 ) {
+			if ( 0 === parent ) {
 				return null;
 			}
-
-			var parentModel = this;
 
 			if ( 'undefined' !== typeof this.parentModel ) {
 				/**
@@ -126,16 +128,18 @@
 			 * @returns {*}.
 			 */
 			sync: function( method, model, options ) {
+				var beforeSend;
+
 				options = options || {};
 
-				if ( ! _.isUndefined( WP_API_Settings.nonce ) && ! _.isNull( WP_API_Settings.nonce ) ) {
-					var beforeSend = options.beforeSend;
+				if ( ! _.isUndefined( wpApiSettings.nonce ) && ! _.isNull( wpApiSettings.nonce ) ) {
+					beforeSend = options.beforeSend;
 
 					// @todo enable option for jsonp endpoints
 					// options.dataType = 'jsonp';
 
 					options.beforeSend = function( xhr ) {
-						xhr.setRequestHeader( 'X-WP-Nonce', WP_API_Settings.nonce );
+						xhr.setRequestHeader( 'X-WP-Nonce', wpApiSettings.nonce );
 
 						if ( beforeSend ) {
 							return beforeSend.apply( this, arguments );
@@ -150,11 +154,14 @@
 			 * Save is only allowed when the PUT OR POST methods are available for the endpoint.
 			 */
 			save: function( attrs, options ) {
+
 				// Do we have the put method, then execute the save.
 				if ( _.contains( this.methods, 'PUT' ) || _.contains( this.methods, 'POST' ) ) {
+
 					// Proxy the call to the original save function.
 					return Backbone.Model.prototype.save.call( this, attrs, options );
 				} else {
+
 					// Otherwise bail, disallowing action.
 					return false;
 				}
@@ -164,11 +171,14 @@
 			 * Delete is only allowed when the DELETE method is available for the endpoint.
 			 */
 			destroy: function( options ) {
+
 				// Do we have the DELETE method, then execute the destroy.
 				if ( _.contains( this.methods, 'DELETE' ) ) {
+
 					// Proxy the call to the original save function.
 					return Backbone.Model.prototype.destroy.call( this, options );
 				} else {
+
 					// Otherwise bail, disallowing action.
 					return false;
 				}
@@ -184,10 +194,8 @@
 		/** @lends Shema.prototype  */
 		{
 			url: function() {
-				return WP_API_Settings.root + wp.api.versionString;
+				return wpApiSettings.root + wp.api.versionString;
 			}
 		}
 	);
-
-
-})( wp, WP_API_Settings, Backbone, window );
+})( wp, wpApiSettings, Backbone, window );
