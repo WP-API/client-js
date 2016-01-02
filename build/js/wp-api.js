@@ -18,18 +18,20 @@
 
 	'use strict';
 
+	var pad, r;
+
 	window.wp = window.wp || {};
 	wp.api = wp.api || {};
 	wp.api.utils = wp.api.utils || {};
 
 	/**
-	 * ECMAScript 5 shim, from MDN.
+	 * ECMAScript 5 shim, adapted from MDN.
 	 * @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString
 	 */
 	if ( ! Date.prototype.toISOString ) {
-		var pad = function( number ) {
-			var r = String( number );
-			if ( r.length === 1 ) {
+		pad = function( number ) {
+			r = String( number );
+			if ( 1 === r.length ) {
 				r = '0' + r;
 			}
 
@@ -63,6 +65,7 @@
 		// implementations could be faster.
 		//              1 YYYY                2 MM       3 DD           4 HH    5 mm       6 ss        7 msec        8 Z 9 ±    10 tzHH    11 tzmm
 		if ( ( struct = /^(\d{4}|[+\-]\d{6})(?:-(\d{2})(?:-(\d{2}))?)?(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{3}))?)?(?:(Z)|([+\-])(\d{2})(?::(\d{2}))?)?)?$/.exec( date ) ) ) {
+
 			// Avoid NaN timestamps caused by “undefined” values being passed to Date.UTC.
 			for ( i = 0; ( k = numericKeys[i] ); ++i ) {
 				struct[k] = +struct[k] || 0;
@@ -72,10 +75,10 @@
 			struct[2] = ( +struct[2] || 1 ) - 1;
 			struct[3] = +struct[3] || 1;
 
-			if ( struct[8] !== 'Z' && struct[9] !== undefined ) {
+			if ( 'Z' !== struct[8]  && undefined !== struct[9] ) {
 				minutesOffset = struct[10] * 60 + struct[11];
 
-				if ( struct[9] === '+' ) {
+				if ( '+' === struct[9] ) {
 					minutesOffset = 0 - minutesOffset;
 				}
 			}
@@ -116,15 +119,17 @@
 	 *                       Example route `/a/b/c`: part 1 is `c`, part 2 is `b`, part 3 is `a`.
 	 */
 	wp.api.utils.extractRoutePart = function( route, part ) {
+		var routeParts;
+
 		part  = part || 1;
 
 		// Remove versions string from route to avoid returning it.
 		route = route.replace( wp.api.versionString, '' );
-		var routeParts = route.split( '/' ).reverse();
-			if ( _.isUndefined( routeParts[ --part ] ) ) {
-				return '';
-			}
-			return routeParts[ part ];
+		routeParts = route.split( '/' ).reverse();
+		if ( _.isUndefined( routeParts[ --part ] ) ) {
+			return '';
+		}
+		return routeParts[ part ];
 	};
 
 	/**
@@ -148,10 +153,11 @@
 
 })( window );
 
-/* global WP_API_Settings:false */
+/* global wpApiSettings:false */
+
 // Suppress warning about parse function's unused "options" argument:
 /* jshint unused:false */
-(function( wp, WP_API_Settings, Backbone, window, undefined ) {
+(function( wp, wpApiSettings, Backbone, window, undefined ) {
 
 	'use strict';
 
@@ -160,14 +166,14 @@
 	 *
 	 * @type {string[]}.
 	 */
-	var parseable_dates = [ 'date', 'modified', 'date_gmt', 'modified_gmt' ];
+	var parseableDates = [ 'date', 'modified', 'date_gmt', 'modified_gmt' ],
 
 	/**
 	 * Mixin for all content that is time stamped.
 	 *
 	 * @type {{toJSON: toJSON, parse: parse}}.
 	 */
-	var TimeStampedMixin = {
+	TimeStampedMixin = {
 		/**
 		 * Serialize the entity pre-sync.
 		 *
@@ -177,7 +183,7 @@
 			var attributes = _.clone( this.attributes );
 
 			// Serialize Date objects back into 8601 strings.
-			_.each( parseable_dates, function( key ) {
+			_.each( parseableDates, function( key ) {
 				if ( key in attributes ) {
 					attributes[key] = attributes[key].toISOString();
 				}
@@ -193,14 +199,15 @@
 		 * @returns {*}.
 		 */
 		parse: function( response ) {
+			var timestamp;
 
 			// Parse dates into native Date objects.
-			_.each( parseable_dates, function ( key ) {
+			_.each( parseableDates, function( key ) {
 				if ( ! ( key in response ) ) {
 					return;
 				}
 
-				var timestamp = wp.api.utils.parseISO8601( response[key] );
+				timestamp = wp.api.utils.parseISO8601( response[key] );
 				response[key] = new Date( timestamp );
 			});
 
@@ -211,14 +218,14 @@
 
 			return response;
 		}
-	};
+	},
 
 	/**
 	 * Mixin for all hierarchical content types such as posts.
 	 *
 	 * @type {{parent: parent}}.
 	 */
-	var HierarchicalMixin = {
+	HierarchicalMixin = {
 		/**
 		 * Get parent object.
 		 *
@@ -226,14 +233,14 @@
 		 */
 		parent: function() {
 
-			var object, parent = this.get( 'parent' );
+			var object,
+				parent      = this.get( 'parent' ),
+				parentModel = this;
 
 			// Return null if we don't have a parent.
-			if ( parent === 0 ) {
+			if ( 0 === parent ) {
 				return null;
 			}
-
-			var parentModel = this;
 
 			if ( 'undefined' !== typeof this.parentModel ) {
 				/**
@@ -276,16 +283,18 @@
 			 * @returns {*}.
 			 */
 			sync: function( method, model, options ) {
+				var beforeSend;
+
 				options = options || {};
 
-				if ( ! _.isUndefined( WP_API_Settings.nonce ) && ! _.isNull( WP_API_Settings.nonce ) ) {
-					var beforeSend = options.beforeSend;
+				if ( ! _.isUndefined( wpApiSettings.nonce ) && ! _.isNull( wpApiSettings.nonce ) ) {
+					beforeSend = options.beforeSend;
 
 					// @todo enable option for jsonp endpoints
 					// options.dataType = 'jsonp';
 
 					options.beforeSend = function( xhr ) {
-						xhr.setRequestHeader( 'X-WP-Nonce', WP_API_Settings.nonce );
+						xhr.setRequestHeader( 'X-WP-Nonce', wpApiSettings.nonce );
 
 						if ( beforeSend ) {
 							return beforeSend.apply( this, arguments );
@@ -300,11 +309,14 @@
 			 * Save is only allowed when the PUT OR POST methods are available for the endpoint.
 			 */
 			save: function( attrs, options ) {
+
 				// Do we have the put method, then execute the save.
 				if ( _.contains( this.methods, 'PUT' ) || _.contains( this.methods, 'POST' ) ) {
+
 					// Proxy the call to the original save function.
 					return Backbone.Model.prototype.save.call( this, attrs, options );
 				} else {
+
 					// Otherwise bail, disallowing action.
 					return false;
 				}
@@ -314,11 +326,14 @@
 			 * Delete is only allowed when the DELETE method is available for the endpoint.
 			 */
 			destroy: function( options ) {
+
 				// Do we have the DELETE method, then execute the destroy.
 				if ( _.contains( this.methods, 'DELETE' ) ) {
+
 					// Proxy the call to the original save function.
 					return Backbone.Model.prototype.destroy.call( this, options );
 				} else {
+
 					// Otherwise bail, disallowing action.
 					return false;
 				}
@@ -334,16 +349,14 @@
 		/** @lends Shema.prototype  */
 		{
 			url: function() {
-				return WP_API_Settings.root + wp.api.versionString;
+				return wpApiSettings.root + wp.api.versionString;
 			}
 		}
 	);
+})( wp, wpApiSettings, Backbone, window );
 
-
-})( wp, WP_API_Settings, Backbone, window );
-
-/* global WP_API_Settings:false */
-(function( wp, WP_API_Settings, Backbone, _, window, undefined ) {
+/* global wpApiSettings:false */
+(function( wp, wpApiSettings, Backbone, _, window, undefined ) {
 
 	'use strict';
 
@@ -382,13 +395,15 @@
 			 * @returns {*}.
 			 */
 			sync: function( method, model, options ) {
-				options = options || {};
-				var beforeSend = options.beforeSend,
+				var beforeSend, success,
 					self = this;
 
-				if ( 'undefined' !== typeof WP_API_Settings.nonce ) {
+				options    = options || {};
+				beforeSend = options.beforeSend;
+
+				if ( 'undefined' !== typeof wpApiSettings.nonce ) {
 					options.beforeSend = function( xhr ) {
-						xhr.setRequestHeader( 'X-WP-Nonce', WP_API_Settings.nonce );
+						xhr.setRequestHeader( 'X-WP-Nonce', wpApiSettings.nonce );
 
 						if ( beforeSend ) {
 							return beforeSend.apply( self, arguments );
@@ -413,12 +428,12 @@
 						self.state.currentPage = options.data.page - 1;
 					}
 
-					var success = options.success;
+					success = options.success;
 					options.success = function( data, textStatus, request ) {
 						self.state.totalPages = parseInt( request.getResponseHeader( 'x-wp-totalpages' ), 10 );
 						self.state.totalObjects = parseInt( request.getResponseHeader( 'x-wp-total' ), 10 );
 
-						if ( self.state.currentPage === null ) {
+						if ( null === self.state.currentPage ) {
 							self.state.currentPage = 1;
 						} else {
 							self.state.currentPage++;
@@ -450,7 +465,7 @@
 						return false;
 					}
 
-					if ( this.state.currentPage === null || this.state.currentPage <= 1 ) {
+					if ( null === this.state.currentPage || this.state.currentPage <= 1 ) {
 						options.data.page = 2;
 					} else {
 						options.data.page = this.state.currentPage + 1;
@@ -466,9 +481,9 @@
 			 * @returns null|boolean.
 			 */
 			hasMore: function() {
-				if ( this.state.totalPages === null ||
-					 this.state.totalObjects === null ||
-					 this.state.currentPage === null ) {
+				if ( null === this.state.totalPages ||
+					 null === this.state.totalObjects ||
+					 null === this.state.currentPage ) {
 					return null;
 				} else {
 					return ( this.state.currentPage < this.state.totalPages );
@@ -477,12 +492,14 @@
 		}
 	);
 
-})( wp, WP_API_Settings, Backbone, _, window );
+})( wp, wpApiSettings, Backbone, _, window );
 
-/* global WP_API_Settings */
+/* global wpApiSettings */
 (function( window, undefined ) {
 
 	'use strict';
+
+	var endpointLoading;
 
 	window.wp = window.wp || {};
 	wp.api = wp.api || {};
@@ -490,21 +507,22 @@
 	/**
 	 * Initialize the wp-api, optionally passing the API root.
 	 *
-	 * @param {string} apiRoot The api root. Optional, defaults to WP_API_Settings.root.
+	 * @param {string} apiRoot The api root. Optional, defaults to wpApiSettings.root.
 	 */
 	wp.api.init = function( apiRoot, versionString ) {
+		var schemaModel,
+			apiConstructor;
 
-		wp.api.apiRoot       = apiRoot || WP_API_Settings.root;
+		wp.api.apiRoot       = apiRoot || wpApiSettings.root;
 		wp.api.versionString = versionString || wp.api.versionString;
-		WP_API_Settings.root = wp.api.apiRoot;
+		wpApiSettings.root = wp.api.apiRoot;
 
 		/**
 		 * Construct and fetch the API schema.
 		 *
-		 * Used a session Storage cached version if available.
+		 * Use a session Storage cached version if available.
 		 */
-		var schemaModel,
-			apiConstructor = new jQuery.Deferred();
+		apiConstructor = new jQuery.Deferred();
 
 		// Used a cached copy of the schema model if available.
 		if ( ! _.isUndefined( sessionStorage ) && sessionStorage.getItem( 'wp-api-schema-model' + apiRoot ) ) {
@@ -515,6 +533,7 @@
 			// Contruct the models and collections from the Schema model.
 			wp.api.constructFromSchema( schemaModel, apiConstructor );
 		} else {
+
 			// Construct a new Schema model.
 			schemaModel = new wp.api.models.Schema(),
 
@@ -526,16 +545,17 @@
 				 * on the schema model data.
 				 */
 				success: function( newSchemaModel ) {
+
 					// Store a copy of the schema model in the session cache if available.
 					if ( ! _.isUndefined( sessionStorage ) ) {
 						sessionStorage.setItem( 'wp-api-schema-model' + apiRoot, JSON.stringify( newSchemaModel ) );
 					}
+
 					// Contruct the models and collections from the Schema model.
 					wp.api.constructFromSchema( newSchemaModel, apiConstructor );
 				},
-				/**
-				 * @todo Handle the error condition.
-				 */
+
+				// @todo Handle the error condition.
 				error: function() {
 				}
 			} );
@@ -568,6 +588,7 @@
 		loadingObjects.collections = {};
 
 		_.each( model.get( 'routes' ), function( route, index ) {
+
 			// Skip the schema root if included in the schema.
 			if ( index !== wp.api.versionString &&
 				 index !== schemaRoot &&
@@ -581,6 +602,7 @@
 				if ( index.endsWith( '+)' ) ) {
 					modelRoutes.push( { index: index, route: route } );
 				} else {
+
 					// Collections end in a name.
 					if ( ! index.endsWith( 'me' ) ) {
 						collectionRoutes.push( { index: index, route: route } );
@@ -605,6 +627,7 @@
 			if ( '' !== parentName && parentName !== routeName ) {
 				modelClassName = wp.api.utils.capitalize( parentName ) + wp.api.utils.capitalize( routeName );
 				loadingObjects.models[ modelClassName ] = wp.api.WPApiBaseModel.extend( {
+
 					// Function that returns a constructed url based on the parent and id.
 					url: function() {
 						var url = wp.api.apiRoot + wp.api.versionString +
@@ -615,15 +638,19 @@
 						}
 						return url;
 					},
+
 					// Incldue a refence to the original route object.
 					route: modelRoute,
+
 					// Include the array of route methods for easy reference.
 					methods: modelRoute.route.methods
 				} );
 			} else {
+
 				// This is a model without a parent in its route
 				modelClassName = wp.api.utils.capitalize( routeName );
 				loadingObjects.models[ modelClassName ] = wp.api.WPApiBaseModel.extend( {
+
 					// Function that returns a constructed url based on the id.
 					url: function() {
 						var url = wp.api.apiRoot + wp.api.versionString + routeName;
@@ -632,8 +659,10 @@
 						}
 						return url;
 					},
+
 					// Incldue a refence to the original route object.
 					route: modelRoute,
+
 					// Include the array of route methods for easy reference.
 					methods: modelRoute.route.methods
 				} );
@@ -662,6 +691,7 @@
 
 				collectionClassName = wp.api.utils.capitalize( parentName ) + wp.api.utils.capitalize( routeName );
 				loadingObjects.collections[ collectionClassName ] = wp.api.WPApiBaseCollection.extend( {
+
 					// Function that returns a constructed url pased on the parent.
 					url: function() {
 						return wp.api.apiRoot + wp.api.versionString +
@@ -669,23 +699,30 @@
 						routeName;
 					},
 					model: loadingObjects.models[collectionClassName],
+
 					// Incldue a refence to the original route object.
 					route: collectionRoute,
+
 					// Include the array of route methods for easy reference.
 					methods: collectionRoute.route.methods
 				} );
 			} else {
+
 				// This is a collection without a parent in its route.
 				collectionClassName = wp.api.utils.capitalize( routeName );
 				loadingObjects.collections[ collectionClassName ] = wp.api.WPApiBaseCollection.extend( {
+
 					// For the url of a root level collection, use a string.
 					url: wp.api.apiRoot + wp.api.versionString + routeName,
+
 							// Incldue a refence to the original route object.
 							route: collectionRoute,
+
 							// Include the array of route methods for easy reference.
 							methods: collectionRoute.route.methods
 						} );
 			}
+
 			// Add defaults to the new model, pulled form the endpoint
 			wp.api.decorateFromRoute( collectionRoute.route.endpoints, loadingObjects.collections[ collectionClassName ] );
 		} );
@@ -693,8 +730,6 @@
 		_.defer( function() {
 			apiConstructor.resolve( loadingObjects );
 		} );
-
-
 	};
 
 	/**
@@ -704,12 +739,13 @@
 	 * @param {Object} modelInstance  An instance of the model (or collection)
 	 *                                to add the defaults to.
 	 */
-	wp.api.decorateFromRoute = function ( routeEndpoints, modelInstance ) {
+	wp.api.decorateFromRoute = function( routeEndpoints, modelInstance ) {
 
 		/**
 		 * Build the defaults based on route endpoint data.
 		 */
 		_.each( routeEndpoints, function( routeEndpoint ) {
+
 			// Add post and edit endpoints as model defaults.
 			if ( _.contains( routeEndpoint.methods, 'POST' ) || _.contains( routeEndpoint.methods, 'PUT' ) ) {
 
@@ -720,13 +756,16 @@
 					if ( _.isEmpty( modelInstance.defaults ) ) {
 						modelInstance.defaults = routeEndpoint.args;
 					} else {
+
 						// We already have defaults, merge these new args in.
 						modelInstance.defaults = _.union( routeEndpoint.args, modelInstance.defaults );
 					}
 				}
 			} else {
+
 				// Add GET method as model options.
 				if ( _.contains( routeEndpoint.methods, 'GET' ) ) {
+
 					// Add any non empty args, merging them into the defaults object.
 					if ( ! _.isEmpty( routeEndpoint.args ) ) {
 
@@ -734,6 +773,7 @@
 						if ( _.isEmpty( modelInstance.options ) ) {
 							modelInstance.options = routeEndpoint.args;
 						} else {
+
 							// We already have options, merge these new args in.
 							modelInstance.options = _.union( routeEndpoint.args, modelInstance.options );
 						}
@@ -745,13 +785,10 @@
 		} );
 
 		/**
-		 * Finish processing the defaults, assigning `defaults` if available,
-		 * otherwise null.
+		 * Finish processing the defaults, assigning `defaults` if available, otherwise null.
 		 *
 		 * @todo required arguments
-		 *
 		 */
-		//
 		_.each( modelInstance.defaults, function( theDefault, index ) {
 			if ( _.isUndefined( theDefault['default'] ) ) {
 				modelInstance.defaults[ index ] = null;
@@ -766,11 +803,12 @@
 	 */
 	wp.api.endpoints = new Backbone.Collection();
 
-	// wp.api.init returns a deferred promise that will resolve with the endpoint once it is completely parsed.
-	var endpointLoading = wp.api.init();
+	// The wp.api.init function returns a promise that will resolve with the endpoint once it is ready.
+	endpointLoading = wp.api.init();
 
 	// When the endpoint is loaded, complete the setup process.
 	endpointLoading.done( function( endpoint ) {
+
 		// Map the default endpoints, extending any already present items (including Schema model).
 		wp.api.models      = _.extend( endpoint.models, wp.api.models );
 		wp.api.collections = _.extend( endpoint.collections, wp.api.collections );
