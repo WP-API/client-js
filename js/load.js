@@ -39,7 +39,7 @@
 		} else {
 
 			// Construct a new Schema model.
-			schemaModel = new wp.api.models.Schema(),
+			schemaModel = new wp.api.models.Schema();
 
 			// Fetch the schema information from the API.
 			schemaModel.fetch( {
