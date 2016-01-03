@@ -259,7 +259,7 @@
 				// Map the default endpoints, extending any already present items (including Schema model).
 				wp.api.models      = _.extend( endpoint.get( 'models' ), wp.api.models );
 				wp.api.collections = _.extend( endpoint.get( 'collections' ), wp.api.collections );
-				deferred.resolve();
+				deferred.resolveWith( wp.api, [ endpoint ] );
 			} );
 			initializedDeferreds[ attributes.apiRoot + attributes.versionString ] = promise;
 		}
