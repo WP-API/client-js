@@ -262,6 +262,10 @@
 		/**
 		 * Mixin for all content that is time stamped.
 		 *
+		 * This mixin converts between mysql timestamps and JavaScript Dates when syncing a model
+		 * to or from the server. For example, a date stored as `2015-12-27T21:22:24` on the server
+		 * gets expanded to `Sun Dec 27 2015 14:22:24 GMT-0700 (MST)` when the model is fetched.
+		 *
 		 * @type {{toJSON: toJSON, parse: parse}}.
 		 */
 		TimeStampedMixin = {
@@ -306,15 +310,20 @@
 			}
 		},
 
+		/**
+		 * The author mixin adds a helper funtion to retrieve a models author user model.
+		 */
 		AuthorMixin = {
 
 			/**
-			 * Get a user model for, using the embedded user data, or fetching the user
+			 * Get a user model for an model's author.
+			 *
+			 * Uses the embedded user data if available, otherwises fetches the user
 			 * data from the server.
 			 *
 			 * @return {Object} user A backbone model representing the author user.
 			 */
-			getAuthorUser: function () {
+			getAuthorUser: function() {
 				var user, authorId, embeddeds, attributes,
 
 					// @todo skip saving this field when saving post.
