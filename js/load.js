@@ -38,7 +38,7 @@
 			if ( model.get( 'schema' ) ) {
 
 				// Use schema supplied as model attribute.
-				model.schemaModel.set( model.get( 'schema' ) );
+				model.schemaModel.set( model.schemaModel.parse( model.get( 'schema' ) ) );
 			} else if ( ! _.isUndefined( sessionStorage ) && sessionStorage.getItem( 'wp-api-schema-model' + model.get( 'apiRoot' ) + model.get( 'versionString' ) ) ) {
 
 				// Used a cached copy of the schema model if available.
@@ -244,11 +244,11 @@
 		args = args || {};
 		attributes.apiRoot = args.apiRoot || wpApiSettings.root;
 		attributes.versionString = args.versionString || wpApiSettings.versionString;
+		attributes.schema = args.schema || wpApiSettings.schema;
 
 		if ( ! initializedDeferreds[ attributes.apiRoot + attributes.versionString ] ) {
-			endpoint = wp.api.endpoints.findWhere( attributes );
+			endpoint = wp.api.endpoints.findWhere( { apiRoot: attributes.apiRoot, versionString: attributes.versionString } );
 			if ( ! endpoint ) {
-				attributes.schema = args.schema || null;
 				endpoint = new Endpoint( attributes );
 				wp.api.endpoints.add( endpoint );
 			}

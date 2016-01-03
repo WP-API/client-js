@@ -201,6 +201,7 @@
 
 			initialize: function( attributes, options ) {
 				var model = this;
+				options = options || {};
 
 				wp.api.WPApiBaseModel.prototype.initialize.call( model, attributes, options );
 
