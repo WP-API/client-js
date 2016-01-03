@@ -80,10 +80,10 @@
 		 * Iterate thru the routes, picking up models and collections to build. Builds two arrays,
 		 * one for models and one for collections.
 		 */
-		var modelRoutes                = [],
-			collectionRoutes           = [],
-			schemaRoot                 = wp.api.apiRoot.replace( wp.api.utils.getRootUrl(), '' ),
-			loadingObjects             = {};
+		var modelRoutes      = [],
+			collectionRoutes = [],
+			schemaRoot       = wp.api.apiRoot.replace( wp.api.utils.getRootUrl(), '' ),
+			loadingObjects   = {};
 
 		/**
 		 * Tracking objects for models and collections.
@@ -173,9 +173,11 @@
 			}
 
 			// Add defaults to the new model, pulled form the endpoint
-			wp.api.decorateFromRoute( modelRoute.route.endpoints, loadingObjects.models[ modelClassName ] );
+			wp.api.addDefaultsandOptionsFromSchema( modelRoute.route.endpoints, loadingObjects.models[ modelClassName ] );
 
-			// @todo add
+			// Add mixins and helpers for the model.
+			loadingObjects.models[ modelClassName ] = wp.api.addMixinsAndHelpers( loadingObjects.models[ modelClassName ] );
+
 		} );
 
 		/**
@@ -227,8 +229,8 @@
 						} );
 			}
 
-			// Add defaults to the new model, pulled form the endpoint
-			wp.api.decorateFromRoute( collectionRoute.route.endpoints, loadingObjects.collections[ collectionClassName ] );
+			// Add defaults to the new collection, pulled from the endpoint.
+			wp.api.addDefaultsandOptionsFromSchema( collectionRoute.route.endpoints, loadingObjects.collections[ collectionClassName ] );
 		} );
 
 		_.defer( function() {
@@ -237,13 +239,156 @@
 	};
 
 	/**
-	 * Add defaults to a model from a route's endpoints.
+	 * Add mixins and helpers to models depending on their defaults.
+	 *
+	 * @param {Backbone Model} model The model to attach helpers and mixins to.
+	 */
+	wp.api.addMixinsAndHelpers = function( model ) {
+
+		var hasDate = false;
+
+		// Exit if we don't have valid model defaults.
+		if ( _.isUndefined( model.defaults ) ) {
+			return;
+		}
+
+		/**
+		 * Array of parseable dates.
+		 *
+		 * @type {string[]}.
+		 */
+		var parseableDates = [ 'date', 'modified', 'date_gmt', 'modified_gmt' ],
+
+		/**
+		 * Mixin for all content that is time stamped.
+		 *
+		 * @type {{toJSON: toJSON, parse: parse}}.
+		 */
+		TimeStampedMixin = {
+			/**
+			 * Serialize the entity pre-sync.
+			 *
+			 * @returns {*}.
+			 */
+			toJSON: function() {
+				var attributes = _.clone( this.attributes );
+
+				// Serialize Date objects back into 8601 strings.
+				_.each( parseableDates, function( key ) {
+					if ( key in attributes ) {
+						attributes[ key ] = attributes[ key ].toISOString();
+					}
+				} );
+
+				return attributes;
+			},
+
+			/**
+			 * Unserialize the fetched response.
+			 *
+			 * @param {*} response.
+			 * @returns {*}.
+			 */
+			parse: function( response ) {
+				var timestamp;
+
+				// Parse dates into native Date objects.
+				_.each( parseableDates, function( key ) {
+					if ( ! ( key in response ) ) {
+						return;
+					}
+
+					timestamp = wp.api.utils.parseISO8601( response[ key ] );
+					response[ key ] = new Date( timestamp );
+				});
+
+				return response;
+			}
+		},
+
+		AuthorMixin = {
+
+			/**
+			 * Get a user model for, using the embedded user data, or fetching the user
+			 * data from the server.
+			 *
+			 * @return {Object} user A backbone model representing the author user.
+			 */
+			getAuthorUser: function () {
+				var user, authorId, embeddeds, attributes,
+
+					// @todo skip saving this field when saving post.
+					authorUser = this.get( 'authorUser' );
+
+				// Do we already have a stored user
+				if ( authorUser ) {
+					return authorUser;
+				}
+
+				authorId  = this.get( 'author' );
+				embeddeds = this.get( '_embedded' ) || {};
+
+				// Verify that we have a valied autor id.
+				if ( ! _.isNumber( authorId ) ) {
+					return null;
+				}
+
+				// If we have embedded author data, use that when constructing the user.
+				if ( embeddeds.author ) {
+					attributes = _.findWhere( embeddeds.author, { id: authorId } );
+				}
+
+				// Otherwise use the authorId.
+				if ( ! attributes ) {
+					attributes = { id: authorId };
+				}
+
+				// Create the new user model.
+				user = new wp.api.models.Users( attributes );
+
+				// If we didn’t have an embedded user, fetch the user data.
+				if ( ! user.get( 'name' ) ) {
+					user.fetch();
+				}
+
+				// Save the user to the model.
+				this.set( 'authorUser', user );
+
+				// Return the constructed user.
+				return user;
+			}
+		};
+
+		// Go thru the parsable date fields, if our model contains any of them it gets the TimeStampedMixin.
+		_.each( parseableDates, function( theDateKey ) {
+			if ( ! _.isUndefined( model.defaults[ theDateKey ] ) ) {
+				hasDate = true;
+			}
+		} );
+
+		// Add the TimeStampedMixin for models that contain a date field.
+		if ( hasDate ) {
+			model = model.extend( TimeStampedMixin );
+		}
+
+		// Add the AuthorMixin for models that contain an author.
+		if ( ! _.isUndefined( model.defaults.author ) ) {
+			model = model.extend( AuthorMixin );
+		}
+
+		return model;
+	};
+
+
+
+	/**
+	 * Add defaults and options to a model or collection from a route's endpoints.
 	 *
 	 * @param {array}  routeEndpoints Array of route endpoints.
-	 * @param {Object} modelInstance  An instance of the model (or collection)
+	 * @param {Object} modelOrCollectionInstance  An instance of the model (or collection)
 	 *                                to add the defaults to.
 	 */
-	wp.api.decorateFromRoute = function( routeEndpoints, modelInstance ) {
+	wp.api.addDefaultsandOptionsFromSchema = function( routeEndpoints, modelOrCollectionInstance ) {
 
 		/**
 		 * Build the defaults based on route endpoint data.
@@ -257,12 +402,12 @@
 				if ( ! _.isEmpty( routeEndpoint.args ) ) {
 
 					// Set as defauls if no defaults yet.
-					if ( _.isEmpty( modelInstance.defaults ) ) {
-						modelInstance.defaults = routeEndpoint.args;
+					if ( _.isEmpty( modelOrCollectionInstance.defaults ) ) {
+						modelOrCollectionInstance.defaults = routeEndpoint.args;
 					} else {
 
 						// We already have defaults, merge these new args in.
-						modelInstance.defaults = _.union( routeEndpoint.args, modelInstance.defaults );
+						modelOrCollectionInstance.defaults = _.union( routeEndpoint.args, modelOrCollectionInstance.defaults );
 					}
 				}
 			} else {
@@ -274,12 +419,12 @@
 					if ( ! _.isEmpty( routeEndpoint.args ) ) {
 
 						// Set as defauls if no defaults yet.
-						if ( _.isEmpty( modelInstance.options ) ) {
-							modelInstance.options = routeEndpoint.args;
+						if ( _.isEmpty( modelOrCollectionInstance.options ) ) {
+							modelOrCollectionInstance.options = routeEndpoint.args;
 						} else {
 
 							// We already have options, merge these new args in.
-							modelInstance.options = _.union( routeEndpoint.args, modelInstance.options );
+							modelOrCollectionInstance.options = _.union( routeEndpoint.args, modelOrCollectionInstance.options );
 						}
 					}
 
@@ -293,11 +438,11 @@
 		 *
 		 * @todo required arguments
 		 */
-		_.each( modelInstance.defaults, function( theDefault, index ) {
+		_.each( modelOrCollectionInstance.defaults, function( theDefault, index ) {
 			if ( _.isUndefined( theDefault['default'] ) ) {
-				modelInstance.defaults[ index ] = null;
+				modelOrCollectionInstance.defaults[ index ] = null;
 			} else {
-				modelInstance.defaults[ index ] = theDefault['default'];
+				modelOrCollectionInstance.defaults[ index ] = theDefault['default'];
 			}
 		} );
 	};
