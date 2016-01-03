@@ -194,7 +194,9 @@
 									parentName + '/' + this.parent + '/' +
 									routeName;
 						},
-						model: loadingObjects.models[collectionClassName],
+
+						// Specify the model that this collection contains.
+						model: loadingObjects.models[ collectionClassName ],
 
 						// Include a reference to the original route object.
 						route: collectionRoute,
@@ -211,7 +213,10 @@
 						// For the url of a root level collection, use a string.
 						url: routeModel.get( 'apiRoot' ) + routeModel.get( 'versionString' ) + routeName,
 
-						// Incldue a refence to the original route object.
+						// Specify the model that this collection contains.
+						model: loadingObjects.models[ collectionClassName ],
+
+						// Include a reference to the original route object.
 						route: collectionRoute,
 
 						// Include the array of route methods for easy reference.
