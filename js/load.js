@@ -86,7 +86,7 @@
 			_.each( routeModel.schemaModel.get( 'routes' ), function( route, index ) {
 
 				// Skip the schema root if included in the schema.
-				if ( index !== routeModel.get(' versionString' ) &&
+				if ( index !== routeModel.get( ' versionString' ) &&
 						index !== schemaRoot &&
 						index !== ( '/' + routeModel.get( 'versionString' ).slice( 0, -1 ) )
 				) {
@@ -266,6 +266,7 @@
 			promise = deferred.promise();
 
 			endpoint.schemaConstructed.done( function( endpoint ) {
+
 				// Map the default endpoints, extending any already present items (including Schema model).
 				wp.api.models      = _.extend( endpoint.get( 'models' ), wp.api.models );
 				wp.api.collections = _.extend( endpoint.get( 'collections' ), wp.api.collections );
@@ -283,128 +284,128 @@
 	 */
 	wp.api.addMixinsAndHelpers = function( model ) {
 
-		var hasDate = false;
+		var hasDate = false,
+
+			/**
+			 * Array of parseable dates.
+			 *
+			 * @type {string[]}.
+			 */
+			parseableDates = [ 'date', 'modified', 'date_gmt', 'modified_gmt' ],
+
+			/**
+			 * Mixin for all content that is time stamped.
+			 *
+			 * This mixin converts between mysql timestamps and JavaScript Dates when syncing a model
+			 * to or from the server. For example, a date stored as `2015-12-27T21:22:24` on the server
+			 * gets expanded to `Sun Dec 27 2015 14:22:24 GMT-0700 (MST)` when the model is fetched.
+			 *
+			 * @type {{toJSON: toJSON, parse: parse}}.
+			 */
+			TimeStampedMixin = {
+				/**
+				 * Serialize the entity pre-sync.
+				 *
+				 * @returns {*}.
+				 */
+				toJSON: function() {
+					var attributes = _.clone( this.attributes );
+
+					// Serialize Date objects back into 8601 strings.
+					_.each( parseableDates, function( key ) {
+						if ( key in attributes ) {
+							attributes[ key ] = attributes[ key ].toISOString();
+						}
+					} );
+
+					return attributes;
+				},
+
+				/**
+				 * Unserialize the fetched response.
+				 *
+				 * @param {*} response.
+				 * @returns {*}.
+				 */
+				parse: function( response ) {
+					var timestamp;
+
+					// Parse dates into native Date objects.
+					_.each( parseableDates, function( key ) {
+						if ( ! ( key in response ) ) {
+							return;
+						}
+
+						timestamp = wp.api.utils.parseISO8601( response[ key ] );
+						response[ key ] = new Date( timestamp );
+					});
+
+					return response;
+				}
+			},
+
+			/**
+			 * The author mixin adds a helper funtion to retrieve a models author user model.
+			 */
+			AuthorMixin = {
+
+				/**
+				 * Get a user model for an model's author.
+				 *
+				 * Uses the embedded user data if available, otherwises fetches the user
+				 * data from the server.
+				 *
+				 * @return {Object} user A backbone model representing the author user.
+				 */
+				getAuthorUser: function() {
+					var user, authorId, embeddeds, attributes,
+
+						// @todo skip saving this field when saving post.
+						authorUser = this.get( 'authorUser' );
+
+					// Do we already have a stored user
+					if ( authorUser ) {
+						return authorUser;
+					}
+
+					authorId  = this.get( 'author' );
+					embeddeds = this.get( '_embedded' ) || {};
+
+					// Verify that we have a valied autor id.
+					if ( ! _.isNumber( authorId ) ) {
+						return null;
+					}
+
+					// If we have embedded author data, use that when constructing the user.
+					if ( embeddeds.author ) {
+						attributes = _.findWhere( embeddeds.author, { id: authorId } );
+					}
+
+					// Otherwise use the authorId.
+					if ( ! attributes ) {
+						attributes = { id: authorId };
+					}
+
+					// Create the new user model.
+					user = new wp.api.models.Users( attributes );
+
+					// If we didn’t have an embedded user, fetch the user data.
+					if ( ! user.get( 'name' ) ) {
+						user.fetch();
+					}
+
+					// Save the user to the model.
+					this.set( 'authorUser', user );
+
+					// Return the constructed user.
+					return user;
+				}
+			};
 
 		// Exit if we don't have valid model defaults.
 		if ( _.isUndefined( model.defaults ) ) {
 			return;
 		}
-
-		/**
-		 * Array of parseable dates.
-		 *
-		 * @type {string[]}.
-		 */
-		var parseableDates = [ 'date', 'modified', 'date_gmt', 'modified_gmt' ],
-
-		/**
-		 * Mixin for all content that is time stamped.
-		 *
-		 * This mixin converts between mysql timestamps and JavaScript Dates when syncing a model
-		 * to or from the server. For example, a date stored as `2015-12-27T21:22:24` on the server
-		 * gets expanded to `Sun Dec 27 2015 14:22:24 GMT-0700 (MST)` when the model is fetched.
-		 *
-		 * @type {{toJSON: toJSON, parse: parse}}.
-		 */
-		TimeStampedMixin = {
-			/**
-			 * Serialize the entity pre-sync.
-			 *
-			 * @returns {*}.
-			 */
-			toJSON: function() {
-				var attributes = _.clone( this.attributes );
-
-				// Serialize Date objects back into 8601 strings.
-				_.each( parseableDates, function( key ) {
-					if ( key in attributes ) {
-						attributes[ key ] = attributes[ key ].toISOString();
-					}
-				} );
-
-				return attributes;
-			},
-
-			/**
-			 * Unserialize the fetched response.
-			 *
-			 * @param {*} response.
-			 * @returns {*}.
-			 */
-			parse: function( response ) {
-				var timestamp;
-
-				// Parse dates into native Date objects.
-				_.each( parseableDates, function( key ) {
-					if ( ! ( key in response ) ) {
-						return;
-					}
-
-					timestamp = wp.api.utils.parseISO8601( response[ key ] );
-					response[ key ] = new Date( timestamp );
-				});
-
-				return response;
-			}
-		},
-
-		/**
-		 * The author mixin adds a helper funtion to retrieve a models author user model.
-		 */
-		AuthorMixin = {
-
-			/**
-			 * Get a user model for an model's author.
-			 *
-			 * Uses the embedded user data if available, otherwises fetches the user
-			 * data from the server.
-			 *
-			 * @return {Object} user A backbone model representing the author user.
-			 */
-			getAuthorUser: function() {
-				var user, authorId, embeddeds, attributes,
-
-					// @todo skip saving this field when saving post.
-					authorUser = this.get( 'authorUser' );
-
-				// Do we already have a stored user
-				if ( authorUser ) {
-					return authorUser;
-				}
-
-				authorId  = this.get( 'author' );
-				embeddeds = this.get( '_embedded' ) || {};
-
-				// Verify that we have a valied autor id.
-				if ( ! _.isNumber( authorId ) ) {
-					return null;
-				}
-
-				// If we have embedded author data, use that when constructing the user.
-				if ( embeddeds.author ) {
-					attributes = _.findWhere( embeddeds.author, { id: authorId } );
-				}
-
-				// Otherwise use the authorId.
-				if ( ! attributes ) {
-					attributes = { id: authorId };
-				}
-
-				// Create the new user model.
-				user = new wp.api.models.Users( attributes );
-
-				// If we didn’t have an embedded user, fetch the user data.
-				if ( ! user.get( 'name' ) ) {
-					user.fetch();
-				}
-
-				// Save the user to the model.
-				this.set( 'authorUser', user );
-
-				// Return the constructed user.
-				return user;
-			}
-		};
 
 		// Go thru the parsable date fields, if our model contains any of them it gets the TimeStampedMixin.
 		_.each( parseableDates, function( theDateKey ) {
@@ -425,7 +426,6 @@
 
 		return model;
 	};
-
 
 	/**
 	 * Add defaults to a model from a route's endpoints.
