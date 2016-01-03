@@ -244,7 +244,10 @@
 		args = args || {};
 		attributes.apiRoot = args.apiRoot || wpApiSettings.root;
 		attributes.versionString = args.versionString || wpApiSettings.versionString;
-		attributes.schema = args.schema || wpApiSettings.schema;
+		attributes.schema = args.schema || null;
+		if ( ! attributes.schema && attributes.apiRoot === wpApiSettings.root && attributes.versionString === wpApiSettings.versionString ) {
+			attributes.schema = wpApiSettings.schema;
+		}
 
 		if ( ! initializedDeferreds[ attributes.apiRoot + attributes.versionString ] ) {
 			endpoint = wp.api.endpoints.findWhere( { apiRoot: attributes.apiRoot, versionString: attributes.versionString } );
