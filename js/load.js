@@ -360,14 +360,6 @@
 				getAuthorUser: function() {
 					var user, authorId, embeddeds, attributes,
 
-						// @todo skip saving this field when saving post.
-						authorUser = this.get( 'authorUser' );
-
-					// Do we already have a stored user
-					if ( authorUser ) {
-						return authorUser;
-					}
-
 					authorId  = this.get( 'author' );
 					embeddeds = this.get( '_embedded' ) || {};
 
@@ -393,9 +385,6 @@
 					if ( ! user.get( 'name' ) ) {
 						user.fetch();
 					}
-
-					// Save the user to the model.
-					this.set( 'authorUser', user );
 
 					// Return the constructed user.
 					return user;
