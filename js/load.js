@@ -358,7 +358,7 @@
 				 * @return {Object} user A backbone model representing the author user.
 				 */
 				getAuthorUser: function() {
-					var user, authorId, embeddeds, attributes,
+					var user, authorId, embeddeds, attributes;
 
 					authorId  = this.get( 'author' );
 					embeddeds = this.get( '_embedded' ) || {};
