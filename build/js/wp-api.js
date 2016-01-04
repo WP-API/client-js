@@ -459,7 +459,7 @@
 
 						// Store a copy of the schema model in the session cache if available.
 						if ( ! _.isUndefined( sessionStorage ) ) {
-							sessionStorage.setItem( 'wp-api-schema-model' + model.get( 'apiRoot' ) + model.get( 'versionString' ), JSON.stringify( newSchemaModel.toJSON() ) );
+							sessionStorage.setItem( 'wp-api-schema-model' + model.get( 'apiRoot' ) + model.get( 'versionString' ), JSON.stringify( newSchemaModel ) );
 						}
 					},
 
@@ -809,7 +809,7 @@
 
 		// Exit if we don't have valid model defaults.
 		if ( _.isUndefined( model.defaults ) ) {
-			return;
+			return model;
 		}
 
 		// Go thru the parsable date fields, if our model contains any of them it gets the TimeStampedMixin.
