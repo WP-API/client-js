@@ -54,7 +54,7 @@
 
 						// Store a copy of the schema model in the session cache if available.
 						if ( ! _.isUndefined( sessionStorage ) ) {
-							sessionStorage.setItem( 'wp-api-schema-model' + model.get( 'apiRoot' ) + model.get( 'versionString' ), JSON.stringify( newSchemaModel.toJSON() ) );
+							sessionStorage.setItem( 'wp-api-schema-model' + model.get( 'apiRoot' ) + model.get( 'versionString' ), JSON.stringify( newSchemaModel ) );
 						}
 					},
 
