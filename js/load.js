@@ -404,7 +404,7 @@
 
 		// Exit if we don't have valid model defaults.
 		if ( _.isUndefined( model.defaults ) ) {
-			return;
+			return model;
 		}
 
 		// Go thru the parsable date fields, if our model contains any of them it gets the TimeStampedMixin.
