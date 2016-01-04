@@ -474,7 +474,7 @@
 		 * @todo required arguments
 		 */
 		_.each( modelInstance.defaults, function( theDefault, index ) {
-			if ( _.isUndefined( theDefault['default'] ) ) {
+			if ( null === theDefault || _.isUndefined( theDefault['default'] ) ) {
 				modelInstance.defaults[ index ] = null;
 			} else {
 				modelInstance.defaults[ index ] = theDefault['default'];
