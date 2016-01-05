@@ -283,9 +283,11 @@
 	/**
 	 * Add mixins and helpers to models depending on their defaults.
 	 *
-	 * @param {Backbone Model} model The model to attach helpers and mixins to.
+	 * @param {Backbone Model} model          The model to attach helpers and mixins to.
+	 * @param {string}         modelClassName The classname of the constructed model.
+	 * @param {Object} 	       loadingObjects An object containing the models and collections we are building.
 	 */
-	wp.api.addMixinsAndHelpers = function( model ) {
+	wp.api.addMixinsAndHelpers = function( model, modelClassName, loadingObjects ) {
 
 		var hasDate = false,
 
@@ -356,7 +358,7 @@
 			/**
 			 * Add a helper funtion to handle post Categories.
 			 */
-			CategoryMixin = {
+			CategoriesMixin = {
 
 				/**
 				 * Get a PostsCategories model for an model's categories.
@@ -366,37 +368,36 @@
 				 *
 				 * @return {Object} user A wp.api.models.Users model representing the author user.
 				 */
-				getAuthorUser: function() {
-					var user, authorId, embeddeds, attributes;
+				getCategories: function() {
+					var postId, embeddeds, categories,
+						classProperties = '',
+						properties = '';
 
-					authorId  = this.get( 'author' );
+					postId    = this.get( 'id' );
 					embeddeds = this.get( '_embedded' ) || {};
 
-					// Verify that we have a valied author id.
-					if ( ! _.isNumber( authorId ) ) {
+					// Verify that we have a valied post id.
+					if ( ! _.isNumber( postId ) ) {
 						return null;
 					}
 
-					// If we have embedded author data, use that when constructing the user.
-					if ( embeddeds.author ) {
-						attributes = _.findWhere( embeddeds.author, { id: authorId } );
+					// If we have embedded categories data, use that when constructing the categories.
+					if ( embeddeds['https://api.w.org/term'] ) {
+						properties =  embeddeds['https://api.w.org/term'][0];
+					} else {
+						// Otherwise use the postId.
+						classProperties = { parent: postId };
 					}
+					// Create the new categories collection.
+					categories = new wp.api.collections.PostsCategories( properties, classProperties );
 
-					// Otherwise use the authorId.
-					if ( ! attributes ) {
-						attributes = { id: authorId };
-					}
-
-					// Create the new user model.
-					user = new wp.api.models.Users( attributes );
-
-					// If we didn’t have an embedded user, fetch the user data.
-					if ( ! user.get( 'name' ) ) {
-						user.fetch();
+					// If we didn’t have embedded categories, sync the categories data.
+					if ( _.isUndefined( categories.models[0] ) ) {
+						categories.fetch();
 					}
 
 					// Return the constructed user.
-					return user;
+					return categories;
 				}
 			},
 
@@ -519,6 +520,11 @@
 		// Add the FeaturedImageMixin for models that contain a featured_image.
 		if ( ! _.isUndefined( model.defaults.featured_image ) ) {
 			model = model.extend( FeaturedImageMixin );
+		}
+
+		// Add the CategoriesMixin for models that support categories collections.
+		if ( ! _.isUndefined( loadingObjects.collections[ modelClassName + 'Categories' ] ) ) {
+			model = model.extend( CategoriesMixin );
 		}
 
 		return model;
