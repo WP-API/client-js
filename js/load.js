@@ -363,10 +363,10 @@
 				/**
 				 * Get a PostsCategories model for an model's categories.
 				 *
-				 * Uses the embedded user data if available, otherwises fetches the user
+				 * Uses the embedded data if available, otherwises fetches the
 				 * data from the server.
 				 *
-				 * @return {Object} user A wp.api.models.Users model representing the author user.
+				 * @return {Object} categories A wp.api.collections.PostsCategories colelction containing the post categories.
 				 */
 				getCategories: function() {
 					var postId, embeddeds, categories,
@@ -383,7 +383,7 @@
 
 					// If we have embedded categories data, use that when constructing the categories.
 					if ( embeddeds['https://api.w.org/term'] ) {
-						properties =  embeddeds['https://api.w.org/term'][0];
+						properties = embeddeds['https://api.w.org/term'][0];
 					} else {
 						// Otherwise use the postId.
 						classProperties = { parent: postId };
@@ -391,12 +391,12 @@
 					// Create the new categories collection.
 					categories = new wp.api.collections.PostsCategories( properties, classProperties );
 
-					// If we didn’t have embedded categories, sync the categories data.
+					// If we didn’t have embedded categories, fetch the categories data.
 					if ( _.isUndefined( categories.models[0] ) ) {
 						categories.fetch();
 					}
 
-					// Return the constructed user.
+					// Return the constructed categories.
 					return categories;
 				}
 			},
