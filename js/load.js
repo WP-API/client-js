@@ -167,9 +167,6 @@
 				// Add defaults to the new model, pulled form the endpoint
 				wp.api.decorateFromRoute( modelRoute.route.endpoints, loadingObjects.models[ modelClassName ] );
 
-				// Add mixins and helpers for the model.
-				loadingObjects.models[ modelClassName ] = wp.api.addMixinsAndHelpers( loadingObjects.models[ modelClassName ] );
-
 			} );
 
 			/**
@@ -229,6 +226,12 @@
 				// Add defaults to the new model, pulled form the endpoint
 				wp.api.decorateFromRoute( collectionRoute.route.endpoints, loadingObjects.collections[ collectionClassName ] );
 			} );
+
+			// Add mixins and helpers for each of the models.
+			_.each( loadingObjects.models, function( model, index ) {
+				loadingObjects.models[ index ] = wp.api.addMixinsAndHelpers( model, index, loadingObjects );
+			} );
+
 		}
 
 	});
