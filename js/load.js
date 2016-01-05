@@ -416,8 +416,8 @@
 					featuredImageId  = this.get( 'featured_image' );
 					embeddeds        = this.get( '_embedded' ) || {};
 
-					// Verify that we have a valied featured image id.
-					if ( ! _.isNumber( featuredImageId ) ) {
+					// Verify that we have a valid featured image id.
+					if ( ( ! _.isNumber( featuredImageId ) ) || 0 === featuredImageId ) {
 						return null;
 					}
 
