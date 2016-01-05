@@ -351,7 +351,54 @@
 			},
 
 			/**
-			 * Add a helper funtion to retrieve the author user model.
+			 * Add a helper funtion to handle post Categories.
+			 */
+			CategoryMixin = {
+
+				/**
+				 * Get a PostsCategories model for an model's categories.
+				 *
+				 * Uses the embedded user data if available, otherwises fetches the user
+				 * data from the server.
+				 *
+				 * @return {Object} user A wp.api.models.Users model representing the author user.
+				 */
+				getAuthorUser: function() {
+					var user, authorId, embeddeds, attributes;
+
+					authorId  = this.get( 'author' );
+					embeddeds = this.get( '_embedded' ) || {};
+
+					// Verify that we have a valied author id.
+					if ( ! _.isNumber( authorId ) ) {
+						return null;
+					}
+
+					// If we have embedded author data, use that when constructing the user.
+					if ( embeddeds.author ) {
+						attributes = _.findWhere( embeddeds.author, { id: authorId } );
+					}
+
+					// Otherwise use the authorId.
+					if ( ! attributes ) {
+						attributes = { id: authorId };
+					}
+
+					// Create the new user model.
+					user = new wp.api.models.Users( attributes );
+
+					// If we didn’t have an embedded user, fetch the user data.
+					if ( ! user.get( 'name' ) ) {
+						user.fetch();
+					}
+
+					// Return the constructed user.
+					return user;
+				}
+			},
+
+			/**
+			 * Add a helper function to retrieve the author user model.
 			 */
 			AuthorMixin = {
 
