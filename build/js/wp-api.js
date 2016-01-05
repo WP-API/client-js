@@ -750,7 +750,7 @@
 			},
 
 			/**
-			 * The author mixin adds a helper funtion to retrieve a models author user model.
+			 * The author mixin adds a helper funtion to retrieve the author user model.
 			 */
 			AuthorMixin = {
 
@@ -760,23 +760,15 @@
 				 * Uses the embedded user data if available, otherwises fetches the user
 				 * data from the server.
 				 *
-				 * @return {Object} user A backbone model representing the author user.
+				 * @return {Object} user A wp.api.models.Users model representing the author user.
 				 */
 				getAuthorUser: function() {
-					var user, authorId, embeddeds, attributes,
-
-						// @todo skip saving this field when saving post.
-						authorUser = this.get( 'authorUser' );
-
-					// Do we already have a stored user
-					if ( authorUser ) {
-						return authorUser;
-					}
+					var user, authorId, embeddeds, attributes;
 
 					authorId  = this.get( 'author' );
 					embeddeds = this.get( '_embedded' ) || {};
 
-					// Verify that we have a valied autor id.
+					// Verify that we have a valied author id.
 					if ( ! _.isNumber( authorId ) ) {
 						return null;
 					}
@@ -799,11 +791,55 @@
 						user.fetch();
 					}
 
-					// Save the user to the model.
-					this.set( 'authorUser', user );
-
 					// Return the constructed user.
 					return user;
+				}
+			},
+
+			/**
+			 * The featured image mixin adds a helper funtion to retrieve the featued image.
+			 */
+			FeaturedImageMixin = {
+
+				/**
+				 * Get a featured image for a post.
+				 *
+				 * Uses the embedded user data if available, otherwises fetches the media
+				 * data from the server.
+				 *
+				 * @return {Object} media A wp.api.models.Media model representing the featured image.
+				 */
+				getFeaturedImage: function() {
+					var media, featuredImageId, embeddeds, attributes;
+
+					featuredImageId  = this.get( 'featured_image' );
+					embeddeds        = this.get( '_embedded' ) || {};
+
+					// Verify that we have a valied featured image id.
+					if ( ! _.isNumber( featuredImageId ) ) {
+						return null;
+					}
+
+					// If we have embedded featured image data, use that when constructing the user.
+					if ( embeddeds['https://api.w.org/featuredmedia'] ) {
+						attributes = _.findWhere( embeddeds['https://api.w.org/featuredmedia'], { id: featuredImageId } );
+					}
+
+					// Otherwise use the featuredImageId.
+					if ( ! attributes ) {
+						attributes = { id: featuredImageId };
+					}
+
+					// Create the new media model.
+					media = new wp.api.models.Media( attributes );
+
+					// If we didn’t have an embedded media, fetch the media data.
+					if ( ! media.get( 'source_url' ) ) {
+						media.fetch();
+					}
+
+					// Return the constructed media.
+					return media;
 				}
 			};
 
@@ -827,6 +863,11 @@
 		// Add the AuthorMixin for models that contain an author.
 		if ( ! _.isUndefined( model.defaults.author ) ) {
 			model = model.extend( AuthorMixin );
+		}
+
+		// Add the FeaturedImageMixin for models that contain a featured_image.
+		if ( ! _.isUndefined( model.defaults.featured_image ) ) {
+			model = model.extend( FeaturedImageMixin );
 		}
 
 		return model;
