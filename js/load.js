@@ -351,7 +351,7 @@
 			},
 
 			/**
-			 * The author mixin adds a helper funtion to retrieve the author user model.
+			 * Add a helper funtion to retrieve the author user model.
 			 */
 			AuthorMixin = {
 
@@ -398,7 +398,7 @@
 			},
 
 			/**
-			 * The featured image mixin adds a helper funtion to retrieve the featued image.
+			 * Add a helper function to retrieve the featured image.
 			 */
 			FeaturedImageMixin = {
 
