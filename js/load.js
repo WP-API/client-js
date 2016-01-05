@@ -314,7 +314,10 @@
 					// Serialize Date objects back into 8601 strings.
 					_.each( parseableDates, function( key ) {
 						if ( key in attributes ) {
-							attributes[ key ] = attributes[ key ].toISOString();
+							// Don't convert null values
+							if ( ! _.isNull( attributes[ key ] ) ) {
+								attributes[ key ] = attributes[ key ].toISOString();
+							}
 						}
 					} );
 
@@ -336,8 +339,11 @@
 							return;
 						}
 
-						timestamp = wp.api.utils.parseISO8601( response[ key ] );
-						response[ key ] = new Date( timestamp );
+						// Don't convert null values
+						if ( ! _.isNull( response[ key ] ) ) {
+							timestamp = wp.api.utils.parseISO8601( response[ key ] );
+							response[ key ] = new Date( timestamp );
+						}
 					});
 
 					return response;
