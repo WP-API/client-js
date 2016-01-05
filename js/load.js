@@ -319,6 +319,7 @@
 					// Serialize Date objects back into 8601 strings.
 					_.each( parseableDates, function( key ) {
 						if ( key in attributes ) {
+
 							// Don't convert null values
 							if ( ! _.isNull( attributes[ key ] ) ) {
 								attributes[ key ] = attributes[ key ].toISOString();
@@ -385,9 +386,11 @@
 					if ( embeddeds['https://api.w.org/term'] ) {
 						properties = embeddeds['https://api.w.org/term'][0];
 					} else {
+
 						// Otherwise use the postId.
 						classProperties = { parent: postId };
 					}
+
 					// Create the new categories collection.
 					categories = new wp.api.collections.PostsCategories( properties, classProperties );
 

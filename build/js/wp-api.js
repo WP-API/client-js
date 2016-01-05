@@ -572,9 +572,6 @@
 				// Add defaults to the new model, pulled form the endpoint
 				wp.api.decorateFromRoute( modelRoute.route.endpoints, loadingObjects.models[ modelClassName ] );
 
-				// Add mixins and helpers for the model.
-				loadingObjects.models[ modelClassName ] = wp.api.addMixinsAndHelpers( loadingObjects.models[ modelClassName ] );
-
 			} );
 
 			/**
@@ -634,6 +631,12 @@
 				// Add defaults to the new model, pulled form the endpoint
 				wp.api.decorateFromRoute( collectionRoute.route.endpoints, loadingObjects.collections[ collectionClassName ] );
 			} );
+
+			// Add mixins and helpers for each of the models.
+			_.each( loadingObjects.models, function( model, index ) {
+				loadingObjects.models[ index ] = wp.api.addMixinsAndHelpers( model, index, loadingObjects );
+			} );
+
 		}
 
 	});
@@ -685,9 +688,11 @@
 	/**
 	 * Add mixins and helpers to models depending on their defaults.
 	 *
-	 * @param {Backbone Model} model The model to attach helpers and mixins to.
+	 * @param {Backbone Model} model          The model to attach helpers and mixins to.
+	 * @param {string}         modelClassName The classname of the constructed model.
+	 * @param {Object} 	       loadingObjects An object containing the models and collections we are building.
 	 */
-	wp.api.addMixinsAndHelpers = function( model ) {
+	wp.api.addMixinsAndHelpers = function( model, modelClassName, loadingObjects ) {
 
 		var hasDate = false,
 
@@ -719,7 +724,11 @@
 					// Serialize Date objects back into 8601 strings.
 					_.each( parseableDates, function( key ) {
 						if ( key in attributes ) {
-							attributes[ key ] = attributes[ key ].toISOString();
+
+							// Don't convert null values
+							if ( ! _.isNull( attributes[ key ] ) ) {
+								attributes[ key ] = attributes[ key ].toISOString();
+							}
 						}
 					} );
 
@@ -741,8 +750,11 @@
 							return;
 						}
 
-						timestamp = wp.api.utils.parseISO8601( response[ key ] );
-						response[ key ] = new Date( timestamp );
+						// Don't convert null values
+						if ( ! _.isNull( response[ key ] ) ) {
+							timestamp = wp.api.utils.parseISO8601( response[ key ] );
+							response[ key ] = new Date( timestamp );
+						}
 					});
 
 					return response;
@@ -750,7 +762,55 @@
 			},
 
 			/**
-			 * The author mixin adds a helper funtion to retrieve the author user model.
+			 * Add a helper funtion to handle post Categories.
+			 */
+			CategoriesMixin = {
+
+				/**
+				 * Get a PostsCategories model for an model's categories.
+				 *
+				 * Uses the embedded data if available, otherwises fetches the
+				 * data from the server.
+				 *
+				 * @return {Object} categories A wp.api.collections.PostsCategories colelction containing the post categories.
+				 */
+				getCategories: function() {
+					var postId, embeddeds, categories,
+						classProperties = '',
+						properties = '';
+
+					postId    = this.get( 'id' );
+					embeddeds = this.get( '_embedded' ) || {};
+
+					// Verify that we have a valied post id.
+					if ( ! _.isNumber( postId ) ) {
+						return null;
+					}
+
+					// If we have embedded categories data, use that when constructing the categories.
+					if ( embeddeds['https://api.w.org/term'] ) {
+						properties = embeddeds['https://api.w.org/term'][0];
+					} else {
+
+						// Otherwise use the postId.
+						classProperties = { parent: postId };
+					}
+
+					// Create the new categories collection.
+					categories = new wp.api.collections.PostsCategories( properties, classProperties );
+
+					// If we didn’t have embedded categories, fetch the categories data.
+					if ( _.isUndefined( categories.models[0] ) ) {
+						categories.fetch();
+					}
+
+					// Return the constructed categories.
+					return categories;
+				}
+			},
+
+			/**
+			 * Add a helper function to retrieve the author user model.
 			 */
 			AuthorMixin = {
 
@@ -797,7 +857,7 @@
 			},
 
 			/**
-			 * The featured image mixin adds a helper funtion to retrieve the featued image.
+			 * Add a helper function to retrieve the featured image.
 			 */
 			FeaturedImageMixin = {
 
@@ -815,8 +875,8 @@
 					featuredImageId  = this.get( 'featured_image' );
 					embeddeds        = this.get( '_embedded' ) || {};
 
-					// Verify that we have a valied featured image id.
-					if ( ! _.isNumber( featuredImageId ) ) {
+					// Verify that we have a valid featured image id.
+					if ( ( ! _.isNumber( featuredImageId ) ) || 0 === featuredImageId ) {
 						return null;
 					}
 
@@ -868,6 +928,11 @@
 		// Add the FeaturedImageMixin for models that contain a featured_image.
 		if ( ! _.isUndefined( model.defaults.featured_image ) ) {
 			model = model.extend( FeaturedImageMixin );
+		}
+
+		// Add the CategoriesMixin for models that support categories collections.
+		if ( ! _.isUndefined( loadingObjects.collections[ modelClassName + 'Categories' ] ) ) {
+			model = model.extend( CategoriesMixin );
 		}
 
 		return model;
