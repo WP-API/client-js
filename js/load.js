@@ -127,7 +127,8 @@
 						// Function that returns a constructed url based on the parent and id.
 						url: function() {
 							var url = routeModel.get( 'apiRoot' ) + routeModel.get( 'versionString' ) +
-									parentName +  '/' + this.get( 'parent' ) + '/' +
+									parentName +  '/' +
+									( 0 === this.get( 'parent' ) ? this.get( 'parent_post' ) : this.get( 'parent' ) ) + '/' +
 									routeName;
 							if ( ! _.isUndefined( this.get( 'id' ) ) ) {
 								url +=  '/' + this.get( 'id' );
