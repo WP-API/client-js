@@ -40,6 +40,10 @@
 					};
 				}
 
+				// Add '?force=true' to delete method when required.
+				if ( this.requireForceForDelete && 'delete' === method ) {
+					model.url = model.url() + '?force=true';
+				}
 				return Backbone.sync( method, model, options );
 			},
 
