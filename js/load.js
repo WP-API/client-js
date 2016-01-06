@@ -138,9 +138,32 @@
 						// Include a reference to the original route object.
 						route: modelRoute,
 
+						// Include a reference to the original class name.
+						name: modelClassName,
+
 						// Include the array of route methods for easy reference.
-						methods: modelRoute.route.methods
+						methods: modelRoute.route.methods,
+
+						initialize: function() {
+							/**
+							 * Posts and pages support trashing, other types don't support a trash
+							 * and require that you pass ?force=true to actually delete them.
+							 *
+							 * @todo we should be getting trashability from the Schema, not hard coding types here.
+							 */
+							if (
+								'Posts' !== this.name &&
+								'Pages' !== this.name &&
+								_.contains( this.methods, 'DELETE' )
+							) {
+								this.requireForceForDelete = true;
+							}
+						}
 					} );
+
+
+
+
 				} else {
 
 					// This is a model without a parent in its route
@@ -158,6 +181,9 @@
 
 						// Include a reference to the original route object.
 						route: modelRoute,
+
+						// Include a reference to the original class name.
+						name: modelClassName,
 
 						// Include the array of route methods for easy reference.
 						methods: modelRoute.route.methods
@@ -197,6 +223,9 @@
 						// Specify the model that this collection contains.
 						model: loadingObjects.models[ collectionClassName ],
 
+						// Include a reference to the original class name.
+						name: collectionClassName,
+
 						// Include a reference to the original route object.
 						route: collectionRoute,
 
@@ -214,6 +243,9 @@
 
 						// Specify the model that this collection contains.
 						model: loadingObjects.models[ collectionClassName ],
+
+						// Include a reference to the original class name.
+						name: collectionClassName,
 
 						// Include a reference to the original route object.
 						route: collectionRoute,
@@ -396,8 +428,15 @@
 
 					// If we didn’t have embedded categories, fetch the categories data.
 					if ( _.isUndefined( categories.models[0] ) ) {
-						categories.fetch();
+						categories.fetch( { success: function( collection ) {
+
+							// Attach post_parent id to the categories.
+							_.each( collection.models, function( category ) {
+								category.set( 'parent_post', postId );
+							} );
+						} } );
 					}
+
 
 					// Return the constructed categories.
 					return categories;
