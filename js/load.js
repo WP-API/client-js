@@ -450,10 +450,10 @@
 					var existingCategories, allCategories, removedCategories, addedCategories,
 						newCategories = [];
 
-					// If this is an array of slugs, build a collection
+					// If this is an array of slugs, build a collection.
 					if ( _.isArray( categories ) ) {
 
-						// Get all the categories
+						// Get all the categories.
 						allCategories = new wp.api.collections.Categories();
 						allCategories.fetch();
 
