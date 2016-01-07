@@ -161,10 +161,6 @@
 							}
 						}
 					} );
-
-
-
-
 				} else {
 
 					// This is a model without a parent in its route
@@ -438,9 +434,49 @@
 						} } );
 					}
 
-
 					// Return the constructed categories.
 					return categories;
+				},
+
+				/**
+				 * Set the categories for a post.
+				 *
+				 * Accepts an array of category slugs, or a PostsCategories collection.
+				 *
+				 * @param {array|Backbone.Collection} categories The categories to set on the post.
+				 *
+				 */
+				setCategories: function( categories ) {
+					var existingCategories, allCategories, removedCategories, addedCategories,
+						newCategories = [];
+
+					// If this is an array of slugs, build a collection
+					if ( _.isArray( categories ) ) {
+
+						// Get all the categories
+						allCategories = new wp.api.collections.Categories();
+						allCategories.fetch();
+
+						_.each( categories, function( category ) {
+							newCategories.push( allCategories.findWhere( { slug: category } ) );
+						} );
+						categories = new wp.api.collections.PostsCategories( newCategories.toJSON(), '' );
+					}
+
+					// Get the existing categories.
+					existingCategories = this.getCategories();
+
+					// Calculate which categories have been removed or added (leave the rest).
+					removedCategories = _.difference( existingCategories, categories );
+					addedCategories   = _.difference( categories, existingCategories );
+
+					// Remove the removed categories.
+					existingCategories.remove( removedCategories );
+
+					// Add the added categories.
+					_.each( addedCategories, function( addedCategory ) {
+						existingCategories.create( addedCategory );
+					} );
 				}
 			},
 
