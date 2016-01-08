@@ -7,113 +7,6 @@
 	'use strict';
 
 	/**
-	 * Array of parseable dates.
-	 *
-	 * @type {string[]}.
-	 */
-	var parseableDates = [ 'date', 'modified', 'date_gmt', 'modified_gmt' ],
-
-	/**
-	 * Mixin for all content that is time stamped.
-	 *
-	 * @type {{toJSON: toJSON, parse: parse}}.
-	 */
-	TimeStampedMixin = {
-		/**
-		 * Serialize the entity pre-sync.
-		 *
-		 * @returns {*}.
-		 */
-		toJSON: function() {
-			var attributes = _.clone( this.attributes );
-
-			// Serialize Date objects back into 8601 strings.
-			_.each( parseableDates, function( key ) {
-				if ( key in attributes ) {
-					attributes[key] = attributes[key].toISOString();
-				}
-			});
-
-			return attributes;
-		},
-
-		/**
-		 * Unserialize the fetched response.
-		 *
-		 * @param {*} response.
-		 * @returns {*}.
-		 */
-		parse: function( response ) {
-			var timestamp;
-
-			// Parse dates into native Date objects.
-			_.each( parseableDates, function( key ) {
-				if ( ! ( key in response ) ) {
-					return;
-				}
-
-				timestamp = wp.api.utils.parseISO8601( response[key] );
-				response[key] = new Date( timestamp );
-			});
-
-			// Parse the author into a User object.
-			if ( 'undefined' !== typeof response.author ) {
-				response.author = new wp.api.models.User( response.author );
-			}
-
-			return response;
-		}
-	},
-
-	/**
-	 * Mixin for all hierarchical content types such as posts.
-	 *
-	 * @type {{parent: parent}}.
-	 */
-	HierarchicalMixin = {
-		/**
-		 * Get parent object.
-		 *
-		 * @returns {Backbone.Model}
-		 */
-		parent: function() {
-
-			var object,
-				parent      = this.get( 'parent' ),
-				parentModel = this;
-
-			// Return null if we don't have a parent.
-			if ( 0 === parent ) {
-				return null;
-			}
-
-			if ( 'undefined' !== typeof this.parentModel ) {
-				/**
-				 * Probably a better way to do this. Perhaps grab a cached version of the
-				 * instantiated model?
-				 */
-				parentModel = new this.parentModel();
-			}
-
-			// Can we get this from its collection?
-			if ( parentModel.collection ) {
-				return parentModel.collection.get( parent );
-			} else {
-
-				// Otherwise, get the object directly.
-				object = new parentModel.constructor( {
-					id: parent
-				});
-
-				// Note that this acts asynchronously.
-				object.fetch();
-
-				return object;
-			}
-		}
-	};
-
-	/**
 	 * Backbone base model for all models.
 	 */
 	wp.api.WPApiBaseModel = Backbone.Model.extend(
@@ -191,10 +84,26 @@
 	 * API Schema model. Contains meta information about the API.
 	 */
 	wp.api.models.Schema = wp.api.WPApiBaseModel.extend(
-		/** @lends Shema.prototype  */
+		/** @lends Schema.prototype  */
 		{
+			defaults: {
+				_links: {},
+				namespace: null,
+				routes: {}
+			},
+
+			initialize: function( attributes, options ) {
+				var model = this;
+				options = options || {};
+
+				wp.api.WPApiBaseModel.prototype.initialize.call( model, attributes, options );
+
+				model.apiRoot = options.apiRoot || wpApiSettings.root;
+				model.versionString = options.versionString || wpApiSettings.versionString;
+			},
+
 			url: function() {
-				return wpApiSettings.root + wp.api.versionString;
+				return this.apiRoot + this.versionString;
 			}
 		}
 	);

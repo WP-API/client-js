@@ -9,13 +9,13 @@ This library provides an interface for the [WP REST API](https://github.com/WP-A
 
 Activate the WP-API plugin. Enqueue the script directly:
 
-```
+```php
 wp_enqueue_script( 'wp-api' );
 ```
 
 or as a dependency for your script:
 
-```
+```php
 wp_enqueue_script( 'my_script', 'path_to_my_script', array( 'wp-api' ) );
 ```
 
@@ -112,6 +112,8 @@ wp.api.collections.Posts.options
  * status
 ```
 
+### Some example Collection uses:
+
 to get the last 10 posts:
 
 ```
@@ -122,8 +124,13 @@ postsCollection.fetch();
 to get the last 25 posts:
 
 ```
-var postsCollection = new wp.api.collections.Posts( {}. { per_page: '25' } );
-postsCollection.fetch();
+postsCollection.fetch( { data: { per_page: 25 } } );
+```
+
+use filter to change the order & orderby options:
+
+```
+postsCollection.fetch( { data: { 'filter[orderby]': 'title', 'filter[order]': 'ASC' } } );
 ```
 
 All collections support pagination automatically, and you can get the next page of results using `more`:
