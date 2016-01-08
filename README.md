@@ -109,7 +109,7 @@ wp.api.collections.Posts.options
  * search
  * status
 ```
-### Model example:
+### Model examples:
 
 To create a post and edit its categories, make sure you are logged in, then:
 
