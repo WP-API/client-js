@@ -124,7 +124,7 @@ post.save();
 
 // Get a collection of the post's categories (returns a promise)
 // Uses _embedded data if available, in which case promise resolves immediately.
-post.getCategories().done( function( categories ) {
+post.getCategories().done( function( postCategories ) {
 	// ... do something with the categories.
 	// The new post has an single Category: Uncategorized
 	postCategories.at( 0 ).get( 'name' );
@@ -150,8 +150,10 @@ allCategories.fetch();
 
 var appleCategory = allCategories.findWhere( { slug: 'apples' } );
 
-// Add the category to the postCategories collection
+// Add the category to the postCategories collection we previously fetched.
 appleCategory.set( 'parent_post', post.get( 'id' ) );
+
+// Use the POST method so Backbone will not PUT it even though it has an id.
 postCategories.create( appleCategory.toJSON(), { type: 'POST' } );
 
 // Remove the Uncategorized category
