@@ -39,6 +39,13 @@
 
 				// Use schema supplied as model attribute.
 				model.schemaModel.set( model.schemaModel.parse( model.get( 'schema' ) ) );
+
+				// Store a copy of the schema model in the session cache if available.
+				if ( ! _.isUndefined( sessionStorage ) ) {
+					sessionStorage.setItem( 'wp-api-schema-model' + model.get( 'apiRoot' ) + model.get( 'versionString' ), JSON.stringify(  model.schemaModel ) );
+					document.cookie = 'api-schema-hash=' + wpApiSettings.schemaHash;
+				}
+
 			} else if ( ! _.isUndefined( sessionStorage ) && sessionStorage.getItem( 'wp-api-schema-model' + model.get( 'apiRoot' ) + model.get( 'versionString' ) ) ) {
 
 				// Used a cached copy of the schema model if available.
@@ -719,7 +726,7 @@
 		 * @todo required arguments
 		 */
 		_.each( modelInstance.defaults, function( theDefault, index ) {
-			if ( _.isUndefined( theDefault['default'] ) ) {
+			if ( null === theDefault || _.isUndefined( theDefault['default'] ) ) {
 				modelInstance.defaults[ index ] = null;
 			} else {
 				modelInstance.defaults[ index ] = theDefault['default'];
