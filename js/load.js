@@ -127,7 +127,10 @@
 						// Function that returns a constructed url based on the parent and id.
 						url: function() {
 							var url = routeModel.get( 'apiRoot' ) + routeModel.get( 'versionString' ) +
-									parentName +  '/' + this.get( 'parent' ) + '/' +
+									parentName +  '/' +
+									( ( _.isUndefined( this.get( 'parent' ) ) || 0 === this.get( 'parent' ) ) ?
+										this.get( 'parent_post' ) :
+										this.get( 'parent' ) ) + '/' +
 									routeName;
 							if ( ! _.isUndefined( this.get( 'id' ) ) ) {
 								url +=  '/' + this.get( 'id' );
@@ -138,8 +141,27 @@
 						// Include a reference to the original route object.
 						route: modelRoute,
 
+						// Include a reference to the original class name.
+						name: modelClassName,
+
 						// Include the array of route methods for easy reference.
-						methods: modelRoute.route.methods
+						methods: modelRoute.route.methods,
+
+						initialize: function() {
+							/**
+							 * Posts and pages support trashing, other types don't support a trash
+							 * and require that you pass ?force=true to actually delete them.
+							 *
+							 * @todo we should be getting trashability from the Schema, not hard coding types here.
+							 */
+							if (
+								'Posts' !== this.name &&
+								'Pages' !== this.name &&
+								_.contains( this.methods, 'DELETE' )
+							) {
+								this.requireForceForDelete = true;
+							}
+						}
 					} );
 				} else {
 
@@ -158,6 +180,9 @@
 
 						// Include a reference to the original route object.
 						route: modelRoute,
+
+						// Include a reference to the original class name.
+						name: modelClassName,
 
 						// Include the array of route methods for easy reference.
 						methods: modelRoute.route.methods
@@ -197,6 +222,9 @@
 						// Specify the model that this collection contains.
 						model: loadingObjects.models[ collectionClassName ],
 
+						// Include a reference to the original class name.
+						name: collectionClassName,
+
 						// Include a reference to the original route object.
 						route: collectionRoute,
 
@@ -214,6 +242,9 @@
 
 						// Specify the model that this collection contains.
 						model: loadingObjects.models[ collectionClassName ],
+
+						// Include a reference to the original class name.
+						name: collectionClassName,
 
 						// Include a reference to the original route object.
 						route: collectionRoute,
@@ -367,12 +398,14 @@
 				 * Uses the embedded data if available, otherwises fetches the
 				 * data from the server.
 				 *
-				 * @return {Object} categories A wp.api.collections.PostsCategories colelction containing the post categories.
+				 * @return {Deferred.promise} promise Resolves to a wp.api.collections.PostsCategories collection containing the post categories.
 				 */
 				getCategories: function() {
 					var postId, embeddeds, categories,
+						self            = this,
 						classProperties = '',
-						properties = '';
+						properties      = '',
+						deferred        = jQuery.Deferred();
 
 					postId    = this.get( 'id' );
 					embeddeds = this.get( '_embedded' ) || {};
@@ -396,11 +429,106 @@
 
 					// If we didn’t have embedded categories, fetch the categories data.
 					if ( _.isUndefined( categories.models[0] ) ) {
-						categories.fetch();
+						categories.fetch( { success: function( categories ) {
+							self.setCategoryPostParents( categories, postId );
+							deferred.resolve( categories );
+						} } );
+					} else {
+						this.setCategoryPostParents( categories, postId );
+						deferred.resolve( categories );
 					}
 
-					// Return the constructed categories.
-					return categories;
+					// Return the constructed categories promise.
+					return deferred.promise();
+				},
+
+				/**
+				 * Set the category post parents when retrieving posts.
+				 */
+				setCategoryPostParents: function( categories, postId ) {
+
+					// Attach post_parent id to the categories.
+					_.each( categories.models, function( category ) {
+						category.set( 'parent_post', postId );
+					} );
+				},
+
+				/**
+				 * Set the categories for a post.
+				 *
+				 * Accepts an array of category slugs, or a PostsCategories collection.
+				 *
+				 * @param {array|Backbone.Collection} categories The categories to set on the post.
+				 *
+				 */
+				setCategories: function( categories ) {
+					var allCategories, newCategory,
+						self = this,
+						newCategories = [];
+
+					// If this is an array of slugs, build a collection.
+					if ( _.isArray( categories ) ) {
+
+						// Get all the categories.
+						allCategories = new wp.api.collections.Categories();
+						allCategories.fetch( {
+							success: function( allcats ) {
+
+								// Find the passed categories and set them up.
+								_.each( categories, function( category ) {
+									newCategory = new wp.api.models.PostsCategories( allcats.findWhere( { slug: category } ) );
+
+									// Tie the new category to the post.
+									newCategory.set( 'parent_post', self.get( 'id' ) );
+
+									// Add the new category to the collection.
+									newCategories.push( newCategory );
+								} );
+								categories = new wp.api.collections.PostsCategories( newCategories );
+								self.setCategoriesWithCollection( categories );
+							}
+						} );
+
+					} else {
+						this.setCategoriesWithCollection( categories );
+					}
+
+				},
+
+				/**
+				 * Set the categories for a post.
+				 *
+				 * Accepts PostsCategories collection.
+				 *
+				 * @param {array|Backbone.Collection} categories The categories to set on the post.
+				 *
+				 */
+				setCategoriesWithCollection: function( categories ) {
+					var removedCategories, addedCategories, categoriesIds, existingCategoriesIds;
+
+					// Get the existing categories.
+					this.getCategories().done( function( existingCategories ) {
+
+						// Pluck out the category ids.
+						categoriesIds         = categories.pluck( 'id' );
+						existingCategoriesIds = existingCategories.pluck( 'id' );
+
+						// Calculate which categories have been removed or added (leave the rest).
+						addedCategories   = _.difference( categoriesIds, existingCategoriesIds );
+						removedCategories = _.difference( existingCategoriesIds, categoriesIds );
+
+						// Add the added categories.
+						_.each( addedCategories, function( addedCategory ) {
+
+							// Save the new categories on the post with a 'POST' method, not Backbone's default 'PUT'.
+							existingCategories.create( categories.get( addedCategory ), { type: 'POST' } );
+						} );
+
+						// Remove the removed categories.
+						_.each( removedCategories, function( removedCategory ) {
+							existingCategories.get( removedCategory ).destroy();
+						} );
+					} );
 				}
 			},
 
