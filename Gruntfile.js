@@ -56,7 +56,7 @@ module.exports = function( grunt ) {
 			files: [
 				'js/*.js'
 			],
-			tasks: [ 'jshint', 'uglify:js', 'concat:js' ]
+			tasks: [ 'jshint', 'jscs', 'uglify:js', 'concat:js' ]
 		},
 		jscs: {
 			src: 'js/*.js',

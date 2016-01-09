@@ -134,7 +134,10 @@
 						// Function that returns a constructed url based on the parent and id.
 						url: function() {
 							var url = routeModel.get( 'apiRoot' ) + routeModel.get( 'versionString' ) +
-									parentName +  '/' + this.get( 'parent' ) + '/' +
+									parentName +  '/' +
+									( ( _.isUndefined( this.get( 'parent' ) ) || 0 === this.get( 'parent' ) ) ?
+										this.get( 'parent_post' ) :
+										this.get( 'parent' ) ) + '/' +
 									routeName;
 							if ( ! _.isUndefined( this.get( 'id' ) ) ) {
 								url +=  '/' + this.get( 'id' );
@@ -145,8 +148,27 @@
 						// Include a reference to the original route object.
 						route: modelRoute,
 
+						// Include a reference to the original class name.
+						name: modelClassName,
+
 						// Include the array of route methods for easy reference.
-						methods: modelRoute.route.methods
+						methods: modelRoute.route.methods,
+
+						initialize: function() {
+							/**
+							 * Posts and pages support trashing, other types don't support a trash
+							 * and require that you pass ?force=true to actually delete them.
+							 *
+							 * @todo we should be getting trashability from the Schema, not hard coding types here.
+							 */
+							if (
+								'Posts' !== this.name &&
+								'Pages' !== this.name &&
+								_.contains( this.methods, 'DELETE' )
+							) {
+								this.requireForceForDelete = true;
+							}
+						}
 					} );
 				} else {
 
@@ -166,6 +188,9 @@
 						// Include a reference to the original route object.
 						route: modelRoute,
 
+						// Include a reference to the original class name.
+						name: modelClassName,
+
 						// Include the array of route methods for easy reference.
 						methods: modelRoute.route.methods
 					} );
@@ -173,9 +198,6 @@
 
 				// Add defaults to the new model, pulled form the endpoint
 				wp.api.decorateFromRoute( modelRoute.route.endpoints, loadingObjects.models[ modelClassName ] );
-
-				// Add mixins and helpers for the model.
-				loadingObjects.models[ modelClassName ] = wp.api.addMixinsAndHelpers( loadingObjects.models[ modelClassName ] );
 
 			} );
 
@@ -189,7 +211,7 @@
 				// Extract the name and any parent from the route.
 				var collectionClassName,
 						routeName  = collectionRoute.index.slice( collectionRoute.index.lastIndexOf( '/' ) + 1 ),
-						parentName = wp.api.utils.extractRoutePart( collectionRoute.index, 4 );
+						parentName = wp.api.utils.extractRoutePart( collectionRoute.index, 3 );
 
 				// If the collection has a parent in its route, add that to its class name/
 				if ( '' !== parentName && parentName !== routeName ) {
@@ -206,6 +228,9 @@
 
 						// Specify the model that this collection contains.
 						model: loadingObjects.models[ collectionClassName ],
+
+						// Include a reference to the original class name.
+						name: collectionClassName,
 
 						// Include a reference to the original route object.
 						route: collectionRoute,
@@ -225,6 +250,9 @@
 						// Specify the model that this collection contains.
 						model: loadingObjects.models[ collectionClassName ],
 
+						// Include a reference to the original class name.
+						name: collectionClassName,
+
 						// Include a reference to the original route object.
 						route: collectionRoute,
 
@@ -236,6 +264,12 @@
 				// Add defaults to the new model, pulled form the endpoint
 				wp.api.decorateFromRoute( collectionRoute.route.endpoints, loadingObjects.collections[ collectionClassName ] );
 			} );
+
+			// Add mixins and helpers for each of the models.
+			_.each( loadingObjects.models, function( model, index ) {
+				loadingObjects.models[ index ] = wp.api.addMixinsAndHelpers( model, index, loadingObjects );
+			} );
+
 		}
 
 	});
@@ -287,9 +321,11 @@
 	/**
 	 * Add mixins and helpers to models depending on their defaults.
 	 *
-	 * @param {Backbone Model} model The model to attach helpers and mixins to.
+	 * @param {Backbone Model} model          The model to attach helpers and mixins to.
+	 * @param {string}         modelClassName The classname of the constructed model.
+	 * @param {Object} 	       loadingObjects An object containing the models and collections we are building.
 	 */
-	wp.api.addMixinsAndHelpers = function( model ) {
+	wp.api.addMixinsAndHelpers = function( model, modelClassName, loadingObjects ) {
 
 		var hasDate = false,
 
@@ -321,7 +357,11 @@
 					// Serialize Date objects back into 8601 strings.
 					_.each( parseableDates, function( key ) {
 						if ( key in attributes ) {
-							attributes[ key ] = attributes[ key ].toISOString();
+
+							// Don't convert null values
+							if ( ! _.isNull( attributes[ key ] ) ) {
+								attributes[ key ] = attributes[ key ].toISOString();
+							}
 						}
 					} );
 
@@ -343,8 +383,11 @@
 							return;
 						}
 
-						timestamp = wp.api.utils.parseISO8601( response[ key ] );
-						response[ key ] = new Date( timestamp );
+						// Don't convert null values
+						if ( ! _.isNull( response[ key ] ) ) {
+							timestamp = wp.api.utils.parseISO8601( response[ key ] );
+							response[ key ] = new Date( timestamp );
+						}
 					});
 
 					return response;
@@ -352,7 +395,152 @@
 			},
 
 			/**
-			 * The author mixin adds a helper funtion to retrieve a models author user model.
+			 * Add a helper funtion to handle post Categories.
+			 */
+			CategoriesMixin = {
+
+				/**
+				 * Get a PostsCategories model for an model's categories.
+				 *
+				 * Uses the embedded data if available, otherwises fetches the
+				 * data from the server.
+				 *
+				 * @return {Deferred.promise} promise Resolves to a wp.api.collections.PostsCategories collection containing the post categories.
+				 */
+				getCategories: function() {
+					var postId, embeddeds, categories,
+						self            = this,
+						classProperties = '',
+						properties      = '',
+						deferred        = jQuery.Deferred();
+
+					postId    = this.get( 'id' );
+					embeddeds = this.get( '_embedded' ) || {};
+
+					// Verify that we have a valied post id.
+					if ( ! _.isNumber( postId ) ) {
+						return null;
+					}
+
+					// If we have embedded categories data, use that when constructing the categories.
+					if ( embeddeds['https://api.w.org/term'] ) {
+						properties = embeddeds['https://api.w.org/term'][0];
+					} else {
+
+						// Otherwise use the postId.
+						classProperties = { parent: postId };
+					}
+
+					// Create the new categories collection.
+					categories = new wp.api.collections.PostsCategories( properties, classProperties );
+
+					// If we didn’t have embedded categories, fetch the categories data.
+					if ( _.isUndefined( categories.models[0] ) ) {
+						categories.fetch( { success: function( categories ) {
+							self.setCategoryPostParents( categories, postId );
+							deferred.resolve( categories );
+						} } );
+					} else {
+						this.setCategoryPostParents( categories, postId );
+						deferred.resolve( categories );
+					}
+
+					// Return the constructed categories promise.
+					return deferred.promise();
+				},
+
+				/**
+				 * Set the category post parents when retrieving posts.
+				 */
+				setCategoryPostParents: function( categories, postId ) {
+
+					// Attach post_parent id to the categories.
+					_.each( categories.models, function( category ) {
+						category.set( 'parent_post', postId );
+					} );
+				},
+
+				/**
+				 * Set the categories for a post.
+				 *
+				 * Accepts an array of category slugs, or a PostsCategories collection.
+				 *
+				 * @param {array|Backbone.Collection} categories The categories to set on the post.
+				 *
+				 */
+				setCategories: function( categories ) {
+					var allCategories, newCategory,
+						self = this,
+						newCategories = [];
+
+					// If this is an array of slugs, build a collection.
+					if ( _.isArray( categories ) ) {
+
+						// Get all the categories.
+						allCategories = new wp.api.collections.Categories();
+						allCategories.fetch( {
+							success: function( allcats ) {
+
+								// Find the passed categories and set them up.
+								_.each( categories, function( category ) {
+									newCategory = new wp.api.models.PostsCategories( allcats.findWhere( { slug: category } ) );
+
+									// Tie the new category to the post.
+									newCategory.set( 'parent_post', self.get( 'id' ) );
+
+									// Add the new category to the collection.
+									newCategories.push( newCategory );
+								} );
+								categories = new wp.api.collections.PostsCategories( newCategories );
+								self.setCategoriesWithCollection( categories );
+							}
+						} );
+
+					} else {
+						this.setCategoriesWithCollection( categories );
+					}
+
+				},
+
+				/**
+				 * Set the categories for a post.
+				 *
+				 * Accepts PostsCategories collection.
+				 *
+				 * @param {array|Backbone.Collection} categories The categories to set on the post.
+				 *
+				 */
+				setCategoriesWithCollection: function( categories ) {
+					var removedCategories, addedCategories, categoriesIds, existingCategoriesIds;
+
+					// Get the existing categories.
+					this.getCategories().done( function( existingCategories ) {
+
+						// Pluck out the category ids.
+						categoriesIds         = categories.pluck( 'id' );
+						existingCategoriesIds = existingCategories.pluck( 'id' );
+
+						// Calculate which categories have been removed or added (leave the rest).
+						addedCategories   = _.difference( categoriesIds, existingCategoriesIds );
+						removedCategories = _.difference( existingCategoriesIds, categoriesIds );
+
+						// Add the added categories.
+						_.each( addedCategories, function( addedCategory ) {
+
+							// Save the new categories on the post with a 'POST' method, not Backbone's default 'PUT'.
+							existingCategories.create( categories.get( addedCategory ), { type: 'POST' } );
+						} );
+
+						// Remove the removed categories.
+						_.each( removedCategories, function( removedCategory ) {
+							existingCategories.get( removedCategory ).destroy();
+						} );
+					} );
+				}
+			},
+
+			/**
+			 * Add a helper function to retrieve the author user model.
 			 */
 			AuthorMixin = {
 
@@ -362,7 +550,7 @@
 				 * Uses the embedded user data if available, otherwises fetches the user
 				 * data from the server.
 				 *
-				 * @return {Object} user A backbone model representing the author user.
+				 * @return {Object} user A wp.api.models.Users model representing the author user.
 				 */
 				getAuthorUser: function() {
 					var user, authorId, embeddeds, attributes;
@@ -370,7 +558,7 @@
 					authorId  = this.get( 'author' );
 					embeddeds = this.get( '_embedded' ) || {};
 
-					// Verify that we have a valied autor id.
+					// Verify that we have a valied author id.
 					if ( ! _.isNumber( authorId ) ) {
 						return null;
 					}
@@ -396,6 +584,53 @@
 					// Return the constructed user.
 					return user;
 				}
+			},
+
+			/**
+			 * Add a helper function to retrieve the featured image.
+			 */
+			FeaturedImageMixin = {
+
+				/**
+				 * Get a featured image for a post.
+				 *
+				 * Uses the embedded user data if available, otherwises fetches the media
+				 * data from the server.
+				 *
+				 * @return {Object} media A wp.api.models.Media model representing the featured image.
+				 */
+				getFeaturedImage: function() {
+					var media, featuredImageId, embeddeds, attributes;
+
+					featuredImageId  = this.get( 'featured_image' );
+					embeddeds        = this.get( '_embedded' ) || {};
+
+					// Verify that we have a valid featured image id.
+					if ( ( ! _.isNumber( featuredImageId ) ) || 0 === featuredImageId ) {
+						return null;
+					}
+
+					// If we have embedded featured image data, use that when constructing the user.
+					if ( embeddeds['https://api.w.org/featuredmedia'] ) {
+						attributes = _.findWhere( embeddeds['https://api.w.org/featuredmedia'], { id: featuredImageId } );
+					}
+
+					// Otherwise use the featuredImageId.
+					if ( ! attributes ) {
+						attributes = { id: featuredImageId };
+					}
+
+					// Create the new media model.
+					media = new wp.api.models.Media( attributes );
+
+					// If we didn’t have an embedded media, fetch the media data.
+					if ( ! media.get( 'source_url' ) ) {
+						media.fetch();
+					}
+
+					// Return the constructed media.
+					return media;
+				}
 			};
 
 		// Exit if we don't have valid model defaults.
@@ -418,6 +653,16 @@
 		// Add the AuthorMixin for models that contain an author.
 		if ( ! _.isUndefined( model.defaults.author ) ) {
 			model = model.extend( AuthorMixin );
+		}
+
+		// Add the FeaturedImageMixin for models that contain a featured_image.
+		if ( ! _.isUndefined( model.defaults.featured_image ) ) {
+			model = model.extend( FeaturedImageMixin );
+		}
+
+		// Add the CategoriesMixin for models that support categories collections.
+		if ( ! _.isUndefined( loadingObjects.collections[ modelClassName + 'Categories' ] ) ) {
+			model = model.extend( CategoriesMixin );
 		}
 
 		return model;
