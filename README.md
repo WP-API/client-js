@@ -122,14 +122,26 @@ post.save();
 var post = new wp.api.models.Posts({ title:'new test' } );
 post.save();
 
-// Get a collection of the post's categories
-var postCategories = post.getCategories();
+// Get a collection of the post's categories (returns a promise)
+// Uses _embedded data if available, in which case promise resolves immediately.
+post.getCategories().done( function( categories ) {
+	// ... do something with the categories.
+	// The new post has an single Category: Uncategorized
+	postCategories.at( 0 ).get( 'name' );
+	// response -> "Uncategorized"
+} );
 
-// The new post has an single Category: Uncategorized
-postCategories.at( 0 ).get('name');
-// response -> "Uncategorized"
+// Get a posts author User model.
+post.getAuthorUser().done( function( user ){
+	// ... do something with user
+} );
 
-// Set the post categories
+// Get a posts featured image Media model.
+post.getFeaturedImage().done( function( image ){
+	// ... do something with image
+} );
+
+// Set the post categories.
 post.setCategories( [ 'apples', 'oranges' ] );
 
 // Get all the categories
