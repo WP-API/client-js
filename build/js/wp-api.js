@@ -890,7 +890,7 @@
 									// Tie the new category to the post.
 									newCategory.set( 'parent_post', self.get( 'id' ) );
 
-									// Add the new category to the collection
+									// Add the new category to the collection.
 									newCategories.push( newCategory );
 								} );
 								categories = new wp.api.collections.PostsCategories( newCategories );
