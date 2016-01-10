@@ -429,11 +429,82 @@
 			},
 
 			/**
+			 * Build a helper getter funciton.
+			 */
+			buildCollectionGetter = function( model, collectionClassName, embedSourcePoint, embedIndex ) {
+				var postId, embeddeds, getObjects,
+					classProperties = '',
+					properties      = '',
+					deferred        = jQuery.Deferred();
+
+				postId    = model.get( 'id' );
+				embeddeds = model.get( '_embedded' ) || {};
+
+				// Verify that we have a valied post id.
+				if ( ! _.isNumber( postId ) ) {
+					deferred.reject();
+					return deferred;
+				}
+
+				// If we have embedded getObjects data, use that when constructing the getObjects.
+				if ( ! _.isUndefined( embedSourcePoint ) && ! _.isUndefined( embeddeds[ embedSourcePoint ] ) ) {
+
+					// Some embeds also include an index offset, check for that.
+					if ( _.isUndefined( embedIndex ) ) {
+
+						// Use the embed source point directly.
+						properties = embeddeds[ embedSourcePoint ];
+					} else {
+
+						// Add the index to the embed source point.
+						properties = embeddeds[ embedSourcePoint ][ embedIndex ];
+					}
+				} else {
+
+					// Otherwise use the postId.
+					classProperties = { parent: postId };
+				}
+
+				// Create the new getObjects collection.
+				getObjects = new wp.api.collections[ collectionClassName ]( properties, classProperties );
+
+				// If we didn’t have embedded getObjects, fetch the getObjects data.
+				if ( _.isUndefined( getObjects.models[0] ) ) {
+					getObjects.fetch( { success: function( getObjects ) {
+
+						// Add a helper 'parent_post' attriburte onto the model.
+						setHelperParentPost( getObjects, postId );
+						deferred.resolve( getObjects );
+					} } );
+				} else {
+
+					// Add a helper 'parent_post' attriburte onto the model.
+					setHelperParentPost( getObjects, postId );
+					deferred.resolve( getObjects );
+				}
+
+				// Return a promise.
+				return deferred.promise();
+
+			},
+
+			/**
+			 * Set the model post parent.
+			 */
+			setHelperParentPost = function( collection, postId ) {
+
+				// Attach post_parent id to the collection.
+				_.each( collection.models, function( model ) {
+					model.set( 'parent_post', postId );
+				} );
+			},
+
+			/**
 			 * Add a helper funtion to handle post Meta.
 			 */
 			MetaMixin = {
 				/**
-				 * Get a PostMeta model for an model's categories.
+				 * Get a PostMeta model for an model's meta.
 				 *
 				 * Uses the embedded data if available, otherwises fetches the
 				 * data from the server.
@@ -442,63 +513,27 @@
 				 * collection containing the post Meta value(s).
 				 */
 				getMeta: function() {
-					var postId, embeddeds, meta,
-						self            = this,
-						classProperties = '',
-						properties      = '',
-						deferred        = jQuery.Deferred();
-
-					postId    = this.get( 'id' );
-					embeddeds = this.get( '_embedded' ) || {};
-
-					// Verify that we have a valied post id.
-					if ( ! _.isNumber( postId ) ) {
-						return null;
-					}
-
-					// If we have embedded meta data, use that when constructing the meta.
-					if ( ! _.isUndefined( embeddeds['https://api.w.org/term'] ) ) {
-						properties = embeddeds['https://api.w.org/term'][1];
-					} else {
-
-						// Otherwise use the postId.
-						classProperties = { parent: postId };
-					}
-
-					// Create the new meta collection.
-					meta = new wp.api.collections.PostMeta( properties, classProperties );
-
-					// If we didn’t have embedded meta, fetch the meta data.
-					if ( _.isUndefined( meta.models[0] ) ) {
-						meta.fetch( { success: function( meta ) {
-							self.setCategoryPostParents( meta, postId );
-							deferred.resolve( meta );
-						} } );
-					} else {
-						this.setCategoryPostParents( meta, postId );
-						deferred.resolve( meta );
-					}
-
-					// Return a promise.
-					return deferred.promise();
+					return buildCollectionGetter( this, 'PostMeta', 'https://api.w.org/meta' );
 				}
-
 			},
 
 			/**
 			 * Add a helper funtion to handle post Revisions.
+			 */
 
 			RevisionsMixin = {
-
+				getRevisions: function() {
+					return buildCollectionGetter( this, 'PostRevisions' );
+				}
 			},
-*/
 			/**
 			 * Add a helper funtion to handle post Tags.
-
+			 */
 			TagsMixin = {
-
+				getTags: function() {
+					return buildCollectionGetter( this, 'PostTags', 'https://api.w.org/term', 1 );
+				}
 			},
- */
 			/**
 			 * Add a helper funtion to handle post Categories.
 			 */
@@ -514,56 +549,7 @@
 				 * collection containing the post categories.
 				 */
 				getCategories: function() {
-					var postId, embeddeds, categories,
-						self            = this,
-						classProperties = '',
-						properties      = '',
-						deferred        = jQuery.Deferred();
-
-					postId    = this.get( 'id' );
-					embeddeds = this.get( '_embedded' ) || {};
-
-					// Verify that we have a valied post id.
-					if ( ! _.isNumber( postId ) ) {
-						return null;
-					}
-
-					// If we have embedded categories data, use that when constructing the categories.
-					if ( ! _.isUndefined( embeddeds['https://api.w.org/term'] ) ) {
-						properties = embeddeds['https://api.w.org/term'][0];
-					} else {
-
-						// Otherwise use the postId.
-						classProperties = { parent: postId };
-					}
-
-					// Create the new categories collection.
-					categories = new wp.api.collections.PostCategories( properties, classProperties );
-
-					// If we didn’t have embedded categories, fetch the categories data.
-					if ( _.isUndefined( categories.models[0] ) ) {
-						categories.fetch( { success: function( categories ) {
-							self.setCategoryPostParents( categories, postId );
-							deferred.resolve( categories );
-						} } );
-					} else {
-						this.setCategoryPostParents( categories, postId );
-						deferred.resolve( categories );
-					}
-
-					// Return a promise.
-					return deferred.promise();
-				},
-
-				/**
-				 * Set the category post parents when retrieving posts.
-				 */
-				setCategoryPostParents: function( categories, postId ) {
-
-					// Attach post_parent id to the categories.
-					_.each( categories.models, function( category ) {
-						category.set( 'parent_post', postId );
-					} );
+					return buildCollectionGetter( this, 'PostCategories', 'https://api.w.org/term', 0 );
 				},
 
 				/**
@@ -781,9 +767,19 @@
 			model = model.extend( CategoriesMixin );
 		}
 
-		// Add the CategoriesMixin for models that support categories collections.
+		// Add the MetaMixin for models that support meta collections.
 		if ( ! _.isUndefined( loadingObjects.collections[ modelClassName + 'Meta' ] ) ) {
 			model = model.extend( MetaMixin );
+		}
+
+		// Add the TagsMixin for models that support tags collections.
+		if ( ! _.isUndefined( loadingObjects.collections[ modelClassName + 'Tags' ] ) ) {
+			model = model.extend( TagsMixin );
+		}
+
+		// Add the RevisionsMixin for models that support revisions collections.
+		if ( ! _.isUndefined( loadingObjects.collections[ modelClassName + 'Revisions' ] ) ) {
+			model = model.extend( RevisionsMixin );
 		}
 
 		return model;
