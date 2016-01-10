@@ -239,7 +239,7 @@
 			_.each( collectionRoutes, function( collectionRoute ) {
 
 				// Extract the name and any parent from the route.
-				var collectionClassName,
+				var collectionClassName, modelClassName,
 						routeName  = collectionRoute.index.slice( collectionRoute.index.lastIndexOf( '/' ) + 1 ),
 						parentName = wp.api.utils.extractRoutePart( collectionRoute.index, 3 );
 
@@ -247,6 +247,7 @@
 				if ( '' !== parentName && parentName !== routeName ) {
 
 					collectionClassName = wp.api.utils.capitalize( parentName ) + wp.api.utils.capitalize( routeName );
+					modelClassName      = mapping.models[ collectionClassName ] || collectionClassName;
 					collectionClassName = mapping.collections[ collectionClassName ] || collectionClassName;
 					loadingObjects.collections[ collectionClassName ] = wp.api.WPApiBaseCollection.extend( {
 
@@ -258,7 +259,7 @@
 						},
 
 						// Specify the model that this collection contains.
-						model: loadingObjects.models[ collectionClassName ],
+						model: loadingObjects.models[ modelClassName ],
 
 						// Include a reference to the original class name.
 						name: collectionClassName,
@@ -273,6 +274,7 @@
 
 					// This is a collection without a parent in its route.
 					collectionClassName = wp.api.utils.capitalize( routeName );
+					modelClassName      = mapping.models[ collectionClassName ] || collectionClassName;
 					collectionClassName = mapping.collections[ collectionClassName ] || collectionClassName;
 					loadingObjects.collections[ collectionClassName ] = wp.api.WPApiBaseCollection.extend( {
 
@@ -280,7 +282,7 @@
 						url: routeModel.get( 'apiRoot' ) + routeModel.get( 'versionString' ) + routeName,
 
 						// Specify the model that this collection contains.
-						model: loadingObjects.models[ collectionClassName ],
+						model: loadingObjects.models[ modelClassName ],
 
 						// Include a reference to the original class name.
 						name: collectionClassName,
@@ -432,12 +434,12 @@
 			CategoriesMixin = {
 
 				/**
-				 * Get a PostsCategories model for an model's categories.
+				 * Get a PostCategories model for an model's categories.
 				 *
 				 * Uses the embedded data if available, otherwises fetches the
 				 * data from the server.
 				 *
-				 * @return {Deferred.promise} promise Resolves to a wp.api.collections.PostsCategories collection containing the post categories.
+				 * @return {Deferred.promise} promise Resolves to a wp.api.collections.PostCategories collection containing the post categories.
 				 */
 				getCategories: function() {
 					var postId, embeddeds, categories,
@@ -464,7 +466,7 @@
 					}
 
 					// Create the new categories collection.
-					categories = new wp.api.collections.PostsCategories( properties, classProperties );
+					categories = new wp.api.collections.PostCategories( properties, classProperties );
 
 					// If we didn’t have embedded categories, fetch the categories data.
 					if ( _.isUndefined( categories.models[0] ) ) {
@@ -495,7 +497,7 @@
 				/**
 				 * Set the categories for a post.
 				 *
-				 * Accepts an array of category slugs, or a PostsCategories collection.
+				 * Accepts an array of category slugs, or a PostCategories collection.
 				 *
 				 * @param {array|Backbone.Collection} categories The categories to set on the post.
 				 *
@@ -515,7 +517,7 @@
 
 								// Find the passed categories and set them up.
 								_.each( categories, function( category ) {
-									newCategory = new wp.api.models.PostsCategories( allcats.findWhere( { slug: category } ) );
+									newCategory = new wp.api.models.PostCategories( allcats.findWhere( { slug: category } ) );
 
 									// Tie the new category to the post.
 									newCategory.set( 'parent_post', self.get( 'id' ) );
@@ -523,7 +525,7 @@
 									// Add the new category to the collection.
 									newCategories.push( newCategory );
 								} );
-								categories = new wp.api.collections.PostsCategories( newCategories );
+								categories = new wp.api.collections.PostCategories( newCategories );
 								self.setCategoriesWithCollection( categories );
 							}
 						} );
@@ -537,7 +539,7 @@
 				/**
 				 * Set the categories for a post.
 				 *
-				 * Accepts PostsCategories collection.
+				 * Accepts PostCategories collection.
 				 *
 				 * @param {array|Backbone.Collection} categories The categories to set on the post.
 				 *
@@ -582,7 +584,7 @@
 				 * Uses the embedded user data if available, otherwises fetches the user
 				 * data from the server.
 				 *
-				 * @return {Object} user A wp.api.models.Users model representing the author user.
+				 * @return {Object} user A wp.api.models.User model representing the author user.
 				 */
 				getAuthorUser: function() {
 					var user, authorId, embeddeds, attributes, deferred;
@@ -607,7 +609,7 @@
 					}
 
 					// Create the new user model.
-					user = new wp.api.models.Users( attributes );
+					user = new wp.api.models.User( attributes );
 
 					// If we didn’t have an embedded user, fetch the user data.
 					if ( ! user.get( 'name' ) ) {
