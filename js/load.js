@@ -429,6 +429,77 @@
 			},
 
 			/**
+			 * Add a helper funtion to handle post Meta.
+			 */
+			MetaMixin = {
+				/**
+				 * Get a PostMeta model for an model's categories.
+				 *
+				 * Uses the embedded data if available, otherwises fetches the
+				 * data from the server.
+				 *
+				 * @return {Deferred.promise} promise Resolves to a wp.api.collections.PostMeta
+				 * collection containing the post Meta value(s).
+				 */
+				getMeta: function() {
+					var postId, embeddeds, meta,
+						self            = this,
+						classProperties = '',
+						properties      = '',
+						deferred        = jQuery.Deferred();
+
+					postId    = this.get( 'id' );
+					embeddeds = this.get( '_embedded' ) || {};
+
+					// Verify that we have a valied post id.
+					if ( ! _.isNumber( postId ) ) {
+						return null;
+					}
+
+					// If we have embedded meta data, use that when constructing the meta.
+					if ( ! _.isUndefined( embeddeds['https://api.w.org/term'] ) ) {
+						properties = embeddeds['https://api.w.org/term'][1];
+					} else {
+
+						// Otherwise use the postId.
+						classProperties = { parent: postId };
+					}
+
+					// Create the new meta collection.
+					meta = new wp.api.collections.PostMeta( properties, classProperties );
+
+					// If we didn’t have embedded meta, fetch the meta data.
+					if ( _.isUndefined( meta.models[0] ) ) {
+						meta.fetch( { success: function( meta ) {
+							self.setCategoryPostParents( meta, postId );
+							deferred.resolve( meta );
+						} } );
+					} else {
+						this.setCategoryPostParents( meta, postId );
+						deferred.resolve( meta );
+					}
+
+					// Return a promise.
+					return deferred.promise();
+				}
+
+			},
+
+			/**
+			 * Add a helper funtion to handle post Revisions.
+
+			RevisionsMixin = {
+
+			},
+*/
+			/**
+			 * Add a helper funtion to handle post Tags.
+
+			TagsMixin = {
+
+			},
+ */
+			/**
 			 * Add a helper funtion to handle post Categories.
 			 */
 			CategoriesMixin = {
@@ -439,7 +510,8 @@
 				 * Uses the embedded data if available, otherwises fetches the
 				 * data from the server.
 				 *
-				 * @return {Deferred.promise} promise Resolves to a wp.api.collections.PostCategories collection containing the post categories.
+				 * @return {Deferred.promise} promise Resolves to a wp.api.collections.PostCategories
+				 * collection containing the post categories.
 				 */
 				getCategories: function() {
 					var postId, embeddeds, categories,
@@ -457,7 +529,7 @@
 					}
 
 					// If we have embedded categories data, use that when constructing the categories.
-					if ( embeddeds['https://api.w.org/term'] ) {
+					if ( ! _.isUndefined( embeddeds['https://api.w.org/term'] ) ) {
 						properties = embeddeds['https://api.w.org/term'][0];
 					} else {
 
@@ -651,7 +723,7 @@
 					}
 
 					// If we have embedded featured image data, use that when constructing the user.
-					if ( embeddeds['https://api.w.org/featuredmedia'] ) {
+					if ( ! _.isUndefined( embeddeds['https://api.w.org/featuredmedia'] ) ) {
 						attributes = _.findWhere( embeddeds['https://api.w.org/featuredmedia'], { id: featuredImageId } );
 					}
 
@@ -707,6 +779,11 @@
 		// Add the CategoriesMixin for models that support categories collections.
 		if ( ! _.isUndefined( loadingObjects.collections[ modelClassName + 'Categories' ] ) ) {
 			model = model.extend( CategoriesMixin );
+		}
+
+		// Add the CategoriesMixin for models that support categories collections.
+		if ( ! _.isUndefined( loadingObjects.collections[ modelClassName + 'Meta' ] ) ) {
+			model = model.extend( MetaMixin );
 		}
 
 		return model;
