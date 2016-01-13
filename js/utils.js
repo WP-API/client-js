@@ -187,18 +187,6 @@
 
 		} );
 
-		/**
-		 * Finish processing the defaults, assigning `defaults` if available, otherwise null.
-		 *
-		 * @todo required arguments
-		 */
-		_.each( modelInstance.defaults, function( theDefault, index ) {
-			if ( _.isUndefined( theDefault['default'] ) ) {
-				modelInstance.defaults[ index ] = null;
-			} else {
-				modelInstance.defaults[ index ] = theDefault['default'];
-			}
-		} );
 	};
 
 	/**
