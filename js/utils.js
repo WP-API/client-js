@@ -136,32 +136,32 @@
 	};
 
 	/**
-	 * Add defaults to a model from a route's endpoints.
+	 * Add args and options to a model prototype from a route's endpoints.
 	 *
 	 * @param {array}  routeEndpoints Array of route endpoints.
 	 * @param {Object} modelInstance  An instance of the model (or collection)
-	 *                                to add the defaults to.
+	 *                                to add the args to.
 	 */
 	wp.api.utils.decorateFromRoute = function( routeEndpoints, modelInstance ) {
 
 		/**
-		 * Build the defaults based on route endpoint data.
+		 * Build the args based on route endpoint data.
 		 */
 		_.each( routeEndpoints, function( routeEndpoint ) {
 
-			// Add post and edit endpoints as model defaults.
+			// Add post and edit endpoints as model args.
 			if ( _.contains( routeEndpoint.methods, 'POST' ) || _.contains( routeEndpoint.methods, 'PUT' ) ) {
 
-				// Add any non empty args, merging them into the defaults object.
+				// Add any non empty args, merging them into the args object.
 				if ( ! _.isEmpty( routeEndpoint.args ) ) {
 
-					// Set as defauls if no defaults yet.
-					if ( _.isEmpty( modelInstance.prototype.defaults ) ) {
-						modelInstance.prototype.defaults = routeEndpoint.args;
+					// Set as defauls if no args yet.
+					if ( _.isEmpty( modelInstance.prototype.args ) ) {
+						modelInstance.prototype.args = routeEndpoint.args;
 					} else {
 
-						// We already have defaults, merge these new args in.
-						modelInstance.prototype.defaults = _.union( routeEndpoint.args, modelInstance.prototype.defaults );
+						// We already have args, merge these new args in.
+						modelInstance.prototype.args = _.union( routeEndpoint.args, modelInstance.prototype.defaults );
 					}
 				}
 			} else {
