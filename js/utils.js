@@ -156,12 +156,12 @@
 				if ( ! _.isEmpty( routeEndpoint.args ) ) {
 
 					// Set as defauls if no defaults yet.
-					if ( _.isEmpty( modelInstance.defaults ) ) {
-						modelInstance.defaults = routeEndpoint.args;
+					if ( _.isEmpty( modelInstance.prototype.defaults ) ) {
+						modelInstance.prototype.defaults = routeEndpoint.args;
 					} else {
 
 						// We already have defaults, merge these new args in.
-						modelInstance.defaults = _.union( routeEndpoint.args, modelInstance.defaults );
+						modelInstance.prototype.defaults = _.union( routeEndpoint.args, modelInstance.prototype.defaults );
 					}
 				}
 			} else {
