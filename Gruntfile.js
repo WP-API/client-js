@@ -29,7 +29,6 @@ module.exports = function( grunt ) {
 						'js/app.js',
 						'js/utils.js',
 						'js/models.js',
-						'js/views.js',
 						'js/collections.js',
 						'js/load.js'
 					]
@@ -42,7 +41,6 @@ module.exports = function( grunt ) {
 					'js/app.js',
 					'js/utils.js',
 					'js/models.js',
-					'js/views.js',
 					'js/collections.js',
 					'js/load.js'
 				],
