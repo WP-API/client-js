@@ -614,9 +614,11 @@
 
 // Suppress warning about parse function's unused "options" argument:
 /* jshint unused:false */
-(function( wp, wpApiSettings, Backbone, window, undefined ) {
+(function() {
 
 	'use strict';
+
+	var wpApiSettings = window.wpApiSettings || {};
 
 	/**
 	 * Backbone base model for all models.
@@ -723,12 +725,13 @@
 			}
 		}
 	);
-})( wp, wpApiSettings, Backbone, window );
+})();
 
-/* global wpApiSettings:false */
-(function( wp, wpApiSettings, Backbone, _, window, undefined ) {
+( function() {
 
 	'use strict';
+
+	var wpApiSettings = window.wpApiSettings || {};
 
 	/**
 	 * Contains basic collection functionality such as pagination.
@@ -864,17 +867,20 @@
 		}
 	);
 
-})( wp, wpApiSettings, Backbone, _, window );
+} )();
 
-/* global wpApiSettings */
-(function( window, undefined ) {
+( function() {
 
 	'use strict';
 
-	var Endpoint, initializedDeferreds = {};
-
+	var Endpoint, initializedDeferreds = {},
+		wpApiSettings = window.wpApiSettings || {};
 	window.wp = window.wp || {};
-	wp.api = wp.api || {};
+	wp.api    = wp.api || {};
+
+	if ( _.isEmpty( wpApiSettings ) ) {
+		wpApiSettings.root = window.location.origin + '/wp-json/';
+	}
 
 	Endpoint = Backbone.Model.extend({
 		defaults: {
@@ -1231,4 +1237,4 @@
 	// The wp.api.init function returns a promise that will resolve with the endpoint once it is ready.
 	wp.api.init();
 
-})( window );
+} )();
