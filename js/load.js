@@ -125,19 +125,14 @@
 						index !== schemaRoot &&
 						index !== ( '/' + routeModel.get( 'versionString' ).slice( 0, -1 ) )
 				) {
-					/**
-					 * Single item models end with a regex/variable.
-					 *
-					 * @todo make model/collection logic more robust.
-					 */
-					if ( index.endsWith( '+)' ) ) {
+
+					// Single items end with a regex (or the special case 'me').
+					if ( index.endsWith( '+)' ) || index.endsWith( 'me' ) ) {
 						modelRoutes.push( { index: index, route: route } );
 					} else {
 
 						// Collections end in a name.
-						if ( ! index.endsWith( 'me' ) ) {
-							collectionRoutes.push( { index: index, route: route } );
-						}
+						collectionRoutes.push( { index: index, route: route } );
 					}
 				}
 			} );
@@ -152,7 +147,13 @@
 				// Extract the name and any parent from the route.
 				var modelClassName,
 						routeName  = wp.api.utils.extractRoutePart( modelRoute.index, 2 ),
-						parentName = wp.api.utils.extractRoutePart( modelRoute.index, 4 );
+						parentName = wp.api.utils.extractRoutePart( modelRoute.index, 4 ),
+						routeEnd   = wp.api.utils.extractRoutePart( modelRoute.index, 1 );
+
+				// Handle the special case of the 'me' route.
+				if ( 'me' === routeEnd ) {
+					routeName = 'me';
+				}
 
 				// If the model has a parent in its route, add that to its class name.
 				if ( '' !== parentName && parentName !== routeName ) {
@@ -208,7 +209,10 @@
 
 						// Function that returns a constructed url based on the id.
 						url: function() {
-							var url = routeModel.get( 'apiRoot' ) + routeModel.get( 'versionString' ) + routeName;
+							var url = routeModel.get( 'apiRoot' ) +
+								routeModel.get( 'versionString' ) +
+								( ( 'me' === routeName ) ? 'users/me' : routeName );
+
 							if ( ! _.isUndefined( this.get( 'id' ) ) ) {
 								url +=  '/' + this.get( 'id' );
 							}
