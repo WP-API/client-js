@@ -73,7 +73,42 @@
 		},
 
 		constructFromSchema: function() {
-			var routeModel = this, modelRoutes, collectionRoutes, schemaRoot, loadingObjects;
+			var routeModel = this, modelRoutes, collectionRoutes, schemaRoot, loadingObjects,
+
+			/**
+			 * Set up the model and collection name mapping options. As the schema is built, the
+			 * model and collection names will be adjusted if they are found in the mapping object.
+			 *
+			 * Localizing a variable wpApiSettings.mapping will over-ride the default mapping options.
+			 *
+			 */
+			mapping = wpApiSettings.mapping || {
+				models: {
+					'Categories':      'Category',
+					'Comments':        'Comment',
+					'Pages':           'Page',
+					'PagesMeta':       'PageMeta',
+					'PagesRevisions':  'PageRevision',
+					'Posts':           'Post',
+					'PostsCategories': 'PostCategory',
+					'PostsRevisions':  'PostRevision',
+					'PostsTags':       'PostTag',
+					'Schema':          'Schema',
+					'Statuses':        'Status',
+					'Tags':            'Tag',
+					'Taxonomies':      'Taxonomy',
+					'Types':           'Type',
+					'Users':           'User'
+				},
+				collections: {
+					'PagesMeta':       'PageMeta',
+					'PagesRevisions':  'PageRevisions',
+					'PostsCategories': 'PostCategories',
+					'PostsMeta':       'PostMeta',
+					'PostsRevisions':  'PostRevisions',
+					'PostsTags':       'PostTags'
+				}
+			};
 
 			/**
 			 * Iterate thru the routes, picking up models and collections to build. Builds two arrays,
@@ -129,6 +164,7 @@
 				// If the model has a parent in its route, add that to its class name.
 				if ( '' !== parentName && parentName !== routeName ) {
 					modelClassName = wp.api.utils.capitalize( parentName ) + wp.api.utils.capitalize( routeName );
+					modelClassName = mapping.models[ modelClassName ] || modelClassName;
 					loadingObjects.models[ modelClassName ] = wp.api.WPApiBaseModel.extend( {
 
 						// Function that returns a constructed url based on the parent and id.
@@ -174,6 +210,7 @@
 
 					// This is a model without a parent in its route
 					modelClassName = wp.api.utils.capitalize( routeName );
+					modelClassName = mapping.models[ modelClassName ] || modelClassName;
 					loadingObjects.models[ modelClassName ] = wp.api.WPApiBaseModel.extend( {
 
 						// Function that returns a constructed url based on the id.
@@ -197,7 +234,7 @@
 				}
 
 				// Add defaults to the new model, pulled form the endpoint
-				wp.api.decorateFromRoute( modelRoute.route.endpoints, loadingObjects.models[ modelClassName ] );
+				wp.api.utils.decorateFromRoute( modelRoute.route.endpoints, loadingObjects.models[ modelClassName ] );
 
 			} );
 
@@ -209,7 +246,7 @@
 			_.each( collectionRoutes, function( collectionRoute ) {
 
 				// Extract the name and any parent from the route.
-				var collectionClassName,
+				var collectionClassName, modelClassName,
 						routeName  = collectionRoute.index.slice( collectionRoute.index.lastIndexOf( '/' ) + 1 ),
 						parentName = wp.api.utils.extractRoutePart( collectionRoute.index, 3 );
 
@@ -217,6 +254,8 @@
 				if ( '' !== parentName && parentName !== routeName ) {
 
 					collectionClassName = wp.api.utils.capitalize( parentName ) + wp.api.utils.capitalize( routeName );
+					modelClassName      = mapping.models[ collectionClassName ] || collectionClassName;
+					collectionClassName = mapping.collections[ collectionClassName ] || collectionClassName;
 					loadingObjects.collections[ collectionClassName ] = wp.api.WPApiBaseCollection.extend( {
 
 						// Function that returns a constructed url passed on the parent.
@@ -227,7 +266,7 @@
 						},
 
 						// Specify the model that this collection contains.
-						model: loadingObjects.models[ collectionClassName ],
+						model: loadingObjects.models[ modelClassName ],
 
 						// Include a reference to the original class name.
 						name: collectionClassName,
@@ -242,13 +281,15 @@
 
 					// This is a collection without a parent in its route.
 					collectionClassName = wp.api.utils.capitalize( routeName );
+					modelClassName      = mapping.models[ collectionClassName ] || collectionClassName;
+					collectionClassName = mapping.collections[ collectionClassName ] || collectionClassName;
 					loadingObjects.collections[ collectionClassName ] = wp.api.WPApiBaseCollection.extend( {
 
 						// For the url of a root level collection, use a string.
 						url: routeModel.get( 'apiRoot' ) + routeModel.get( 'versionString' ) + routeName,
 
 						// Specify the model that this collection contains.
-						model: loadingObjects.models[ collectionClassName ],
+						model: loadingObjects.models[ modelClassName ],
 
 						// Include a reference to the original class name.
 						name: collectionClassName,
@@ -262,12 +303,12 @@
 				}
 
 				// Add defaults to the new model, pulled form the endpoint
-				wp.api.decorateFromRoute( collectionRoute.route.endpoints, loadingObjects.collections[ collectionClassName ] );
+				wp.api.utils.decorateFromRoute( collectionRoute.route.endpoints, loadingObjects.collections[ collectionClassName ] );
 			} );
 
 			// Add mixins and helpers for each of the models.
 			_.each( loadingObjects.models, function( model, index ) {
-				loadingObjects.models[ index ] = wp.api.addMixinsAndHelpers( model, index, loadingObjects );
+				loadingObjects.models[ index ] = wp.api.utils.addMixinsAndHelpers( model, index, loadingObjects );
 			} );
 
 		}

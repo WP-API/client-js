@@ -122,14 +122,26 @@ post.save();
 var post = new wp.api.models.Posts({ title:'new test' } );
 post.save();
 
-// Get a collection of the post's categories
-var postCategories = post.getCategories();
+// Get a collection of the post's categories (returns a promise)
+// Uses _embedded data if available, in which case promise resolves immediately.
+post.getCategories().done( function( postCategories ) {
+	// ... do something with the categories.
+	// The new post has an single Category: Uncategorized
+	postCategories.at( 0 ).get( 'name' );
+	// response -> "Uncategorized"
+} );
 
-// The new post has an single Category: Uncategorized
-postCategories.at( 0 ).get('name');
-// response -> "Uncategorized"
+// Get a posts author User model.
+post.getAuthorUser().done( function( user ){
+	// ... do something with user
+} );
 
-// Set the post categories
+// Get a posts featured image Media model.
+post.getFeaturedImage().done( function( image ){
+	// ... do something with image
+} );
+
+// Set the post categories.
 post.setCategories( [ 'apples', 'oranges' ] );
 
 // Get all the categories
@@ -138,8 +150,10 @@ allCategories.fetch();
 
 var appleCategory = allCategories.findWhere( { slug: 'apples' } );
 
-// Add the category to the postCategories collection
+// Add the category to the postCategories collection we previously fetched.
 appleCategory.set( 'parent_post', post.get( 'id' ) );
+
+// Use the POST method so Backbone will not PUT it even though it has an id.
 postCategories.create( appleCategory.toJSON(), { type: 'POST' } );
 
 // Remove the Uncategorized category
