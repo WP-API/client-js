@@ -53,7 +53,7 @@
 			save: function( attrs, options ) {
 
 				// Do we have the put method, then execute the save.
-				if ( _.contains( this.methods, 'PUT' ) || _.contains( this.methods, 'POST' ) ) {
+				if ( _.includes( this.methods, 'PUT' ) || _.includes( this.methods, 'POST' ) ) {
 
 					// Proxy the call to the original save function.
 					return Backbone.Model.prototype.save.call( this, attrs, options );
@@ -70,7 +70,7 @@
 			destroy: function( options ) {
 
 				// Do we have the DELETE method, then execute the destroy.
-				if ( _.contains( this.methods, 'DELETE' ) ) {
+				if ( _.includes( this.methods, 'DELETE' ) ) {
 
 					// Proxy the call to the original save function.
 					return Backbone.Model.prototype.destroy.call( this, options );
