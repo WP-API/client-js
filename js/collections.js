@@ -1,7 +1,8 @@
-/* global wpApiSettings:false */
-(function( wp, wpApiSettings, Backbone, _, window, undefined ) {
+( function() {
 
 	'use strict';
+
+	var wpApiSettings = window.wpApiSettings || {};
 
 	/**
 	 * Contains basic collection functionality such as pagination.
@@ -137,4 +138,4 @@
 		}
 	);
 
-})( wp, wpApiSettings, Backbone, _, window );
+} )();
