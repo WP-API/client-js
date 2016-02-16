@@ -364,6 +364,6 @@
 	 */
 
 	// The wp.api.init function returns a promise that will resolve with the endpoint once it is ready.
-	wp.api.init();
+	wp.api.loadPromise = wp.api.init();
 
 } )();
