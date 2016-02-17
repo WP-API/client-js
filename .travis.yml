@@ -11,15 +11,15 @@ node_js:
     - 0.10
 
 env:
-    - WP_VERSION=latest WP_MULTISITE=0 WP_PROJECT_TYPE=plugin WP_TEST_URL=http://wpdev.localhost:80
+    - WP_VERSION=latest WP_MULTISITE=0 WP_PROJECT_TYPE=plugin WP_TEST_URL=http://localhost:80
 
 before_script:
     - export DEV_LIB_PATH=dev-lib
     - if [ ! -e "$DEV_LIB_PATH" ] && [ -L .travis.yml ]; then export DEV_LIB_PATH=$( dirname $( readlink .travis.yml ) ); fi
     - source $DEV_LIB_PATH/travis.before_script.sh
-    - npm install
     - wp plugin install WP-API
     - wp plugin activate WP-API
+    - npm install
 
 script:
     - $DEV_LIB_PATH/travis.script.sh
