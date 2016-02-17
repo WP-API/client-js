@@ -1,8 +1,5 @@
-/*global JSON */
-module( 'Post Model Tests' );
-
-var testDate = new Date();
-
+/*global console */
+module( 'WP-API JS Client Tests' );
 
 QUnit.test( 'API Loaded correctly', function( assert ) {
 	var done = assert.async();
@@ -12,7 +9,7 @@ QUnit.test( 'API Loaded correctly', function( assert ) {
 
 	wp.api.loadPromise.done( function() {
 		console.log( 'done' );
-		assert.ok( wp.api.models )
+		assert.ok( wp.api.models );
 		done();
 	} );
 
@@ -40,8 +37,8 @@ _.each( collectionClassNames, function( className ) {
 		assert.expect( 2 );
 
 		wp.api.loadPromise.done( function() {
-			var theCollection = new wp.api.collections[ className ];
-			assert.ok( theCollection, "We can instantiate wp.api.collections." + className );
+			var theCollection = new wp.api.collections[ className ]();
+			assert.ok( theCollection, 'We can instantiate wp.api.collections.' + className );
 			theCollection.fetch().done( function() {
 				assert.equal( 1, theCollection.state.currentPage , 'We should be on page 1 of the collection in ' + className  );
 				done();
@@ -59,7 +56,7 @@ var modelsWithIdsClassNames =
 		'Page',
 		'Post',
 		'Tag',
-		'User',
+		'User'
 	];
 
 
@@ -74,7 +71,7 @@ _.each( modelsWithIdsClassNames, function( className ) {
 
 		wp.api.loadPromise.done( function() {
 			var theModel = new wp.api.models[ className ]();
-			assert.ok( theModel, "We can instantiate wp.api.models." + className );
+			assert.ok( theModel, 'We can instantiate wp.api.models.' + className );
 			theModel.fetch().done( function() {
 				console.log( theModel.attributes );
 				console.log( theModel.attributes[0].id );
@@ -96,7 +93,7 @@ var modelsWithIndexes =
 	[
 		'Taxonomy',
 		'Status',
-		'Type',
+		'Type'
 	];
 
 _.each( modelsWithIndexes, function( className ) {
@@ -110,7 +107,7 @@ _.each( modelsWithIndexes, function( className ) {
 
 		wp.api.loadPromise.done( function() {
 			var theModel = new wp.api.models[ className ]();
-			assert.ok( theModel, "We can instantiate wp.api.models." + className );
+			assert.ok( theModel, 'We can instantiate wp.api.models.' + className );
 			theModel.fetch().done( function() {
 				console.log( theModel.attributes );
 				var theModel2 = new wp.api.models[ className ]();
