@@ -3,6 +3,55 @@ module( 'Post Model Tests' );
 
 var testDate = new Date();
 
+
+QUnit.test( 'API Loaded correctly', function( assert ) {
+	var done = assert.async();
+
+	assert.expect( 2 );
+	assert.ok( wp.api.loadPromise );
+
+	wp.api.loadPromise.done( function() {
+		console.log( 'done' );
+		assert.ok( wp.api.models )
+		done();
+	} );
+
+});
+
+var classNames = [
+		'Categories',
+		'Comments',
+		'Media',
+		'Pages',
+		'Posts',
+		'Statuses',
+		'Tags',
+		'Taxonomies',
+		'Types',
+		'Users'
+	];
+
+_.each( classNames, function( className ) {
+	QUnit.test( 'Checking ' + className + ' collection.' , function( assert ) {
+		var done = assert.async();
+
+		assert.expect( 2 );
+
+		wp.api.loadPromise.done( function() {
+			var objects = new wp.api.collections[ className ];
+			assert.ok( objects, "We can instantiate wp.api.collections." + className );
+			objects.fetch().done( function() {
+				console.log( objects );
+				assert.equal( 1, objects.state.currentPage , 'We should be on page 1 of the collection.' );
+				done();
+			} );
+
+		} );
+
+	});
+} );
+
+/*
 // Sample Post Data.
 var testData = {
 	title:   'Test Post',
@@ -149,3 +198,4 @@ test( 'Post parent is retrieved correctly', function() {
 	equal( post2.parent().get('title'), 'Test Parent' );
 
 });
+*/
