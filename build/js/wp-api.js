@@ -1008,7 +1008,7 @@
 				) {
 
 					// Single items end with a regex (or the special case 'me').
-					if ( index.endsWith( '+)' ) || index.endsWith( 'me' ) ) {
+					if ( /.*[+)|me]$/.test( index ) ) {
 						modelRoutes.push( { index: index, route: route } );
 					} else {
 
@@ -1658,6 +1658,6 @@
 	 */
 
 	// The wp.api.init function returns a promise that will resolve with the endpoint once it is ready.
-	wp.api.init();
+	wp.api.loadPromise = wp.api.init();
 
 } )();
