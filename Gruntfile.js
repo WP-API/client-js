@@ -48,7 +48,11 @@ module.exports = function( grunt ) {
 			}
 		},
 		qunit: {
-			all: [ 'tests/*.html' ]
+			all: {
+				options: {
+					urls: [ 'http://wpdev.localhost:80/wp-content/plugins/client-js/tests/tests.html' ]
+				}
+			}
 		},
 		watch: {
 			files: [
