@@ -1,4 +1,3 @@
-/*global console */
 module( 'WP-API JS Client Tests' );
 
 QUnit.test( 'API Loaded correctly', function( assert ) {
@@ -8,7 +7,6 @@ QUnit.test( 'API Loaded correctly', function( assert ) {
 	assert.ok( wp.api.loadPromise );
 
 	wp.api.loadPromise.done( function() {
-		console.log( 'done' );
 		assert.ok( wp.api.models );
 		done();
 	} );
@@ -62,8 +60,6 @@ var modelsWithIdsClassNames =
 
 _.each( modelsWithIdsClassNames, function( className ) {
 
-	console.log( className );
-
 	QUnit.test( 'Checking ' + className + ' model.' , function( assert ) {
 		var done = assert.async();
 
@@ -73,12 +69,9 @@ _.each( modelsWithIdsClassNames, function( className ) {
 			var theModel = new wp.api.models[ className ]();
 			assert.ok( theModel, 'We can instantiate wp.api.models.' + className );
 			theModel.fetch().done( function() {
-				console.log( theModel.attributes );
-				console.log( theModel.attributes[0].id );
 				var theModel2 = new wp.api.models[ className ]();
 				theModel2.set( 'id', theModel.attributes[0].id );
 				theModel2.fetch().done( function() {
-					console.log( theModel2.attributes );
 					assert.equal( theModel.attributes[0].id, theModel2.get( 'id' ) , 'We should be able to get a ' + className );
 					done();
 				} );
@@ -98,8 +91,6 @@ var modelsWithIndexes =
 
 _.each( modelsWithIndexes, function( className ) {
 
-	console.log( className );
-
 	QUnit.test( 'Testing ' + className + ' model.' , function( assert ) {
 		var done = assert.async();
 
@@ -109,7 +100,6 @@ _.each( modelsWithIndexes, function( className ) {
 			var theModel = new wp.api.models[ className ]();
 			assert.ok( theModel, 'We can instantiate wp.api.models.' + className );
 			theModel.fetch().done( function() {
-				console.log( theModel.attributes );
 				var theModel2 = new wp.api.models[ className ]();
 
 				if ( ! _.isUndefined( theModel.attributes[0] ) ) {
@@ -117,7 +107,6 @@ _.each( modelsWithIndexes, function( className ) {
 				}
 
 				theModel2.fetch().done( function() {
-					console.log( theModel2.attributes );
 					assert.notEqual( 0, _.keys( theModel2.attributes ).length , 'We should be able to get a ' + className );
 					done();
 				} );
