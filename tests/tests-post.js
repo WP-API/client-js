@@ -18,7 +18,9 @@ QUnit.test( 'API Loaded correctly', function( assert ) {
 
 });
 
-var classNames = [
+
+// Verify collections loaded.
+var collectionClassNames = [
 		'Categories',
 		'Comments',
 		'Media',
@@ -31,18 +33,17 @@ var classNames = [
 		'Users'
 	];
 
-_.each( classNames, function( className ) {
-	QUnit.test( 'Checking ' + className + ' collection.' , function( assert ) {
+_.each( collectionClassNames, function( className ) {
+	QUnit.test( 'Testing ' + className + ' collection.' , function( assert ) {
 		var done = assert.async();
 
 		assert.expect( 2 );
 
 		wp.api.loadPromise.done( function() {
-			var objects = new wp.api.collections[ className ];
-			assert.ok( objects, "We can instantiate wp.api.collections." + className );
-			objects.fetch().done( function() {
-				console.log( objects );
-				assert.equal( 1, objects.state.currentPage , 'We should be on page 1 of the collection.' );
+			var theCollection = new wp.api.collections[ className ];
+			assert.ok( theCollection, "We can instantiate wp.api.collections." + className );
+			theCollection.fetch().done( function() {
+				assert.equal( 1, theCollection.state.currentPage , 'We should be on page 1 of the collection in ' + className  );
 				done();
 			} );
 
@@ -51,6 +52,84 @@ _.each( classNames, function( className ) {
 	});
 } );
 
+var modelsWithIdsClassNames =
+	[
+		'Category',
+		'Media',
+		'Page',
+		'Post',
+		'Tag',
+		'User',
+	];
+
+
+_.each( modelsWithIdsClassNames, function( className ) {
+
+	console.log( className );
+
+	QUnit.test( 'Checking ' + className + ' model.' , function( assert ) {
+		var done = assert.async();
+
+		assert.expect( 2 );
+
+		wp.api.loadPromise.done( function() {
+			var theModel = new wp.api.models[ className ]();
+			assert.ok( theModel, "We can instantiate wp.api.models." + className );
+			theModel.fetch().done( function() {
+				console.log( theModel.attributes );
+				console.log( theModel.attributes[0].id );
+				var theModel2 = new wp.api.models[ className ]();
+				theModel2.set( 'id', theModel.attributes[0].id );
+				theModel2.fetch().done( function() {
+					console.log( theModel2.attributes );
+					assert.equal( theModel.attributes[0].id, theModel2.get( 'id' ) , 'We should be able to get a ' + className );
+					done();
+				} );
+			} );
+
+		} );
+
+	});
+} );
+
+var modelsWithIndexes =
+	[
+		'Taxonomy',
+		'Status',
+		'Type',
+	];
+
+_.each( modelsWithIndexes, function( className ) {
+
+	console.log( className );
+
+	QUnit.test( 'Testing ' + className + ' model.' , function( assert ) {
+		var done = assert.async();
+
+		assert.expect( 2 );
+
+		wp.api.loadPromise.done( function() {
+			var theModel = new wp.api.models[ className ]();
+			assert.ok( theModel, "We can instantiate wp.api.models." + className );
+			theModel.fetch().done( function() {
+				console.log( theModel.attributes );
+				var theModel2 = new wp.api.models[ className ]();
+
+				if ( ! _.isUndefined( theModel.attributes[0] ) ) {
+					theModel2.set( 'id', theModel.attributes[0].id );
+				}
+
+				theModel2.fetch().done( function() {
+					console.log( theModel2.attributes );
+					assert.notEqual( 0, _.keys( theModel2.attributes ).length , 'We should be able to get a ' + className );
+					done();
+				} );
+			} );
+
+		} );
+
+	});
+} );
 /*
 // Sample Post Data.
 var testData = {
