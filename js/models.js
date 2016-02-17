@@ -2,9 +2,11 @@
 
 // Suppress warning about parse function's unused "options" argument:
 /* jshint unused:false */
-(function( wp, wpApiSettings, Backbone, window, undefined ) {
+(function() {
 
 	'use strict';
+
+	var wpApiSettings = window.wpApiSettings || {};
 
 	/**
 	 * Backbone base model for all models.
@@ -111,4 +113,4 @@
 			}
 		}
 	);
-})( wp, wpApiSettings, Backbone, window );
+})();
