@@ -1,7 +1,7 @@
 /* global console, wpApiSettings:false */
 // Suppress warning about parse function's unused "options" argument:
 /* jshint unused:false */
-(function( wp, wpApiSettings, window, undefined ) {
+(function() {
 	/**
 	 * Test the endpoints.
 	 *
@@ -82,4 +82,4 @@
 			} );
 		} );
 	};
-})( wp, wpApiSettings, window );
+})();
