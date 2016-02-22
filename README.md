@@ -5,6 +5,7 @@ Backbone library for the WordPress REST API or "WP-API"
 
 This library provides an interface for the [WP REST API](https://github.com/WP-API/WP-API) by providing Backbone Models and Collections for all endpoints in the API.
 
+
 ## Using
 
 Activate the WP-API plugin. Enqueue the script directly:
@@ -16,42 +17,39 @@ wp_enqueue_script( 'wp-api' );
 or as a dependency for your script:
 
 ```php
-wp_enqueue_script( 'my_script', 'path_to_my_script', array( 'wp-api' ) );
+wp_enqueue_script( 'my_script', 'path/to/my/script', array( 'wp-api' ) );
 ```
 
-The library parses the root endpoint (the 'Schema') and creates matching Backbone models and collections. You will now have two root objects available to you: `wp.api.models` and `wp-api.collections`.
+The library parses the root endpoint (the 'Schema') and creates matching Backbone models and collections. You will now have two root objects available to you: `wp.api.models` and `wp.api.collections`.
 
-These objects contain the following:
+The models and collections include:
 
 ```
 Models:
- * Categories
- * Comments
+ * Category
+ * Comment
  * Media
- * Pages
- * PagesMeta
- * PagesRevisions
+ * Page
+ * PageMeta
+ * PageRevision
  * Posts
- * PostsCategories
- * PostsMeta
- * PostsRevisions
- * PostsTags
+ * PostMeta
+ * PostRevision
  * Schema
- * Statuses
- * Tags
- * Taxonomies
- * Types
- * Users
+ * Status
+ * Tag
+ * Taxonomy
+ * Type
+ * User
 
 Collections:
  * Categories
  * Comments
- * Customposttype
  * Media
- * Meta
+ * PageMeta
+ * PageRevisions
  * Pages
  * Posts
- * Revisions
  * Statuses
  * Tags
  * Taxonomies
@@ -59,7 +57,7 @@ Collections:
  * Users
 ```
 
-You can use these endpoints as is to read, update, create and delete items using standard Backbone methods (fetch, sync, save & destroy for models, sync for collections). You can also extend these objects to make them your own, and build your views on top of them.
+You can use these endpoints as-is to read, update, create and delete items using standard Backbone methods (fetch, sync, save & destroy for models, sync for collections). You can also extend these objects to make them your own, and build your views on top of them.
 
 ### Default values
 
@@ -95,7 +93,7 @@ Each model and collection contains a list of methods the corrosponding endpoint 
 
 ### Accepted options
 
-Each model and collection contains a list of options the corrosponding endpoint accepts (passed as a second parameter), for example:
+Each model and collection contains a list of options the corrosponding endpoint accepts (note that options are passed as the second parameter when creating models or collections), for example:
 
 ```
 wp.api.collections.Posts.options
@@ -121,6 +119,9 @@ post.save();
 // Create a new post
 var post = new wp.api.models.Posts({ title:'new test' } );
 post.save();
+
+// Get a collection of the post's categories
+var postCategories = post.getCategories();
 
 // Get a collection of the post's categories (returns a promise)
 // Uses _embedded data if available, in which case promise resolves immediately.
@@ -159,10 +160,10 @@ postCategories.create( appleCategory.toJSON(), { type: 'POST' } );
 // Remove the Uncategorized category
 postCategories.at( 0 ).destroy();
 
-// Check the results - refectch
+// Check the results - re-fetch
 postCategories = post.getCategories();
 
-postCategories.at( 0 ).get('name');
+postCategories.at( 0 ).get( 'name' );
 // response -> "apples"
 ```
 
@@ -193,7 +194,7 @@ All collections support pagination automatically, and you can get the next page 
 postsCollection.more();
 ```
 
-If you add custom endpoints to the api they will also become available as models/collections. For example, you will get new models and collections when you [add REST API support to your custom post type](http://v2.wp-api.org/extending/custom-content-types/). Note that you may need to open a new tab to get a new read of the Schema.
+If you add custom endpoints to the api they will also become available as models/collections. For example, you will get new models and collections when you [add REST API support to your custom post type](http://v2.wp-api.org/extending/custom-content-types/). Note: because the schema is stored in the user's session cache to avoid re-fetchingyou may need to open a new tab to get a new read of the Schema.
 
 ## Development
 
