@@ -543,13 +543,13 @@
 			};
 
 		// Exit if we don't have valid model defaults.
-		if ( _.isUndefined( model.defaults ) ) {
+		if ( _.isUndefined( model.prototype.args ) ) {
 			return model;
 		}
 
 		// Go thru the parsable date fields, if our model contains any of them it gets the TimeStampedMixin.
 		_.each( parseableDates, function( theDateKey ) {
-			if ( ! _.isUndefined( model.defaults[ theDateKey ] ) ) {
+			if ( ! _.isUndefined( model.prototype.args[ theDateKey ] ) ) {
 				hasDate = true;
 			}
 		} );
@@ -560,17 +560,17 @@
 		}
 
 		// Add the AuthorMixin for models that contain an author.
-		if ( ! _.isUndefined( model.defaults.author ) ) {
+		if ( ! _.isUndefined( model.prototype.args.author ) ) {
 			model = model.extend( AuthorMixin );
 		}
 
 		// Add the FeaturedImageMixin for models that contain a featured_image.
-		if ( ! _.isUndefined( model.defaults.featured_image ) ) {
+		if ( ! _.isUndefined( model.prototype.args.featured_image ) ) {
 			model = model.extend( FeaturedImageMixin );
 		}
 
 		// Add the CategoriesMixin for models that support categories collections.
-		if ( ! _.isUndefined( loadingObjects.collections[ modelClassName + 'Categories' ] ) ) {
+		if ( ! _.isUndefined( model.prototype.args.categories ) ) {
 			model = model.extend( CategoriesMixin );
 		}
 
@@ -580,7 +580,7 @@
 		}
 
 		// Add the TagsMixin for models that support tags collections.
-		if ( ! _.isUndefined( loadingObjects.collections[ modelClassName + 'Tags' ] ) ) {
+		if ( ! _.isUndefined( loadingObjects.collections.tags ) ) {
 			model = model.extend( TagsMixin );
 		}
 
