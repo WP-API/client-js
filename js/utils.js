@@ -438,11 +438,14 @@
 				 * Uses the embedded data if available, otherwises fetches the
 				 * data from the server.
 				 *
-				 * @return {Deferred.promise} promise Resolves to a wp.api.collections.PostCategories
-				 * collection containing the post categories.
+				 * @return {Deferred.promise} promise Resolves to an array of wp.api.models.Category
+				 *                                    objects.
 				 */
 				getCategories: function() {
-					return buildCollectionGetter( this, 'PostCategories', 'https://api.w.org/term', 0 );
+					var categoryIds = this.get( 'categories' ),
+						categories  = new wp.api.collections.Categories();
+
+					return categories.fetch( { data: { include: categoryIds } } );
 				},
 
 				/**
@@ -458,6 +461,10 @@
 						self = this,
 						newCategories = [];
 
+					if ( _.isString( categories ) ) {
+						return false;
+					}
+
 					// If this is an array of slugs, build a collection.
 					if ( _.isArray( categories ) ) {
 
@@ -468,7 +475,7 @@
 
 								// Find the passed categories and set them up.
 								_.each( categories, function( category ) {
-									newCategory = new wp.api.models.PostCategories( allcats.findWhere( { slug: category } ) );
+									newCategory = new wp.api.models.Category( allcats.findWhere( { slug: category } ) );
 
 									// Tie the new category to the post.
 									newCategory.set( 'parent_post', self.get( 'id' ) );
@@ -476,7 +483,7 @@
 									// Add the new category to the collection.
 									newCategories.push( newCategory );
 								} );
-								categories = new wp.api.collections.PostCategories( newCategories );
+								categories = new wp.api.collections.Categories( newCategories );
 								self.setCategoriesWithCollection( categories );
 							}
 						} );
@@ -496,31 +503,10 @@
 				 *
 				 */
 				setCategoriesWithCollection: function( categories ) {
-					var removedCategories, addedCategories, categoriesIds, existingCategoriesIds;
 
-					// Get the existing categories.
-					this.getCategories().done( function( existingCategories ) {
-
-						// Pluck out the category ids.
-						categoriesIds         = categories.pluck( 'id' );
-						existingCategoriesIds = existingCategories.pluck( 'id' );
-
-						// Calculate which categories have been removed or added (leave the rest).
-						addedCategories   = _.difference( categoriesIds, existingCategoriesIds );
-						removedCategories = _.difference( existingCategoriesIds, categoriesIds );
-
-						// Add the added categories.
-						_.each( addedCategories, function( addedCategory ) {
-
-							// Save the new categories on the post with a 'POST' method, not Backbone's default 'PUT'.
-							existingCategories.create( categories.get( addedCategory ), { type: 'POST' } );
-						} );
-
-						// Remove the removed categories.
-						_.each( removedCategories, function( removedCategory ) {
-							existingCategories.get( removedCategory ).destroy();
-						} );
-					} );
+					// Pluck out the category ids.
+					this.set( 'categories', categories.pluck( 'id' ) );
+					this.save();
 				}
 			},
 
