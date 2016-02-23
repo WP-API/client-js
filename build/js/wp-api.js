@@ -12,6 +12,11 @@
 	wp.api               = wp.api || new WP_API();
 	wp.api.versionString = wp.api.versionString || 'wp/v2/';
 
+	// Alias _includes to _.contains, ensuring it is available.
+	if ( ! _.isFunction( _.includes ) && _.isFunction( _.contains ) ) {
+	  _.includes = _.contains;
+	}
+
 })( window );
 
 (function( window, undefined ) {
@@ -166,7 +171,7 @@
 		_.each( routeEndpoints, function( routeEndpoint ) {
 
 			// Add post and edit endpoints as model args.
-			if ( _.contains( routeEndpoint.methods, 'POST' ) || _.contains( routeEndpoint.methods, 'PUT' ) ) {
+			if ( _.includes( routeEndpoint.methods, 'POST' ) || _.includes( routeEndpoint.methods, 'PUT' ) ) {
 
 				// Add any non empty args, merging them into the args object.
 				if ( ! _.isEmpty( routeEndpoint.args ) ) {
@@ -183,7 +188,7 @@
 			} else {
 
 				// Add GET method as model options.
-				if ( _.contains( routeEndpoint.methods, 'GET' ) ) {
+				if ( _.includes( routeEndpoint.methods, 'GET' ) ) {
 
 					// Add any non empty args, merging them into the defaults object.
 					if ( ! _.isEmpty( routeEndpoint.args ) ) {
@@ -333,12 +338,12 @@
 			/**
 			 * Build a helper to retrieve a collection.
 			 *
-			 * @param  {string} parentModel         The parent model.
-			 * @param  {string} collectionName      The name to use when constructing the collection.
-			 * @param  {string} embedSourcePoint    Where to check the embedds object for _embed data.
-			 * @param  {string} embedIndex          An addiitonal optional index for the _embed data.
+			 * @param  {string} parentModel      The parent model.
+			 * @param  {string} collectionName   The name to use when constructing the collection.
+			 * @param  {string} embedSourcePoint Where to check the embedds object for _embed data.
+			 * @param  {string} embedIndex       An addiitonal optional index for the _embed data.
 			 *
-			 * @return {Deferred.promise}           A promise which resolves to the constructed collection.
+			 * @return {Deferred.promise}        A promise which resolves to the constructed collection.
 			 */
 			buildCollectionGetter = function( parentModel, collectionName, embedSourcePoint, embedIndex ) {
 				/**
@@ -467,7 +472,7 @@
 				/**
 				 * Set the categories for a post.
 				 *
-				 * Accepts an array of category slugs, or a PostCategories collection.
+				 * Accepts an array of category slugs, or a Categories collection.
 				 *
 				 * @param {array|Backbone.Collection} categories The categories to set on the post.
 				 *
@@ -654,7 +659,7 @@
 			save: function( attrs, options ) {
 
 				// Do we have the put method, then execute the save.
-				if ( _.contains( this.methods, 'PUT' ) || _.contains( this.methods, 'POST' ) ) {
+				if ( _.includes( this.methods, 'PUT' ) || _.includes( this.methods, 'POST' ) ) {
 
 					// Proxy the call to the original save function.
 					return Backbone.Model.prototype.save.call( this, attrs, options );
@@ -671,7 +676,7 @@
 			destroy: function( options ) {
 
 				// Do we have the DELETE method, then execute the destroy.
-				if ( _.contains( this.methods, 'DELETE' ) ) {
+				if ( _.includes( this.methods, 'DELETE' ) ) {
 
 					// Proxy the call to the original save function.
 					return Backbone.Model.prototype.destroy.call( this, options );
@@ -1055,7 +1060,7 @@
 							if (
 								'Posts' !== this.name &&
 								'Pages' !== this.name &&
-								_.contains( this.methods, 'DELETE' )
+								_.includes( this.methods, 'DELETE' )
 							) {
 								this.requireForceForDelete = true;
 							}
