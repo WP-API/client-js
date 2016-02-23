@@ -471,6 +471,7 @@
 						// Get all the categories.
 						allCategories = new wp.api.collections.Categories();
 						allCategories.fetch( {
+							data:    { per_page: 100 },
 							success: function( allcats ) {
 
 								// Find the passed categories and set them up.
