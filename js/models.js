@@ -27,6 +27,16 @@
 
 				options = options || {};
 
+				// Remove date_gmt if null.
+				if ( _.isNull( model.get( 'date_gmt' ) ) ) {
+					model.unset( 'date_gmt' );
+				}
+
+				// Remove slug if empty.
+				if ( _.isEmpty( model.get( 'slug' ) ) ) {
+					model.unset( 'slug' );
+				}
+
 				if ( ! _.isUndefined( wpApiSettings.nonce ) && ! _.isNull( wpApiSettings.nonce ) ) {
 					beforeSend = options.beforeSend;
 
