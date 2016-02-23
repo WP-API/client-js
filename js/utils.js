@@ -423,20 +423,94 @@
 			 * Add a helper funtion to handle post Tags.
 			 */
 			TagsMixin = {
+
+				/**
+				 * Get a PostTags model for an model's categories.
+				 *
+				 * @return {Deferred.promise} promise Resolves to an array of wp.api.models.Category
+				 *                                    objects.
+				 */
 				getTags: function() {
-					return buildCollectionGetter( this, 'PostTags', 'https://api.w.org/term', 1 );
+					var tagIds = this.get( 'tags' ),
+						tags  = new wp.api.collections.Tags();
+
+					if ( _.isEmpty( tags.models ) ) {
+						return jQuery.Deferred().resolve( [] );
+					}
+
+					return tags.fetch( { data: { include: tagIds } } );
+				},
+
+				/**
+				 * Set the tags for a post.
+				 *
+				 * Accepts an array of tag slugs, or a Tags collection.
+				 *
+				 * @param {array|Backbone.Collection} tags The tags to set on the post.
+				 *
+				 */
+				setTags: function( tags ) {
+					var allTags, newTag,
+						self = this,
+						newTags = [];
+
+					if ( _.isString( tags ) ) {
+						return false;
+					}
+
+					// If this is an array of slugs, build a collection.
+					if ( _.isArray( tags ) ) {
+
+						// Get all the tags.
+						allTags = new wp.api.collections.Tags();
+						allTags.fetch( {
+							data:    { per_page: 100 },
+							success: function( alltags ) {
+
+								// Find the passed tags and set them up.
+								_.each( tags, function( tag ) {
+									newTag = new wp.api.models.Tag( alltags.findWhere( { slug: tag } ) );
+
+									// Tie the new tag to the post.
+									newTag.set( 'parent_post', self.get( 'id' ) );
+
+									// Add the new tag to the collection.
+									newTags.push( newTag );
+								} );
+								tags = new wp.api.collections.Tags( newTags );
+								self.setTagsWithCollection( tags );
+							}
+						} );
+
+					} else {
+						this.setTagsWithCollection( tags );
+					}
+				},
+
+				/**
+				 * Set the tags for a post.
+				 *
+				 * Accepts Tags collection.
+				 *
+				 * @param {array|Backbone.Collection} tags The tags to set on the post.
+				 *
+				 */
+				setTagsWithCollection: function( tags ) {
+
+					// Pluck out the category ids.
+					this.set( 'tags', tags.pluck( 'id' ) );
+					this.save();
+
 				}
 			},
+
 			/**
 			 * Add a helper funtion to handle post Categories.
 			 */
 			CategoriesMixin = {
 
 				/**
-				 * Get a PostCategories model for an model's categories.
-				 *
-				 * Uses the embedded data if available, otherwises fetches the
-				 * data from the server.
+				 * Get a Category models for an model's categories.
 				 *
 				 * @return {Deferred.promise} promise Resolves to an array of wp.api.models.Category
 				 *                                    objects.
@@ -444,6 +518,10 @@
 				getCategories: function() {
 					var categoryIds = this.get( 'categories' ),
 						categories  = new wp.api.collections.Categories();
+
+					if ( _.isEmpty( categories.models ) ) {
+						return jQuery.Deferred().resolve( [] );
+					}
 
 					return categories.fetch( { data: { include: categoryIds } } );
 				},
@@ -498,7 +576,7 @@
 				/**
 				 * Set the categories for a post.
 				 *
-				 * Accepts PostCategories collection.
+				 * Accepts Categories collection.
 				 *
 				 * @param {array|Backbone.Collection} categories The categories to set on the post.
 				 *
@@ -567,7 +645,7 @@
 		}
 
 		// Add the TagsMixin for models that support tags collections.
-		if ( ! _.isUndefined( loadingObjects.collections.tags ) ) {
+		if ( ! _.isUndefined( model.prototype.args.tags ) ) {
 			model = model.extend( TagsMixin );
 		}
 
