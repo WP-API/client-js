@@ -197,7 +197,7 @@
 							if (
 								'Posts' !== this.name &&
 								'Pages' !== this.name &&
-								_.contains( this.methods, 'DELETE' )
+								_.includes( this.methods, 'DELETE' )
 							) {
 								this.requireForceForDelete = true;
 							}

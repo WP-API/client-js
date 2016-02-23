@@ -150,7 +150,7 @@
 		_.each( routeEndpoints, function( routeEndpoint ) {
 
 			// Add post and edit endpoints as model args.
-			if ( _.contains( routeEndpoint.methods, 'POST' ) || _.contains( routeEndpoint.methods, 'PUT' ) ) {
+			if ( _.includes( routeEndpoint.methods, 'POST' ) || _.includes( routeEndpoint.methods, 'PUT' ) ) {
 
 				// Add any non empty args, merging them into the args object.
 				if ( ! _.isEmpty( routeEndpoint.args ) ) {
@@ -167,7 +167,7 @@
 			} else {
 
 				// Add GET method as model options.
-				if ( _.contains( routeEndpoint.methods, 'GET' ) ) {
+				if ( _.includes( routeEndpoint.methods, 'GET' ) ) {
 
 					// Add any non empty args, merging them into the defaults object.
 					if ( ! _.isEmpty( routeEndpoint.args ) ) {
