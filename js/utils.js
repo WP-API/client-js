@@ -317,12 +317,12 @@
 			/**
 			 * Build a helper to retrieve a collection.
 			 *
-			 * @param  {string} parentModel         The parent model.
-			 * @param  {string} collectionName      The name to use when constructing the collection.
-			 * @param  {string} embedSourcePoint    Where to check the embedds object for _embed data.
-			 * @param  {string} embedIndex          An addiitonal optional index for the _embed data.
+			 * @param  {string} parentModel      The parent model.
+			 * @param  {string} collectionName   The name to use when constructing the collection.
+			 * @param  {string} embedSourcePoint Where to check the embedds object for _embed data.
+			 * @param  {string} embedIndex       An addiitonal optional index for the _embed data.
 			 *
-			 * @return {Deferred.promise}           A promise which resolves to the constructed collection.
+			 * @return {Deferred.promise}        A promise which resolves to the constructed collection.
 			 */
 			buildCollectionGetter = function( parentModel, collectionName, embedSourcePoint, embedIndex ) {
 				/**
@@ -451,7 +451,7 @@
 				/**
 				 * Set the categories for a post.
 				 *
-				 * Accepts an array of category slugs, or a PostCategories collection.
+				 * Accepts an array of category slugs, or a Categories collection.
 				 *
 				 * @param {array|Backbone.Collection} categories The categories to set on the post.
 				 *
