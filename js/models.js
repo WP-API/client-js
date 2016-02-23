@@ -42,7 +42,7 @@
 					};
 				}
 
-				// Add '?force=true' to delete method when required.
+				// Add '?force=true' to use delete method when required.
 				if ( this.requireForceForDelete && 'delete' === method ) {
 					model.url = model.url() + '?force=true';
 				}
