@@ -21,7 +21,75 @@
 		},
 
 		initialize: function() {
-			var model = this, deferred;
+			var model = this, deferred, oauth, requestData, tokenPublic, tokenSecret;
+
+			if ( wpApiSettings.oauth1 ) {
+				oauth = new OAuth( {
+					consumer: {
+						'public': '0XKFJPpIuBWR',
+						'secret': 'SFh0EqddY1dwhiq2G7GvExEQdMY89TyT0C05qpQELJPFlS7R'
+					},
+					signature_method: 'HMAC-SHA1'
+
+				} );
+				requestData = {
+					url: 'http://wpdev.localhost/oauth1/request',
+					method: 'POST',
+					data: {
+						oauth_callback: 'http://wpdev.localhost/'
+					}
+				};
+
+				// Request the authorization tokens.
+				console.log( oauth.toHeader( oauth.authorize( requestData ) ) );
+				jQuery.ajax( {
+					url: requestData.url,
+					type: requestData.method,
+					beforeSend: function( xhr ) {
+						_.each( oauth.toHeader( oauth.authorize( requestData ) ), function( header, index ) {
+							xhr.setRequestHeader( index, header );
+						} );
+					}
+				} ).done( function( tokens ) {
+
+					tokenPublic = tokens.substr( tokens.indexOf( 'oauth_token' ) + 'oauth_token'.length + 1, tokens.indexOf( '&', tokens.indexOf( 'oauth_token' ) ) - tokens.indexOf( 'oauth_token' ) - ( 'oauth_token'.length + 1 ) );
+
+					tokenSecret = tokens.substr( tokens.indexOf( 'oauth_token_secret' ) + 'oauth_token_secret'.length + 1, tokens.indexOf( '&', tokens.indexOf( 'oauth_token_secret' ) ) - tokens.indexOf( 'oauth_token_secret' ) - (  'oauth_token_secret'.length + 1 ) );
+
+					console.log( tokens );
+
+					window.location.href = 'http://wpdev.localhost/oauth1/authorize?oauth_token=' + tokenPublic;
+/*
+
+					token = {
+						'public': tokenPublic,
+						'secret': tokenSecret
+					};
+					console.log( token );
+					requestData = {
+						url: 'http://wpdev.localhost/wp-json/wp/v2/posts/1578',
+						method: 'POST',
+						data: {
+							oauth_callback: 'http://wpdev.localhost/',
+							'title': 'This is fun!'
+						}
+					};
+					jQuery.ajax( {
+						url: requestData.url,
+						type: requestData.method,
+						beforeSend: function( xhr ) {
+							_.each( oauth.toHeader( oauth.authorize( requestData, token ) ), function( header, index ) {
+								xhr.setRequestHeader( index, header );
+							} );
+						}
+					} ).done( function( doner ) {
+						console.log( doner );
+					} );
+
+*/
+
+				} );
+			}
 
 			Backbone.Model.prototype.initialize.apply( model, arguments );
 

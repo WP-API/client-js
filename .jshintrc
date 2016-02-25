@@ -20,6 +20,7 @@
 		"jQuery": false,
 		"JSON"  : false,
 		"wp": false,
-		"console": true
+		"console": true,
+		"OAuth": true
 	}
 }

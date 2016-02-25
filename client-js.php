@@ -34,10 +34,11 @@ function json_api_client_js() {
 	}
 
 	$settings = array(
-		'root' => esc_url_raw( get_rest_url() ),
-		'nonce' => wp_create_nonce( 'wp_rest' ),
+		'root'          => esc_url_raw( get_rest_url() ),
+		'nonce'         => wp_create_nonce( 'wp_rest' ),
 		'versionString' => 'wp/v2/',
-		'schema' => $schema,
+		'schema'        => $schema,
+		'oauth1'        => true
 	);
 	wp_localize_script( 'wp-api', 'wpApiSettings', $settings );
 
@@ -46,4 +47,19 @@ function json_api_client_js() {
 if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) {
 	add_action( 'wp_enqueue_scripts', 'json_api_client_js' );
 	add_action( 'admin_enqueue_scripts', 'json_api_client_js' );
+}
+
+function add_oauth_scripts() {
+	echo '
+<!-- sha1 -->
+<script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/hmac-sha1.js"></script>
+<!-- sha256 -->
+<script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/hmac-sha256.js"></script>
+
+<script src="http://crypto-js.googlecode.com/svn/tags/3.1.2/build/components/enc-base64-min.js"></script>
+<script src="' . esc_url( plugins_url( 'oauth-1.0a.js', __FILE__ ) ) . '"></script>';
+}
+// Is OAuth1 enabled?
+if ( true ) {
+	add_action( 'wp_head', 'add_oauth_scripts' );
 }
