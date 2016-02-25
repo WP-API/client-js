@@ -425,7 +425,7 @@
 			TagsMixin = {
 
 				/**
-				 * Get a PostTags model for an model's categories.
+				 * Get the tags for a post.
 				 *
 				 * @return {Deferred.promise} promise Resolves to an array of tags.
 				 */
@@ -490,7 +490,7 @@
 				/**
 				 * Set the tags for a post.
 				 *
-				 * Accepts Tags collection.
+				 * Accepts a Tags collection.
 				 *
 				 * @param {array|Backbone.Collection} tags The tags to set on the post.
 				 *
@@ -509,7 +509,7 @@
 			CategoriesMixin = {
 
 				/**
-				 * Get a Category models for an model's categories.
+				 * Get a the categories for a post.
 				 *
 				 * @return {Deferred.promise} promise Resolves to an array of categories.
 				 */
