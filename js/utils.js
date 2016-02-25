@@ -427,13 +427,13 @@
 				/**
 				 * Get a PostTags model for an model's categories.
 				 *
-				 * @return {Deferred.promise} promise Resolves to an array of wp.api.models.Tag
-				 *                                    objects.
+				 * @return {Deferred.promise} promise Resolves to an array of tags.
 				 */
 				getTags: function() {
 					var tagIds = this.get( 'tags' ),
 						tags  = new wp.api.collections.Tags();
 
+					// Resolve with an empty array if no tags.
 					if ( _.isEmpty( tagIds ) ) {
 						return jQuery.Deferred().resolve( [] );
 					}
@@ -511,13 +511,13 @@
 				/**
 				 * Get a Category models for an model's categories.
 				 *
-				 * @return {Deferred.promise} promise Resolves to an array of wp.api.models.Category
-				 *                                    objects.
+				 * @return {Deferred.promise} promise Resolves to an array of categories.
 				 */
 				getCategories: function() {
 					var categoryIds = this.get( 'categories' ),
 						categories  = new wp.api.collections.Categories();
 
+					// Resolve with an empty array if no categories.
 					if ( _.isEmpty( categoryIds ) ) {
 						return jQuery.Deferred().resolve( [] );
 					}
