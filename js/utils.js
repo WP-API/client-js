@@ -499,8 +499,7 @@
 
 					// Pluck out the category ids.
 					this.set( 'tags', tags.pluck( 'id' ) );
-					this.save();
-
+					return this.save();
 				}
 			},
 
@@ -585,7 +584,7 @@
 
 					// Pluck out the category ids.
 					this.set( 'categories', categories.pluck( 'id' ) );
-					this.save();
+					return this.save();
 				}
 			},
 
