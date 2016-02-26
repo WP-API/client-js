@@ -656,4 +656,23 @@
 		return model;
 	};
 
+	// Extract tokens from the returned token string.
+	wp.api.utils.extractTokens = function( tokens, hasAdditionalData ) {
+		var tokenPublic, tokenSecret;
+
+		tokenPublic = tokens.substr( tokens.indexOf( 'oauth_token' ) + 'oauth_token'.length + 1, tokens.indexOf( '&', tokens.indexOf( 'oauth_token' ) ) - tokens.indexOf( 'oauth_token' ) - ( 'oauth_token'.length + 1 ) );
+
+		if ( hasAdditionalData ) {
+			tokenSecret = tokens.substr( tokens.indexOf( 'oauth_token_secret' ) + 'oauth_token_secret'.length + 1, tokens.indexOf( '&', tokens.indexOf( 'oauth_token_secret' ) ) - tokens.indexOf( 'oauth_token_secret' ) - (  'oauth_token_secret'.length + 1 ) );
+		} else {
+			tokenSecret = tokens.substr( tokens.indexOf( 'oauth_token_secret' ) + 'oauth_token_secret'.length + 1 );
+		}
+
+		return {
+			'public': tokenPublic,
+			'secret': tokenSecret
+		};
+
+	};
+
 })( window );
