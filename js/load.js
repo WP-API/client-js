@@ -23,18 +23,73 @@
 		initialize: function() {
 			var model = this, deferred, oauth, requestData, tokenPublic, tokenSecret, token;
 
-			console.log( wpApiSettings.oauth_token );
+				wp.api.oauth.setup = function( publicKey, secretKey, requestUrl ) {
 
-			// Do we have an oauth_token?
-			if ( ! _.isNull( wpApiSettings.oauth_token ) ) {
+				// Are we using OAuth 1 and don't already have a token in the response
+				if ( wpApiSettings.oauth1 && _.isNull( wpApiSettings.oauth_token ) ) {
+					oauth = new OAuth( {
+						consumer: {
+							'public': publicKey,
+							'secret': secretKey
+						},
+						signature_method: 'HMAC-SHA1'
+
+					} );
+					requestData = {
+						url: requestUrl,
+						method: 'POST',
+						data: {
+							oauth_callback: 'http://wpdev.localhost/'
+						}
+					};
+
+					// Request the authorization tokens.
+					jQuery.ajax( {
+						url: requestData.url,
+						type: requestData.method,
+						beforeSend: function( xhr ) {
+							_.each( oauth.toHeader( oauth.authorize( requestData ) ), function( header, index ) {
+								xhr.setRequestHeader( index, header );
+							} );
+						}
+					} ).done( function( tokens ) {
+
+						tokenPublic = tokens.substr( tokens.indexOf( 'oauth_token' ) + 'oauth_token'.length + 1, tokens.indexOf( '&', tokens.indexOf( 'oauth_token' ) ) - tokens.indexOf( 'oauth_token' ) - ( 'oauth_token'.length + 1 ) );
+
+						tokenSecret = tokens.substr( tokens.indexOf( 'oauth_token_secret' ) + 'oauth_token_secret'.length + 1, tokens.indexOf( '&', tokens.indexOf( 'oauth_token_secret' ) ) - tokens.indexOf( 'oauth_token_secret' ) - (  'oauth_token_secret'.length + 1 ) );
+
+						// Store the returned token data into the session.
+						sessionStorage.setItem( 'tokenPublic', JSON.stringify( tokenPublic ) );
+						sessionStorage.setItem( 'tokenSecret', JSON.stringify( tokenSecret ) );
+
+						window.location.href = 'http://wpdev.localhost/oauth1/authorize?oauth_token=' + tokenPublic;
+
+					} );
+				}
+			};
+
+			if ( ! localStorage.getItem( 'wpOathToken' ) ) {
+
+				// Dummy setup call for testing
+				wp.api.oauth.setup(
+					wpApiSettings.oauthPublic,                                     // App public key.
+					wpApiSettings.oauthSecret, // App secret key.
+					'http://wpdev.localhost/oauth1/request'             // Token request url.
+				 );
+			}
+
+			// NEXT STEP: Handle the returned temporary OAuth token, requesting a long term token.
+			if ( ! _.isNull( wpApiSettings.oauth_token && ! localStorage.getItem( 'wpOathToken' ) ) ) {
+
+				// Construct a new request to get a long term authorization token.
 				token = {
-					'public': Cookies.get( 'tokenPublic' ),
-					'secret': Cookies.get( 'tokenSecret' )
+					'public': JSON.parse( sessionStorage.getItem( 'tokenPublic' ) ),
+					'secret': JSON.parse( sessionStorage.getItem( 'tokenSecret' ) )
 				};
 				oauth = new OAuth( {
 					consumer: {
-						'public': '0XKFJPpIuBWR',
-						'secret': 'SFh0EqddY1dwhiq2G7GvExEQdMY89TyT0C05qpQELJPFlS7R'
+						'public': wpApiSettings.oauthPublic,
+						'secret': wpApiSettings.oauthSecret
 					},
 					signature_method: 'HMAC-SHA1'
 
@@ -57,87 +112,13 @@
 						} );
 					}
 				} ).done( function( tokens ) {
-					console.log( tokens );
-					tokenPublic = tokens.substr( tokens.indexOf( 'oauth_token' ) + 'oauth_token'.length + 1, tokens.indexOf( '&', tokens.indexOf( 'oauth_token' ) ) - tokens.indexOf( 'oauth_token' ) - ( 'oauth_token'.length + 1 ) );
 
-					tokenSecret = tokens.substr( tokens.indexOf( 'oauth_token_secret' ) + 'oauth_token_secret'.length + 1, tokens.indexOf( '&', tokens.indexOf( 'oauth_token_secret' ) ) - tokens.indexOf( 'oauth_token_secret' ) - (  'oauth_token_secret'.length + 1 ) );
+					token = wp.api.utils.extractTokens( tokens, false );
 
-					Cookies.set( 'tokenPublic', tokenPublic );
-					Cookies.set( 'tokenSecret', tokenSecret );
+					localStorage.setItem( 'wpOathToken', JSON.stringify( token ) );
 
 				} );
 
-			}
-
-			if ( wpApiSettings.oauth1 && _.isNull( wpApiSettings.oauth_token ) ) {
-				oauth = new OAuth( {
-					consumer: {
-						'public': '0XKFJPpIuBWR',
-						'secret': 'SFh0EqddY1dwhiq2G7GvExEQdMY89TyT0C05qpQELJPFlS7R'
-					},
-					signature_method: 'HMAC-SHA1'
-
-				} );
-				requestData = {
-					url: 'http://wpdev.localhost/oauth1/request',
-					method: 'POST',
-					data: {
-						oauth_callback: 'http://wpdev.localhost/'
-					}
-				};
-
-				// Request the authorization tokens.
-				console.log( oauth.toHeader( oauth.authorize( requestData ) ) );
-				jQuery.ajax( {
-					url: requestData.url,
-					type: requestData.method,
-					beforeSend: function( xhr ) {
-						_.each( oauth.toHeader( oauth.authorize( requestData ) ), function( header, index ) {
-							xhr.setRequestHeader( index, header );
-						} );
-					}
-				} ).done( function( tokens ) {
-
-					tokenPublic = tokens.substr( tokens.indexOf( 'oauth_token' ) + 'oauth_token'.length + 1, tokens.indexOf( '&', tokens.indexOf( 'oauth_token' ) ) - tokens.indexOf( 'oauth_token' ) - ( 'oauth_token'.length + 1 ) );
-
-					tokenSecret = tokens.substr( tokens.indexOf( 'oauth_token_secret' ) + 'oauth_token_secret'.length + 1, tokens.indexOf( '&', tokens.indexOf( 'oauth_token_secret' ) ) - tokens.indexOf( 'oauth_token_secret' ) - (  'oauth_token_secret'.length + 1 ) );
-
-					Cookies.set( 'tokenPublic', tokenPublic );
-					Cookies.set( 'tokenSecret', tokenSecret );
-
-					console.log( tokens );
-
-					window.location.href = 'http://wpdev.localhost/oauth1/authorize?oauth_token=' + tokenPublic;
-/*
-
-					token = {
-						'public': tokenPublic,
-						'secret': tokenSecret
-					};
-					console.log( token );
-					requestData = {
-						url: 'http://wpdev.localhost/wp-json/wp/v2/posts/1578',
-						method: 'POST',
-						data: {
-							oauth_callback: 'http://wpdev.localhost/',
-							'title': 'This is fun!'
-						}
-					};
-					jQuery.ajax( {
-						url: requestData.url,
-						type: requestData.method,
-						beforeSend: function( xhr ) {
-							_.each( oauth.toHeader( oauth.authorize( requestData, token ) ), function( header, index ) {
-								xhr.setRequestHeader( index, header );
-							} );
-						}
-					} ).done( function( doner ) {
-						console.log( doner );
-					} );
-
-*/
-
-				} );
 			}
 
 			Backbone.Model.prototype.initialize.apply( model, arguments );
