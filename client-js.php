@@ -34,16 +34,28 @@ function json_api_client_js() {
 		$schema = $schema_response->get_data();
 	}
 
+	// Search for the OAuth1 authentication, and add any info to localized data.
+	$oauth_request = new WP_REST_Request( 'GET', '/' );
+	$oauth_response = $wp_rest_server->dispatch( $oauth_request );
+	$oauth1 = null;
+	if ( ! $oauth_response->is_error() ) {
+		$oauth_data = $oauth_response->get_data();
+
+		if ( isset(  $oauth_data['authentication']['oauth1'] ) ) {
+			$oauth1 =  $oauth_data['authentication']['oauth1'];
+		}
+	}
+
 	$settings = array(
 		'root'           => esc_url_raw( get_rest_url() ),
 		'nonce'          => wp_create_nonce( 'wp_rest' ),
 		'versionString'  => 'wp/v2/',
 		'schema'         => $schema,
-		'oauth1'         => true,
-		'oauth_token'    => isset( $_GET['oauth_token'] ) ? sanitize_text_field( $_GET['oauth_token'] ) : null,
-		'oauth_verifier' => isset( $_GET['oauth_verifier'] ) ? sanitize_text_field( $_GET['oauth_verifier'] ) : null,
-		'oauthPublic'    => '0XKFJPpIuBWR',
-		'oauthSecret'    => 'SFh0EqddY1dwhiq2G7GvExEQdMY89TyT0C05qpQELJPFlS7R'
+		'oauth1'         => $oauth1,
+		'oauth1Token'    => isset( $_GET['oauth_token'] ) ? sanitize_text_field( $_GET['oauth_token'] ) : null,
+		'oauth1Verifier' => isset( $_GET['oauth_verifier'] ) ? sanitize_text_field( $_GET['oauth_verifier'] ) : null,
+		'oauth1Public'    => '0XKFJPpIuBWR',
+		'oauth1Secret'    => 'SFh0EqddY1dwhiq2G7GvExEQdMY89TyT0C05qpQELJPFlS7R'
 	);
 	wp_localize_script( 'wp-api', 'wpApiSettings', $settings );
 
