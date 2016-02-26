@@ -7,6 +7,7 @@ function json_api_client_js() {
 
 	$scripts = wp_scripts();
 	$src = plugins_url( 'build/js/wp-api.js', __FILE__ );
+
 	if ( isset( $scripts->registered['wp-api'] ) ) {
 		$scripts->registered['wp-api']->src = $src;
 	} else {
@@ -41,6 +42,8 @@ function json_api_client_js() {
 		'oauth1'         => true,
 		'oauth_token'    => isset( $_GET['oauth_token'] ) ? sanitize_text_field( $_GET['oauth_token'] ) : null,
 		'oauth_verifier' => isset( $_GET['oauth_verifier'] ) ? sanitize_text_field( $_GET['oauth_verifier'] ) : null,
+		'oauthPublic'    => '0XKFJPpIuBWR',
+		'oauthSecret'    => 'SFh0EqddY1dwhiq2G7GvExEQdMY89TyT0C05qpQELJPFlS7R'
 	);
 	wp_localize_script( 'wp-api', 'wpApiSettings', $settings );
 
