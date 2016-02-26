@@ -23,7 +23,7 @@
 			 * @returns {*}.
 			 */
 			sync: function( method, model, options ) {
-				var beforeSend;
+				var beforeSend, token, oauth, requestData;
 
 				options = options || {};
 
@@ -35,6 +35,35 @@
 				// Remove slug if empty.
 				if ( _.isEmpty( model.get( 'slug' ) ) ) {
 					model.unset( 'slug' );
+				}
+
+				// Use Oauth authentication if available.
+				token = JSON.parse( localStorage.getItem( 'wpOathToken' ) );
+				if ( ! _.isUndefined( token ) ) {
+
+					oauth = new OAuth( {
+						consumer: {
+							'public': wpApiSettings.oauthPublic,
+							'secret': wpApiSettings.oauthSecret
+						},
+						signature_method: 'HMAC-SHA1'
+					} );
+
+					options.beforeSend = function( xhr, request ) {
+
+						requestData = {
+							url: request.url,
+							method: request.type
+						};
+						_.each( oauth.toHeader( oauth.authorize( requestData, token ) ), function( header, index ) {
+							xhr.setRequestHeader( index, header );
+						} );
+
+					};
+
+					// When using OAuth, turn off nonce/cookie authentication.
+					delete wpApiSettings.nonce;
+
 				}
 
 				if ( ! _.isUndefined( wpApiSettings.nonce ) && ! _.isNull( wpApiSettings.nonce ) ) {
