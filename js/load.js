@@ -47,8 +47,11 @@
 					jQuery.ajax( {
 						url: requestData.url,
 						type: requestData.method,
+
+						// Add the authorization headers.
 						beforeSend: function( xhr ) {
-							_.each( oauth.toHeader( oauth.authorize( requestData ) ), function( header, index ) {
+							var oauthHeaders = oauth.toHeader( oauth.authorize( requestData, token ) );
+							_.each( oauthHeaders, function( header, index ) {
 								xhr.setRequestHeader( index, header );
 							} );
 						}
@@ -109,7 +112,7 @@
 					url: requestData.url,
 					type: requestData.method,
 
-					// Add the authorization headers for OAuth.
+					// Add the authorization headers.
 					beforeSend: function( xhr ) {
 						var oauthHeaders = oauth.toHeader( oauth.authorize( requestData, token ) );
 						_.each( oauthHeaders, function( header, index ) {
