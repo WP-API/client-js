@@ -100,7 +100,7 @@
 					url: wpApiSettings.oauth1.access,
 					method: 'POST',
 					data: {
-						oauth_callback: 'http://wpdev.localhost/',
+						oauth_callback: window.location.href,
 						oauth_verifier: wpApiSettings.oauth1Verifier,
 						oauth_token:    wpApiSettings.oauth1Token
 					}
