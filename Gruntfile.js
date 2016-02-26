@@ -26,6 +26,7 @@ module.exports = function( grunt ) {
 				},
 				files: {
 					'build/js/wp-api.min.js': [
+						'vendor/js/js.cookie.js',
 						'js/app.js',
 						'js/utils.js',
 						'js/models.js',
@@ -38,6 +39,7 @@ module.exports = function( grunt ) {
 		concat: {
 			js: {
 				src: [
+					'vendor/js/js.cookie.js',
 					'js/app.js',
 					'js/utils.js',
 					'js/models.js',

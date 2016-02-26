@@ -34,11 +34,13 @@ function json_api_client_js() {
 	}
 
 	$settings = array(
-		'root'          => esc_url_raw( get_rest_url() ),
-		'nonce'         => wp_create_nonce( 'wp_rest' ),
-		'versionString' => 'wp/v2/',
-		'schema'        => $schema,
-		'oauth1'        => true
+		'root'           => esc_url_raw( get_rest_url() ),
+		'nonce'          => wp_create_nonce( 'wp_rest' ),
+		'versionString'  => 'wp/v2/',
+		'schema'         => $schema,
+		'oauth1'         => true,
+		'oauth_token'    => isset( $_GET['oauth_token'] ) ? sanitize_text_field( $_GET['oauth_token'] ) : null,
+		'oauth_verifier' => isset( $_GET['oauth_verifier'] ) ? sanitize_text_field( $_GET['oauth_verifier'] ) : null,
 	);
 	wp_localize_script( 'wp-api', 'wpApiSettings', $settings );
 

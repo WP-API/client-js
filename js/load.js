@@ -23,7 +23,43 @@
 		initialize: function() {
 			var model = this, deferred, oauth, requestData, tokenPublic, tokenSecret;
 
-			if ( wpApiSettings.oauth1 ) {
+			console.log( wpApiSettings.oauth_token );
+
+			// Do we have an oauth_token?
+			if ( ! _.isNull( wpApiSettings.oauth_token ) ) {
+
+				oauth = new OAuth( {
+					consumer: {
+						'public': Cookies.get( 'tokenPublic' ),
+						'secret': Cookies.get( 'tokenSecret' )
+					},
+					signature_method: 'HMAC-SHA1'
+
+				} );
+				requestData = {
+					url: 'http://wpdev.localhost/oauth1/access',
+					method: 'POST',
+					data: {
+						oauth_callback: 'http://wpdev.localhost/',
+						oauth_verifier: wpApiSettings.oauth_verifier,
+						oauth_token:    wpApiSettings.oauth_token
+					}
+				};
+				jQuery.ajax( {
+					url: requestData.url,
+					type: requestData.method,
+					beforeSend: function( xhr ) {
+						_.each( oauth.toHeader( oauth.authorize( requestData ) ), function( header, index ) {
+							xhr.setRequestHeader( index, header );
+						} );
+					}
+				} ).done( function( tokens ) {
+					console.log( tokens );
+				} );
+
+			}
+
+			if ( wpApiSettings.oauth1 && _.isNull( wpApiSettings.oauth_token ) ) {
 				oauth = new OAuth( {
 					consumer: {
 						'public': '0XKFJPpIuBWR',
@@ -55,6 +91,9 @@
 					tokenPublic = tokens.substr( tokens.indexOf( 'oauth_token' ) + 'oauth_token'.length + 1, tokens.indexOf( '&', tokens.indexOf( 'oauth_token' ) ) - tokens.indexOf( 'oauth_token' ) - ( 'oauth_token'.length + 1 ) );
 
 					tokenSecret = tokens.substr( tokens.indexOf( 'oauth_token_secret' ) + 'oauth_token_secret'.length + 1, tokens.indexOf( '&', tokens.indexOf( 'oauth_token_secret' ) ) - tokens.indexOf( 'oauth_token_secret' ) - (  'oauth_token_secret'.length + 1 ) );
+
+					Cookies.set( 'tokenPublic', tokenPublic );
+					Cookies.set( 'tokenSecret', tokenSecret );
 
 					console.log( tokens );
 
