@@ -26,7 +26,7 @@
 				wp.api.oauth.setup = function( publicKey, secretKey, requestUrl ) {
 
 				// Are we using OAuth 1 and don't already have a token in the response
-				if ( wpApiSettings.oauth1 && _.isNull( wpApiSettings.oauth_token ) ) {
+				if ( wpApiSettings.oauth1 && _.isNull( wpApiSettings.oauth1Token ) ) {
 					oauth = new OAuth( {
 						consumer: {
 							'public': publicKey,
@@ -39,7 +39,7 @@
 						url: requestUrl,
 						method: 'POST',
 						data: {
-							oauth_callback: 'http://wpdev.localhost/'
+							oauth_callback: window.location.href
 						}
 					};
 
@@ -62,7 +62,7 @@
 						sessionStorage.setItem( 'tokenPublic', JSON.stringify( tokenPublic ) );
 						sessionStorage.setItem( 'tokenSecret', JSON.stringify( tokenSecret ) );
 
-						window.location.href = 'http://wpdev.localhost/oauth1/authorize?oauth_token=' + tokenPublic;
+						window.location.href = wpApiSettings.oauth1.authorize +  '?oauth_token=' + tokenPublic;
 
 					} );
 				}
@@ -70,16 +70,16 @@
 
 			if ( ! localStorage.getItem( 'wpOathToken' ) ) {
 
-				// Dummy setup call for testing
+				// Setup call for testing
 				wp.api.oauth.setup(
-					wpApiSettings.oauthPublic,                                     // App public key.
-					wpApiSettings.oauthSecret, // App secret key.
-					'http://wpdev.localhost/oauth1/request'             // Token request url.
+					wpApiSettings.oauth1Public,   // App public key.
+					wpApiSettings.oauth1Secret,   // App secret key.
+					wpApiSettings.oauth1.request // Token request url.
 				 );
 			}
 
 			// NEXT STEP: Handle the returned temporary OAuth token, requesting a long term token.
-			if ( ! _.isNull( wpApiSettings.oauth_token && ! localStorage.getItem( 'wpOathToken' ) ) ) {
+			if ( ! _.isNull( wpApiSettings.oauth1Token && ! localStorage.getItem( 'wpOathToken' ) ) ) {
 
 				// Construct a new request to get a long term authorization token.
 				token = {
@@ -88,33 +88,36 @@
 				};
 				oauth = new OAuth( {
 					consumer: {
-						'public': wpApiSettings.oauthPublic,
-						'secret': wpApiSettings.oauthSecret
+						'public': wpApiSettings.oauth1Public,
+						'secret': wpApiSettings.oauth1Secret
 					},
 					signature_method: 'HMAC-SHA1'
 
 				} );
 				requestData = {
-					url: 'http://wpdev.localhost/oauth1/access',
+					url: wpApiSettings.oauth1.access,
 					method: 'POST',
 					data: {
 						oauth_callback: 'http://wpdev.localhost/',
-						oauth_verifier: wpApiSettings.oauth_verifier,
-						oauth_token:    wpApiSettings.oauth_token
+						oauth_verifier: wpApiSettings.oauth1Verifier,
+						oauth_token:    wpApiSettings.oauth1Token
 					}
 				};
 				jQuery.ajax( {
 					url: requestData.url,
 					type: requestData.method,
+
+					// Add the authorization headers for OAuth.
 					beforeSend: function( xhr ) {
-						_.each( oauth.toHeader( oauth.authorize( requestData, token ) ), function( header, index ) {
+						var oauthHeaders = oauth.toHeader( oauth.authorize( requestData, token ) );
+						_.each( oauthHeaders, function( header, index ) {
 							xhr.setRequestHeader( index, header );
 						} );
 					}
-				} ).done( function( tokens ) {
+				} ).success( function( tokens ) {
 
+					// We have a valid token, store it in localStorage.
 					token = wp.api.utils.extractTokens( tokens, false );
-
 					localStorage.setItem( 'wpOathToken', JSON.stringify( token ) );
 
 				} );
