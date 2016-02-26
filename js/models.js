@@ -43,8 +43,8 @@
 
 					oauth = new OAuth( {
 						consumer: {
-							'public': wpApiSettings.oauthPublic,
-							'secret': wpApiSettings.oauthSecret
+							'public': wpApiSettings.oauth1Public,
+							'secret': wpApiSettings.oauth1Secret
 						},
 						signature_method: 'HMAC-SHA1'
 					} );
