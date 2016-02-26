@@ -21,17 +21,20 @@
 		},
 
 		initialize: function() {
-			var model = this, deferred, oauth, requestData, tokenPublic, tokenSecret;
+			var model = this, deferred, oauth, requestData, tokenPublic, tokenSecret, token;
 
 			console.log( wpApiSettings.oauth_token );
 
 			// Do we have an oauth_token?
 			if ( ! _.isNull( wpApiSettings.oauth_token ) ) {
-
+				token = {
+					'public': Cookies.get( 'tokenPublic' ),
+					'secret': Cookies.get( 'tokenSecret' )
+				};
 				oauth = new OAuth( {
 					consumer: {
-						'public': Cookies.get( 'tokenPublic' ),
-						'secret': Cookies.get( 'tokenSecret' )
+						'public': '0XKFJPpIuBWR',
+						'secret': 'SFh0EqddY1dwhiq2G7GvExEQdMY89TyT0C05qpQELJPFlS7R'
 					},
 					signature_method: 'HMAC-SHA1'
 
@@ -49,12 +52,19 @@
 					url: requestData.url,
 					type: requestData.method,
 					beforeSend: function( xhr ) {
-						_.each( oauth.toHeader( oauth.authorize( requestData ) ), function( header, index ) {
+						_.each( oauth.toHeader( oauth.authorize( requestData, token ) ), function( header, index ) {
 							xhr.setRequestHeader( index, header );
 						} );
 					}
 				} ).done( function( tokens ) {
 					console.log( tokens );
+					tokenPublic = tokens.substr( tokens.indexOf( 'oauth_token' ) + 'oauth_token'.length + 1, tokens.indexOf( '&', tokens.indexOf( 'oauth_token' ) ) - tokens.indexOf( 'oauth_token' ) - ( 'oauth_token'.length + 1 ) );
+
+					tokenSecret = tokens.substr( tokens.indexOf( 'oauth_token_secret' ) + 'oauth_token_secret'.length + 1, tokens.indexOf( '&', tokens.indexOf( 'oauth_token_secret' ) ) - tokens.indexOf( 'oauth_token_secret' ) - (  'oauth_token_secret'.length + 1 ) );
+
+					Cookies.set( 'tokenPublic', tokenPublic );
+					Cookies.set( 'tokenSecret', tokenSecret );
+
 				} );
 
 			}
