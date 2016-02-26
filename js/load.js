@@ -21,7 +21,7 @@
 		},
 
 		initialize: function() {
-			var model = this, deferred, oauth, requestData, tokenPublic, tokenSecret, token;
+			var model = this, deferred, oauth, requestData, token;
 
 				wp.api.oauth.setup = function( publicKey, secretKey, requestUrl ) {
 
@@ -54,15 +54,13 @@
 						}
 					} ).done( function( tokens ) {
 
-						tokenPublic = tokens.substr( tokens.indexOf( 'oauth_token' ) + 'oauth_token'.length + 1, tokens.indexOf( '&', tokens.indexOf( 'oauth_token' ) ) - tokens.indexOf( 'oauth_token' ) - ( 'oauth_token'.length + 1 ) );
-
-						tokenSecret = tokens.substr( tokens.indexOf( 'oauth_token_secret' ) + 'oauth_token_secret'.length + 1, tokens.indexOf( '&', tokens.indexOf( 'oauth_token_secret' ) ) - tokens.indexOf( 'oauth_token_secret' ) - (  'oauth_token_secret'.length + 1 ) );
+						token = wp.api.utils.extractTokens( tokens, true );
 
 						// Store the returned token data into the session.
-						sessionStorage.setItem( 'tokenPublic', JSON.stringify( tokenPublic ) );
-						sessionStorage.setItem( 'tokenSecret', JSON.stringify( tokenSecret ) );
+						sessionStorage.setItem( 'tokenPublic', JSON.stringify( token['public'] ) );
+						sessionStorage.setItem( 'tokenSecret', JSON.stringify( token.secret ) );
 
-						window.location.href = wpApiSettings.oauth1.authorize +  '?oauth_token=' + tokenPublic;
+						window.location.href = wpApiSettings.oauth1.authorize +  '?oauth_token=' + token['public'];
 
 					} );
 				}
