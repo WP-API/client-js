@@ -66,18 +66,22 @@
 				}
 			};
 
-			if ( ! localStorage.getItem( 'wpOathToken' ) ) {
+			wp.api.oauth.connect = function( publicKey, secretKey ) {
+				if ( ! localStorage.getItem( 'wpOathToken' ) ) {
 
-				// Setup call for testing
-				wp.api.oauth.setup(
-					wpApiSettings.oauth1Public,   // App public key.
-					wpApiSettings.oauth1Secret,   // App secret key.
-					wpApiSettings.oauth1.request // Token request url.
-				 );
-			}
+					// Setup the oath process.
+					wp.api.oauth.setup( publicKey, secretKey, wpApiSettings.oauth1.request );
+				}
+			};
+
+			// Connect our app.
+			wp.api.oauth.connect(
+				wpApiSettings.oauth1Public, // App public key.
+				wpApiSettings.oauth1Secret  // App secret key.
+			);
 
 			// NEXT STEP: Handle the returned temporary OAuth token, requesting a long term token.
-			if ( ! _.isNull( wpApiSettings.oauth1Token && ! localStorage.getItem( 'wpOathToken' ) ) ) {
+			if ( ( ! _.isNull( wpApiSettings.oauth1Token ) && ( ! localStorage.getItem( 'wpOathToken' ) ) ) ) {
 
 				// Construct a new request to get a long term authorization token.
 				token = {
