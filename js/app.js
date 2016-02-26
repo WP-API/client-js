@@ -6,6 +6,7 @@
 		this.models = {};
 		this.collections = {};
 		this.views = {};
+		this.oauth = {};
 	}
 
 	window.wp            = window.wp || {};
