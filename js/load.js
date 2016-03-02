@@ -39,7 +39,7 @@
 						url: requestUrl,
 						method: 'POST',
 						data: {
-							oauth_callback: window.location.href
+							oauth_callback: window.location.toString().replace( location.search, '' )
 						}
 					};
 
@@ -69,19 +69,17 @@
 				}
 			};
 
-			wp.api.oauth.connect = function( publicKey, secretKey ) {
+			// Set up OAuth, using localized or passed credentials.
+			wp.api.oauth.connect = function( publicK, secretK ) {
+				var secretKey = secretK || wpApiSettings.oauth1Secret,
+					publicKey = publicK || wpApiSettings.oauth1Public;
+
 				if ( ! localStorage.getItem( 'wpOathToken' ) ) {
 
 					// Setup the oath process.
 					wp.api.oauth.setup( publicKey, secretKey, wpApiSettings.oauth1.request );
 				}
 			};
-
-			// Connect our app.
-			wp.api.oauth.connect(
-				wpApiSettings.oauth1Public, // App public key.
-				wpApiSettings.oauth1Secret  // App secret key.
-			);
 
 			// NEXT STEP: Handle the returned temporary OAuth token, requesting a long term token.
 			if ( ( ! _.isNull( wpApiSettings.oauth1Token ) && ( ! localStorage.getItem( 'wpOathToken' ) ) ) ) {
@@ -103,7 +101,7 @@
 					url: wpApiSettings.oauth1.access,
 					method: 'POST',
 					data: {
-						oauth_callback: window.location.href,
+						oauth_callback: window.location.toString().replace( location.search, '' ),
 						oauth_verifier: wpApiSettings.oauth1Verifier,
 						oauth_token:    wpApiSettings.oauth1Token
 					}
