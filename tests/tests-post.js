@@ -11,7 +11,7 @@ QUnit.test( 'API Loaded correctly', function( assert ) {
 		done();
 	} );
 
-});
+} );
 
 
 // Verify collections loaded.
@@ -29,7 +29,7 @@ var collectionClassNames = [
 	];
 
 _.each( collectionClassNames, function( className ) {
-	QUnit.test( 'Testing ' + className + ' collection.' , function( assert ) {
+	QUnit.test( 'Testing ' + className + ' collection.', function( assert ) {
 		var done = assert.async();
 
 		assert.expect( 2 );
@@ -38,7 +38,7 @@ _.each( collectionClassNames, function( className ) {
 			var theCollection = new wp.api.collections[ className ]();
 			assert.ok( theCollection, 'We can instantiate wp.api.collections.' + className );
 			theCollection.fetch().done( function() {
-				assert.equal( 1, theCollection.state.currentPage , 'We should be on page 1 of the collection in ' + className  );
+				assert.equal( 1, theCollection.state.currentPage, 'We should be on page 1 of the collection in ' + className  );
 				done();
 			} );
 
