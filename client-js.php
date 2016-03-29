@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: WP-API Client JS
+ * Plugin Name: WP-API Client JS.
  */
 
 function json_api_client_js() {
@@ -14,7 +14,7 @@ function json_api_client_js() {
 	}
 
 	/**
-	 * @var \WP_REST_Server $wp_rest_server
+	 * @var WP_REST_Server $wp_rest_server
 	 */
 	global $wp_rest_server;
 	if ( empty( $wp_rest_server ) ) {
