@@ -598,10 +598,10 @@
 			},
 
 			/**
-			 * Add a helper function to retrieve the featured image.
+			 * Add a helper function to retrieve the featured media.
 			 */
-			FeaturedImageMixin = {
-				getFeaturedImage: function() {
+			FeaturedMediaMixin = {
+				getFeaturedMedia: function() {
 					return buildModelGetter( this, this.get( 'featured_media' ), 'Media', 'wp:featuredmedia', 'source_url' );
 				}
 			};
@@ -628,9 +628,9 @@
 			model = model.extend( AuthorMixin );
 		}
 
-		// Add the FeaturedImageMixin for models that contain a featured_media.
+		// Add the FeaturedMediaMixin for models that contain a featured_media.
 		if ( ! _.isUndefined( model.prototype.args.featured_media ) ) {
-			model = model.extend( FeaturedImageMixin );
+			model = model.extend( FeaturedMediaMixin );
 		}
 
 		// Add the CategoriesMixin for models that support categories collections.
