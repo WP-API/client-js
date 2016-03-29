@@ -303,8 +303,8 @@
 				deferred  = jQuery.Deferred();
 				embeddeds = parentModel.get( '_embedded' ) || {};
 
-				// Verify that we have a valied author id.
-				if ( ! _.isNumber( modelId ) ) {
+				// Verify that we have a valied object id.
+				if ( ! _.isNumber( modelId ) || 0 === modelId ) {
 					deferred.reject();
 					return deferred;
 				}
@@ -623,7 +623,7 @@
 			 */
 			FeaturedImageMixin = {
 				getFeaturedImage: function() {
-					return buildModelGetter( this, this.get( 'featured_image' ), 'Media', 'https://api.w.org/featuredmedia', 'source_url' );
+					return buildModelGetter( this, this.get( 'featured_media' ), 'Media', 'wp:featuredmedia', 'source_url' );
 				}
 			};
 
@@ -649,8 +649,8 @@
 			model = model.extend( AuthorMixin );
 		}
 
-		// Add the FeaturedImageMixin for models that contain a featured_image.
-		if ( ! _.isUndefined( model.prototype.args.featured_image ) ) {
+		// Add the FeaturedImageMixin for models that contain a featured_media.
+		if ( ! _.isUndefined( model.prototype.args.featured_media ) ) {
 			model = model.extend( FeaturedImageMixin );
 		}
 
