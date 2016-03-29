@@ -5,7 +5,6 @@ Backbone library for the WordPress REST API or "WP-API"
 
 This library provides an interface for the [WP REST API](https://github.com/WP-API/WP-API) by providing Backbone Models and Collections for all endpoints in the API.
 
-
 ## Using
 
 Activate the WP-API plugin. Enqueue the script directly:
@@ -107,39 +106,51 @@ wp.api.collections.Posts.options
  * search
  * status
 ```
+
+### Localizing the API Schema
+The client will accept and use a localized schema as part of the `wpApiSettings` object. The Schema is currently not passed by default; instead the client makes an ajax request to the API to load the Schema, then caches it in the browser's session storage (if available). Activating the client-js plugin with `SCRIPT_DEBUG` enabled uses a localized Schema. Check the [client-js example](https://github.com/WP-API/client-js/blob/master/client-js.php) or this branch which [attempts to only localize the schema once per client](https://github.com/WP-API/client-js/compare/features/only-localize-schma-once?expand=1).
+
+### Waiting for the client to load
+Client startup is asynchronous. If the api schema is localized, the client can start immediately; if not the client makes an ajax request to load the schema. The client exposes a load promise for provide a reliable wait to wait for client to be ready:
+
+```js
+wp.api.loadPromise.done( function() {
+	//... use the client here
+} )
+```
+
 ### Model examples:
 
 To create a post and edit its categories, make sure you are logged in, then:
 
 ```js
 // Create a new post
-var post = new wp.api.models.Posts( { title: 'This is a test post' } );
+var post = new wp.api.models.Post( { title: 'This is a test post' } );
 post.save();
 
-// Create a new post
-var post = new wp.api.models.Posts({ title:'new test' } );
-post.save();
-
-// Get a collection of the post's categories
-var postCategories = post.getCategories();
+// Load an existing post
+var post = new wp.api.models.Post( { id: 1 } );
+post.fetch();
 
 // Get a collection of the post's categories (returns a promise)
 // Uses _embedded data if available, in which case promise resolves immediately.
 post.getCategories().done( function( postCategories ) {
 	// ... do something with the categories.
 	// The new post has an single Category: Uncategorized
-	postCategories.at( 0 ).get( 'name' );
+	console.log( postCategories[0].name );
 	// response -> "Uncategorized"
 } );
 
 // Get a posts author User model.
 post.getAuthorUser().done( function( user ){
 	// ... do something with user
+	console.log( user.get( 'name' ) );
 } );
 
 // Get a posts featured image Media model.
 post.getFeaturedImage().done( function( image ){
 	// ... do something with image
+	console.log( image );
 } );
 
 // Set the post categories.
@@ -194,7 +205,7 @@ All collections support pagination automatically, and you can get the next page 
 postsCollection.more();
 ```
 
-If you add custom endpoints to the api they will also become available as models/collections. For example, you will get new models and collections when you [add REST API support to your custom post type](http://v2.wp-api.org/extending/custom-content-types/). Note: because the schema is stored in the user's session cache to avoid re-fetchingyou may need to open a new tab to get a new read of the Schema.
+If you add custom endpoints to the api they will also become available as models/collections. For example, you will get new models and collections when you [add REST API support to your custom post type](http://v2.wp-api.org/extending/custom-content-types/). Note: because the schema is stored in the user's session cache to avoid re-fetching, you may need to open a new tab to get a new read of the Schema.
 
 ## Development
 
