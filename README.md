@@ -107,6 +107,7 @@ wp.api.collections.Posts.options
  * search
  * status
 ```
+
 ### Model examples:
 
 To create a post and edit its categories, make sure you are logged in, then:
@@ -116,9 +117,9 @@ To create a post and edit its categories, make sure you are logged in, then:
 var post = new wp.api.models.Posts( { title: 'This is a test post' } );
 post.save();
 
-// Create a new post
-var post = new wp.api.models.Posts({ title:'new test' } );
-post.save();
+// Load an existing post
+var post = new wp.api.models.Post( { id: 1 } );
+post.fetch();
 
 // Get a collection of the post's categories
 var postCategories = post.getCategories();
