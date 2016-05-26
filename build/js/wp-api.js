@@ -250,8 +250,8 @@
 					_.each( parseableDates, function( key ) {
 						if ( key in attributes ) {
 
-							// Don't convert null values
-							if ( ! _.isNull( attributes[ key ] ) ) {
+							// Only convert dates.
+							if ( _.isDate( attributes[ key ] )  ) {
 								attributes[ key ] = attributes[ key ].toISOString();
 							}
 						}
@@ -275,7 +275,7 @@
 							return;
 						}
 
-						// Don't convert null values
+						// Don't convert null values.
 						if ( ! _.isNull( response[ key ] ) ) {
 							timestamp = wp.api.utils.parseISO8601( response[ key ] );
 							response[ key ] = new Date( timestamp );
@@ -619,10 +619,10 @@
 			},
 
 			/**
-			 * Add a helper function to retrieve the featured image.
+			 * Add a helper function to retrieve the featured media.
 			 */
-			FeaturedImageMixin = {
-				getFeaturedImage: function() {
+			FeaturedMediaMixin = {
+				getFeaturedMedia: function() {
 					return buildModelGetter( this, this.get( 'featured_media' ), 'Media', 'wp:featuredmedia', 'source_url' );
 				}
 			};
@@ -649,9 +649,9 @@
 			model = model.extend( AuthorMixin );
 		}
 
-		// Add the FeaturedImageMixin for models that contain a featured_media.
+		// Add the FeaturedMediaMixin for models that contain a featured_media.
 		if ( ! _.isUndefined( model.prototype.args.featured_media ) ) {
-			model = model.extend( FeaturedImageMixin );
+			model = model.extend( FeaturedMediaMixin );
 		}
 
 		// Add the CategoriesMixin for models that support categories collections.
@@ -1007,7 +1007,12 @@
 
 						// Store a copy of the schema model in the session cache if available.
 						if ( ! _.isUndefined( sessionStorage ) ) {
-							sessionStorage.setItem( 'wp-api-schema-model' + model.get( 'apiRoot' ) + model.get( 'versionString' ), JSON.stringify( newSchemaModel ) );
+							try {
+								sessionStorage.setItem( 'wp-api-schema-model' + model.get( 'apiRoot' ) + model.get( 'versionString' ), JSON.stringify( newSchemaModel ) );
+							} catch ( error ) {
+
+								// Fail silently, fixes errors in safari private mode.
+							}
 						}
 					},
 
@@ -1080,7 +1085,7 @@
 				) {
 
 					// Single items end with a regex (or the special case 'me').
-					if ( /.*[+)|me]$/.test( index ) ) {
+					if ( /(?:.*[+)]|\/me)$/.test( index ) ) {
 						modelRoutes.push( { index: index, route: route } );
 					} else {
 
