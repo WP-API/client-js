@@ -229,8 +229,8 @@
 					_.each( parseableDates, function( key ) {
 						if ( key in attributes ) {
 
-							// Don't convert null values
-							if ( ! _.isNull( attributes[ key ] ) ) {
+							// Only convert dates.
+							if ( _.isDate( attributes[ key ] )  ) {
 								attributes[ key ] = attributes[ key ].toISOString();
 							}
 						}
@@ -254,7 +254,7 @@
 							return;
 						}
 
-						// Don't convert null values
+						// Don't convert null values.
 						if ( ! _.isNull( response[ key ] ) ) {
 							timestamp = wp.api.utils.parseISO8601( response[ key ] );
 							response[ key ] = new Date( timestamp );
