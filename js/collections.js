@@ -29,7 +29,7 @@
 			},
 
 			/**
-			 * Overwrite Backbone.Collection.sync to pagination state based on response headers.
+			 * Extend Backbone.Collection.sync to add nince and pagination support.
 			 *
 			 * Set nonce header before every Backbone sync.
 			 *
@@ -45,6 +45,7 @@
 				options    = options || {};
 				beforeSend = options.beforeSend;
 
+				// If we have a localized nonce, pass that along with each sync.
 				if ( 'undefined' !== typeof wpApiSettings.nonce ) {
 					options.beforeSend = function( xhr ) {
 						xhr.setRequestHeader( 'X-WP-Nonce', wpApiSettings.nonce );
@@ -55,6 +56,7 @@
 					};
 				}
 
+				// When reading, add pagination data.
 				if ( 'read' === method ) {
 					if ( options.data ) {
 						self.state.data = _.clone( options.data );
@@ -65,8 +67,8 @@
 					}
 
 					if ( 'undefined' === typeof options.data.page ) {
-						self.state.currentPage = null;
-						self.state.totalPages = null;
+						self.state.currentPage  = null;
+						self.state.totalPages   = null;
 						self.state.totalObjects = null;
 					} else {
 						self.state.currentPage = options.data.page - 1;
@@ -75,7 +77,7 @@
 					success = options.success;
 					options.success = function( data, textStatus, request ) {
 						if ( ! _.isUndefined( request ) ) {
-							self.state.totalPages = parseInt( request.getResponseHeader( 'x-wp-totalpages' ), 10 );
+							self.state.totalPages   = parseInt( request.getResponseHeader( 'x-wp-totalpages' ), 10 );
 							self.state.totalObjects = parseInt( request.getResponseHeader( 'x-wp-total' ), 10 );
 						}
 
@@ -91,6 +93,7 @@
 					};
 				}
 
+				// Continue by calling Bacckbone's sync.
 				return Backbone.sync( method, model, options );
 			},
 
