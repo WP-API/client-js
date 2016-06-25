@@ -121,10 +121,10 @@
 			 * Iterate thru the routes, picking up models and collections to build. Builds two arrays,
 			 * one for models and one for collections.
 			 */
-			modelRoutes                = [];
-			collectionRoutes           = [];
-			schemaRoot                 = routeModel.get( 'apiRoot' ).replace( wp.api.utils.getRootUrl(), '' );
-			loadingObjects             = {};
+			modelRoutes      = [];
+			collectionRoutes = [];
+			schemaRoot       = routeModel.get( 'apiRoot' ).replace( wp.api.utils.getRootUrl(), '' );
+			loadingObjects   = {};
 
 			/**
 			 * Tracking objects for models and collections.
@@ -175,7 +175,7 @@
 					modelClassName = mapping.models[ modelClassName ] || modelClassName;
 					loadingObjects.models[ modelClassName ] = wp.api.WPApiBaseModel.extend( {
 
-						// Function that returns a constructed url based on the parent and id.
+						// Return a constructed url based on the parent and id.
 						url: function() {
 							var url = routeModel.get( 'apiRoot' ) + routeModel.get( 'versionString' ) +
 									parentName +  '/' +
@@ -199,6 +199,7 @@
 						methods: modelRoute.route.methods,
 
 						initialize: function() {
+
 							/**
 							 * Posts and pages support trashing, other types don't support a trash
 							 * and require that you pass ?force=true to actually delete them.
@@ -244,7 +245,7 @@
 					} );
 				}
 
-				// Add defaults to the new model, pulled form the endpoint
+				// Add defaults to the new model, pulled form the endpoint.
 				wp.api.utils.decorateFromRoute( modelRoute.route.endpoints, loadingObjects.models[ modelClassName ] );
 
 			} );
@@ -261,7 +262,7 @@
 						routeName  = collectionRoute.index.slice( collectionRoute.index.lastIndexOf( '/' ) + 1 ),
 						parentName = wp.api.utils.extractRoutePart( collectionRoute.index, 3 );
 
-				// If the collection has a parent in its route, add that to its class name/
+				// If the collection has a parent in its route, add that to its class name.
 				if ( '' !== parentName && parentName !== routeName ) {
 
 					collectionClassName = wp.api.utils.capitalize( parentName ) + wp.api.utils.capitalize( routeName );
@@ -313,7 +314,7 @@
 					} );
 				}
 
-				// Add defaults to the new model, pulled form the endpoint
+				// Add defaults to the new model, pulled form the endpoint.
 				wp.api.utils.decorateFromRoute( collectionRoute.route.endpoints, loadingObjects.collections[ collectionClassName ] );
 			} );
 
@@ -341,10 +342,10 @@
 	wp.api.init = function( args ) {
 		var endpoint, attributes = {}, deferred, promise;
 
-		args = args || {};
-		attributes.apiRoot = args.apiRoot || wpApiSettings.root;
+		args                     = args || {};
+		attributes.apiRoot       = args.apiRoot || wpApiSettings.root;
 		attributes.versionString = args.versionString || wpApiSettings.versionString;
-		attributes.schema = args.schema || null;
+		attributes.schema        = args.schema || null;
 		if ( ! attributes.schema && attributes.apiRoot === wpApiSettings.root && attributes.versionString === wpApiSettings.versionString ) {
 			attributes.schema = wpApiSettings.schema;
 		}
