@@ -7,11 +7,12 @@
 	window.wp = window.wp || {};
 	wp.api    = wp.api || {};
 
+	// If wpApiSettings is unavailable, try the default.
 	if ( _.isEmpty( wpApiSettings ) ) {
 		wpApiSettings.root = window.location.origin + '/wp-json/';
 	}
 
-	Endpoint = Backbone.Model.extend({
+	Endpoint = Backbone.Model.extend( {
 		defaults: {
 			apiRoot: wpApiSettings.root,
 			versionString: wp.api.versionString,
@@ -20,6 +21,9 @@
 			collections: {}
 		},
 
+		/**
+		 * Initialize the Endpoint model.
+		 */
 		initialize: function() {
 			var model = this, deferred;
 
@@ -31,8 +35,9 @@
 			model.schemaModel = new wp.api.models.Schema( null, {
 				apiRoot: model.get( 'apiRoot' ),
 				versionString: model.get( 'versionString' )
-			});
+			} );
 
+			// When the model loads, resolve the promise.
 			model.schemaModel.once( 'change', function() {
 				model.constructFromSchema();
 				deferred.resolve( model );
@@ -47,9 +52,9 @@
 				// Used a cached copy of the schema model if available.
 				model.schemaModel.set( model.schemaModel.parse( JSON.parse( sessionStorage.getItem( 'wp-api-schema-model' + model.get( 'apiRoot' ) + model.get( 'versionString' ) ) ) ) );
 			} else {
-				model.schemaModel.fetch({
+				model.schemaModel.fetch( {
 					/**
-					 * When the server return the schema model data, store the data in a sessionCache so we don't
+					 * When the server returns the schema model data, store the data in a sessionCache so we don't
 					 * have to retrieve it again for this session. Then, construct the models and collections based
 					 * on the schema model data.
 					 */
@@ -70,7 +75,7 @@
 					error: function( err ) {
 						window.console.log( err );
 					}
-				});
+				} );
 			}
 		},
 
@@ -319,11 +324,11 @@
 
 		}
 
-	});
+	} );
 
-	wp.api.endpoints = new Backbone.Collection({
+	wp.api.endpoints = new Backbone.Collection( {
 		model: Endpoint
-	});
+	} );
 
 	/**
 	 * Initialize the wp-api, optionally passing the API root.
