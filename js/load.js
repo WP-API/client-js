@@ -66,8 +66,9 @@
 						}
 					},
 
-					// @todo Handle the error condition.
-					error: function() {
+					// Log the error condition.
+					error: function( err ) {
+						window.console.log( err );
 					}
 				});
 			}
