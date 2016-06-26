@@ -46,6 +46,7 @@ function json_api_client_js() {
 		'nonce'         => wp_create_nonce( 'wp_rest' ),
 		'versionString' => 'wp/v2/',
 		'schema'        => $schema,
+		'cacheSchema'   => true,
 	);
 	wp_localize_script( 'wp-api', 'wpApiSettings', $settings );
 
