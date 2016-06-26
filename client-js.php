@@ -46,7 +46,17 @@ function json_api_client_js() {
 		'nonce'         => wp_create_nonce( 'wp_rest' ),
 		'versionString' => 'wp/v2/',
 		'schema'        => $schema,
+		'cacheSchema'   => true,
 	);
+
+	/**
+	 * Filter the JavaScript Client settings before localizing.
+	 *
+	 * Enables modifying the config values sent to the JS client.
+	 *
+	 * @param array  $settings The JS Client settings.
+	 */
+	$settings = apply_filters( 'rest_js_client_settings', $settings );
 	wp_localize_script( 'wp-api', 'wpApiSettings', $settings );
 
 }
