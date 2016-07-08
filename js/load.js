@@ -49,7 +49,7 @@
 				model.schemaModel.set( model.schemaModel.parse( model.get( 'schema' ) ) );
 			} else if (
 				! _.isUndefined( sessionStorage ) &&
-				( _.isUndefined( cacheSchema ) || wpApiSettings.cacheSchema ) &&
+				( _.isUndefined( wpApiSettings.cacheSchema ) || wpApiSettings.cacheSchema ) &&
 				sessionStorage.getItem( 'wp-api-schema-model' + model.get( 'apiRoot' ) + model.get( 'versionString' ) )
 			) {
 
