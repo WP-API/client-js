@@ -31,7 +31,7 @@ Models:
  * Page
  * PageMeta
  * PageRevision
- * Posts
+ * Post
  * PostMeta
  * PostRevision
  * Schema
