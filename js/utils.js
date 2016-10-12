@@ -2,78 +2,9 @@
 
 	'use strict';
 
-	var pad, r;
-
 	window.wp = window.wp || {};
 	wp.api = wp.api || {};
 	wp.api.utils = wp.api.utils || {};
-
-	/**
-	 * ECMAScript 5 shim, adapted from MDN.
-	 * @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString
-	 */
-	if ( ! Date.prototype.toISOString ) {
-		pad = function( number ) {
-			r = String( number );
-			if ( 1 === r.length ) {
-				r = '0' + r;
-			}
-
-			return r;
-		};
-
-		Date.prototype.toISOString = function() {
-			return this.getUTCFullYear() +
-				'-' + pad( this.getUTCMonth() + 1 ) +
-				'-' + pad( this.getUTCDate() ) +
-				'T' + pad( this.getUTCHours() ) +
-				':' + pad( this.getUTCMinutes() ) +
-				':' + pad( this.getUTCSeconds() ) +
-				'.' + String( ( this.getUTCMilliseconds() / 1000 ).toFixed( 3 ) ).slice( 2, 5 ) +
-				'Z';
-		};
-	}
-
-	/**
-	 * Parse date into ISO8601 format.
-	 *
-	 * @param {Date} date.
-	 */
-	wp.api.utils.parseISO8601 = function( date ) {
-		var timestamp, struct, i, k,
-			minutesOffset = 0,
-			numericKeys = [ 1, 4, 5, 6, 7, 10, 11 ];
-
-		// ES5 §15.9.4.2 states that the string should attempt to be parsed as a Date Time String Format string
-		// before falling back to any implementation-specific date parsing, so that’s what we do, even if native
-		// implementations could be faster.
-		//              1 YYYY                2 MM       3 DD           4 HH    5 mm       6 ss        7 msec        8 Z 9 ±    10 tzHH    11 tzmm
-		if ( ( struct = /^(\d{4}|[+\-]\d{6})(?:-(\d{2})(?:-(\d{2}))?)?(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{3}))?)?(?:(Z)|([+\-])(\d{2})(?::(\d{2}))?)?)?$/.exec( date ) ) ) {
-
-			// Avoid NaN timestamps caused by “undefined” values being passed to Date.UTC.
-			for ( i = 0; ( k = numericKeys[i] ); ++i ) {
-				struct[k] = +struct[k] || 0;
-			}
-
-			// Allow undefined days and months.
-			struct[2] = ( +struct[2] || 1 ) - 1;
-			struct[3] = +struct[3] || 1;
-
-			if ( 'Z' !== struct[8]  && undefined !== struct[9] ) {
-				minutesOffset = struct[10] * 60 + struct[11];
-
-				if ( '+' === struct[9] ) {
-					minutesOffset = 0 - minutesOffset;
-				}
-			}
-
-			timestamp = Date.UTC( struct[1], struct[2], struct[3], struct[4], struct[5] + minutesOffset, struct[6], struct[7] );
-		} else {
-			timestamp = Date.parse ? Date.parse( date ) : NaN;
-		}
-
-		return timestamp;
-	};
 
 	/**
 	 * Helper function for getting the root URL.
@@ -198,73 +129,6 @@
 	 */
 	wp.api.utils.addMixinsAndHelpers = function( model, modelClassName, loadingObjects ) {
 
-		var hasDate = false,
-
-			/**
-			 * Array of parseable dates.
-			 *
-			 * @type {string[]}.
-			 */
-			parseableDates = [ 'date', 'modified', 'date_gmt', 'modified_gmt' ],
-
-			/**
-			 * Mixin for all content that is time stamped.
-			 *
-			 * This mixin converts between mysql timestamps and JavaScript Dates when syncing a model
-			 * to or from the server. For example, a date stored as `2015-12-27T21:22:24` on the server
-			 * gets expanded to `Sun Dec 27 2015 14:22:24 GMT-0700 (MST)` when the model is fetched.
-			 *
-			 * @type {{toJSON: toJSON, parse: parse}}.
-			 */
-			TimeStampedMixin = {
-				/**
-				 * Serialize the entity pre-sync.
-				 *
-				 * @returns {*}.
-				 */
-				toJSON: function() {
-					var attributes = _.clone( this.attributes );
-
-					// Serialize Date objects back into 8601 strings.
-					_.each( parseableDates, function( key ) {
-						if ( key in attributes ) {
-
-							// Only convert dates.
-							if ( _.isDate( attributes[ key ] )  ) {
-								attributes[ key ] = attributes[ key ].toISOString();
-							}
-						}
-					} );
-
-					return attributes;
-				},
-
-				/**
-				 * Unserialize the fetched response.
-				 *
-				 * @param {*} response.
-				 * @returns {*}.
-				 */
-				parse: function( response ) {
-					var timestamp;
-
-					// Parse dates into native Date objects.
-					_.each( parseableDates, function( key ) {
-						if ( ! ( key in response ) ) {
-							return;
-						}
-
-						// Don't convert null values.
-						if ( ! _.isNull( response[ key ] ) ) {
-							timestamp = wp.api.utils.parseISO8601( response[ key ] );
-							response[ key ] = new Date( timestamp );
-						}
-					});
-
-					return response;
-				}
-			},
-
 			/**
 			 * Build a helper function to retrieve related model.
 			 *
@@ -276,7 +140,7 @@
 			 *
 			 * @return {Deferred.promise}        A promise which resolves to the constructed model.
 			 */
-			buildModelGetter = function( parentModel, modelId, modelName, embedSourcePoint, embedCheckField ) {
+		var buildModelGetter = function( parentModel, modelId, modelName, embedSourcePoint, embedCheckField ) {
 				var getModel, embeddeds, attributes, deferred;
 
 				deferred  = jQuery.Deferred();
@@ -609,18 +473,6 @@
 		// Exit if we don't have valid model defaults.
 		if ( _.isUndefined( model.prototype.args ) ) {
 			return model;
-		}
-
-		// Go thru the parsable date fields, if our model contains any of them it gets the TimeStampedMixin.
-		_.each( parseableDates, function( theDateKey ) {
-			if ( ! _.isUndefined( model.prototype.args[ theDateKey ] ) ) {
-				hasDate = true;
-			}
-		} );
-
-		// Add the TimeStampedMixin for models that contain a date field.
-		if ( hasDate ) {
-			model = model.extend( TimeStampedMixin );
 		}
 
 		// Add the AuthorMixin for models that contain an author.
