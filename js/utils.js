@@ -71,6 +71,7 @@
 		} else {
 			timestamp = Date.parse ? Date.parse( date ) : NaN;
 		}
+		console.log( 'wp.api.utils.parseISO8601 returning', timestamp, ( new Date( timestamp ) ).toISOString() );
 
 		return timestamp;
 	};
@@ -235,31 +236,29 @@
 							}
 						}
 					} );
-
 					return attributes;
 				},
 
 				/**
-				 * Unserialize the fetched response.
+				 * Unserialize the fetched response. Parse dates into native Date objects.
 				 *
 				 * @param {*} response.
 				 * @returns {*}.
 				 */
 				parse: function( response ) {
-					var timestamp;
+					var theDate     = new Date( response.date ),
+						theDateGMT  = new Date( response.date_gmt ),
+						timeDiff    = theDateGMT.getTime() - theDate.getTime(),
+						newGMT      = new Date( theDateGMT.getTime() + timeDiff ),
+						modDate     = new Date( response.modified ),
+						modDateGMT  = new Date( response.modified_gmt ),
+						modtimeDiff = modDateGMT.getTime() - modDate.getTime(),
+						modnewGMT   = new Date( modDateGMT.getTime() + modtimeDiff );
 
-					// Parse dates into native Date objects.
-					_.each( parseableDates, function( key ) {
-						if ( ! ( key in response ) ) {
-							return;
-						}
-
-						// Don't convert null values.
-						if ( ! _.isNull( response[ key ] ) ) {
-							timestamp = wp.api.utils.parseISO8601( response[ key ] );
-							response[ key ] = new Date( timestamp );
-						}
-					});
+					response.date         = theDateGMT;
+					response.date_gmt     = newGMT;
+					response.modified     = modDateGMT;
+					response.modified_gmt = modnewGMT;
 
 					return response;
 				}
