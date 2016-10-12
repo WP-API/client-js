@@ -71,7 +71,6 @@
 		} else {
 			timestamp = Date.parse ? Date.parse( date ) : NaN;
 		}
-		console.log( 'wp.api.utils.parseISO8601 returning', timestamp, ( new Date( timestamp ) ).toISOString() );
 
 		return timestamp;
 	};
