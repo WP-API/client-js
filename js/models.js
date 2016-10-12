@@ -27,6 +27,16 @@
 
 				options = options || {};
 
+				// Remove date_gmt if null.
+				if ( _.isNull( model.get( 'date_gmt' ) ) ) {
+					model.unset( 'date_gmt' );
+				}
+
+				// Remove slug if empty.
+				if ( _.isEmpty( model.get( 'slug' ) ) ) {
+					model.unset( 'slug' );
+				}
+
 				if ( ! _.isUndefined( wpApiSettings.nonce ) && ! _.isNull( wpApiSettings.nonce ) ) {
 					beforeSend = options.beforeSend;
 
@@ -42,7 +52,7 @@
 					};
 				}
 
-				// Add '?force=true' to delete method when required.
+				// Add '?force=true' to use delete method when required.
 				if ( this.requireForceForDelete && 'delete' === method ) {
 					model.url = model.url() + '?force=true';
 				}
@@ -55,7 +65,7 @@
 			save: function( attrs, options ) {
 
 				// Do we have the put method, then execute the save.
-				if ( _.contains( this.methods, 'PUT' ) || _.contains( this.methods, 'POST' ) ) {
+				if ( _.includes( this.methods, 'PUT' ) || _.includes( this.methods, 'POST' ) ) {
 
 					// Proxy the call to the original save function.
 					return Backbone.Model.prototype.save.call( this, attrs, options );
@@ -72,7 +82,7 @@
 			destroy: function( options ) {
 
 				// Do we have the DELETE method, then execute the destroy.
-				if ( _.contains( this.methods, 'DELETE' ) ) {
+				if ( _.includes( this.methods, 'DELETE' ) ) {
 
 					// Proxy the call to the original save function.
 					return Backbone.Model.prototype.destroy.call( this, options );

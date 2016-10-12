@@ -50,7 +50,7 @@ module.exports = function( grunt ) {
 		qunit: {
 			all: {
 				options: {
-					urls: [ 'http://wpdev.localhost:80/wp-content/plugins/client-js/tests/tests.html' ]
+					urls: [ 'http://localhost:80/wp-content/plugins/client-js/tests/tests.html' ]
 				}
 			}
 		},
