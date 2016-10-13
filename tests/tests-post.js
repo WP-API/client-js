@@ -12,8 +12,7 @@ QUnit.test( 'Testing dates when updating posts.' , function( assert ) {
 
 			var date = post.get( 'date' );
 
-			post.save().always( function() {
-
+			post.save().done( function() {
 				// Get the post one more time to check its date.
 				var post = new wp.api.models.Post( {id: 1} );
 				post.fetch().done( function() {
