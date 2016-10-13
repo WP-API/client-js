@@ -8,14 +8,18 @@ QUnit.test( 'Testing dates when updating posts.' , function( assert ) {
 	wp.api.loadPromise.done( function() {
 
 		var post = new wp.api.models.Post( {id: 1} );
-
 		post.fetch().done( function() {
 
 			var date = post.get( 'date' );
 
 			post.save().always( function() {
-				assert.equal( post.get( 'date' ), date, 'The date should not change when a post is updated.' );
-				done();
+
+				// Get the post one more time to check its date.
+				var post = new wp.api.models.Post( {id: 1} );
+				post.fetch().done( function() {
+					assert.equal( post.get( 'date' ), date, 'The date should not change when a post is updated.' );
+					done();
+				} );
 			} );
 		} );
 	} );
