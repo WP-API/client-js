@@ -32,6 +32,10 @@
 					model.unset( 'date_gmt' );
 				}
 
+				// Remove the modified times, letting the server set those.
+				model.unset( 'date_modified' );
+				model.unset( 'date_modified_gmt' );
+
 				// Remove slug if empty.
 				if ( _.isEmpty( model.get( 'slug' ) ) ) {
 					model.unset( 'slug' );
