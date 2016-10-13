@@ -17,7 +17,7 @@ QUnit.test( 'Testing dates when updating posts.' , function( assert ) {
 				// Get the post one more time to check its date.
 				var post = new wp.api.models.Post( {id: 1} );
 				post.fetch().done( function() {
-					assert.equal( post.get( 'date' ), date, 'The date should not change when a post is updated.' );
+					assert.equal( post.get( 'date' ).getTime(), date.getTime(), 'The date should not change when a post is updated.' );
 					done();
 				} );
 			} );
