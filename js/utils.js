@@ -262,12 +262,12 @@
 						if ( ! _.isNull( response[ key ] ) ) {
 							timestamp = wp.api.utils.parseISO8601( response[ key ] );
 
-							// Adjust date and mofified dates to put them in UTC.
+							// Adjust date and date_modified to put them in UTC.
 							if ( 'date' === key || 'date_modified' === key ) {
-								response[ key ] = new Date( timestamp + utcOffset );
-							} else {
-								response[ key ] = new Date( timestamp );
+								timestamp += utcOffset;
 							}
+
+							response[ key ] = new Date( timestamp );
 						}
 					});
 
