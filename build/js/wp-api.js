@@ -259,29 +259,41 @@
 							}
 						}
 					} );
+
 					return attributes;
 				},
 
 				/**
-				 * Unserialize the fetched response. Parse dates into native Date objects.
+				 * Unserialize the fetched response.
 				 *
 				 * @param {*} response.
 				 * @returns {*}.
 				 */
 				parse: function( response ) {
-					var theDate     = new Date( response.date ),
-						theDateGMT  = new Date( response.date_gmt ),
-						timeDiff    = theDateGMT.getTime() - theDate.getTime(),
-						newGMT      = new Date( theDateGMT.getTime() + timeDiff ),
-						modDate     = new Date( response.modified ),
-						modDateGMT  = new Date( response.modified_gmt ),
-						modtimeDiff = modDateGMT.getTime() - modDate.getTime(),
-						modnewGMT   = new Date( modDateGMT.getTime() + modtimeDiff );
+					var timestamp,
 
-					response.date         = theDateGMT;
-					response.date_gmt     = newGMT;
-					response.modified     = modDateGMT;
-					response.modified_gmt = modnewGMT;
+					// The API returns two dates for a post: date and date_gmt. The difference
+					// between these times equals difference between the timezone and UTC.
+					utcOffset = ( new Date( response.date_gmt ).getTime() - new Date( response.date ).getTime() );
+
+					// Parse dates into native Date objects.
+					_.each( parseableDates, function( key ) {
+						if ( ! ( key in response ) ) {
+							return;
+						}
+
+						// Don't convert null values.
+						if ( ! _.isNull( response[ key ] ) ) {
+							timestamp = wp.api.utils.parseISO8601( response[ key ] );
+
+							// Adjust date and date_modified to put them in UTC.
+							if ( 'date' === key || 'date_modified' === key ) {
+								timestamp += utcOffset;
+							}
+
+							response[ key ] = new Date( timestamp );
+						}
+					});
 
 					return response;
 				}
