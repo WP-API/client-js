@@ -1,30 +1,5 @@
 module( 'WP-API JS Client Tests' );
 
-// Test updating a post to verify the date is unchanged.
-QUnit.test( 'Testing dates when updating posts.' , function( assert ) {
-	var done = assert.async();
-	assert.expect( 1 );
-
-	wp.api.loadPromise.done( function() {
-
-		var post = new wp.api.models.Post( {id: 1} );
-		post.fetch().done( function() {
-
-			var date = post.get( 'date' );
-
-			post.save().always( function() {
-
-				// Get the post one more time to check its date.
-				var post = new wp.api.models.Post( {id: 1} );
-				post.fetch().done( function() {
-					assert.equal( post.get( 'date' ), date, 'The date should not change when a post is updated.' );
-					done();
-				} );
-			} );
-		} );
-	} );
-} );
-
 QUnit.test( 'API Loaded correctly', function( assert ) {
 	var done = assert.async();
 
