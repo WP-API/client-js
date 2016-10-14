@@ -246,7 +246,11 @@
 				 * @returns {*}.
 				 */
 				parse: function( response ) {
-					var timestamp;
+					var timestamp,
+
+					// The API returns two dates for a post: date and date_gmt. The difference
+					// between these times equals difference between the timezone and UTC.
+					utcOffset = ( new Date( response.date_gmt ).getTime() - new Date( response.date ).getTime() );
 
 					// Parse dates into native Date objects.
 					_.each( parseableDates, function( key ) {
@@ -257,7 +261,13 @@
 						// Don't convert null values.
 						if ( ! _.isNull( response[ key ] ) ) {
 							timestamp = wp.api.utils.parseISO8601( response[ key ] );
-							response[ key ] = new Date( timestamp );
+
+							// Adjust date and mofified dates to put them in UTC.
+							if ( 'date' === key || 'date_modified' === key ) {
+								response[ key ] = new Date( timestamp + utcOffset );
+							} else {
+								response[ key ] = new Date( timestamp );
+							}
 						}
 					});
 
