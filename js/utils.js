@@ -250,7 +250,7 @@
 
 					// The API returns two dates for a post: date and date_gmt. The difference
 					// between these times equals difference between the timezone and UTC.
-					utcOffset = ( new Date( response.date_gmt ).getTime() - new Date( response.date ).getTime() );
+					utcOffset = _.isNull( response.date_gmt ) ? 0 : ( new Date( response.date_gmt ).getTime() - new Date( response.date ).getTime() );
 
 					// Parse dates into native Date objects.
 					_.each( parseableDates, function( key ) {
