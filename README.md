@@ -207,6 +207,24 @@ postsCollection.more();
 
 If you add custom endpoints to the api they will also become available as models/collections. For example, you will get new models and collections when you [add REST API support to your custom post type](http://v2.wp-api.org/extending/custom-content-types/). Note: because the schema is stored in the user's session cache to avoid re-fetching, you may need to open a new tab to get a new read of the Schema.
 
+### Working With Revisions
+You can access post or page revisions using the PostRevisions or PageRevisions collections or through the Post or Page collection.
+
+For example, to get a collection of all revisions of post ID 1:
+```
+var revisions = new wp.api.collections.PostRevisions({}, { parent: 1 });
+```
+
+Revision collections can also be accessed via their parent's collection. This example makes 2 HTTP requests instead of one, but now the original post and its revisions are avaible:
+
+```
+var post = new wp.api.models.Post( { id: 1 } );
+post.fetch();
+post.getRevisions().done( function( revisions ){
+console.log( revisions );
+});
+```
+
 ## Development
 
 To develop, build and test this library, you must have [Node](http://nodejs.org) installed. For Windows users, simply [download](http://nodejs.org/download/) and install Node. For Mac users, we recommend installing Node using [Homebrew](http://mxcl.github.com/homebrew/). Once Homebrew is installed, run `brew install node` to install Node.js.
