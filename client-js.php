@@ -40,7 +40,7 @@ function json_api_client_js() {
 		$schema = $schema_response->get_data();
 	}
 
-	// Localize the plugin serrings and schema.
+	// Localize the plugin settings and schema.
 	$settings = array(
 		'root'          => esc_url_raw( get_rest_url() ),
 		'nonce'         => wp_create_nonce( 'wp_rest' ),
