@@ -205,6 +205,19 @@ All collections support pagination automatically, and you can get the next page 
 postsCollection.more();
 ```
 
+to get page 5 of a collection:
+
+```js
+posts.fetch( { data: { page: 5 }  } );
+```
+
+check if the collection has any more posts:
+
+```js
+posts.hasMore();
+```
+
+
 If you add custom endpoints to the api they will also become available as models/collections. For example, you will get new models and collections when you [add REST API support to your custom post type](http://v2.wp-api.org/extending/custom-content-types/). Note: because the schema is stored in the user's session cache to avoid re-fetching, you may need to open a new tab to get a new read of the Schema.
 
 ### Working With Revisions
