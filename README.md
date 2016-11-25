@@ -5,6 +5,7 @@ Backbone library for the WordPress REST API or "WP-API"
 
 This library provides an interface for the [WP REST API](https://github.com/WP-API/WP-API) by providing Backbone Models and Collections for all endpoints in the API.
 
+
 ## Using
 
 Activate the WP-API plugin. Enqueue the script directly:
@@ -63,7 +64,7 @@ You can use these endpoints as-is to read, update, create and delete items using
 Each model and collection includes a reference to its default values, for example:
 
 ```
-wp.api.models.Posts.defaults
+wp.api.models.Post.prototype.args
  * author: null
  * comment_status: null
  * content: null
@@ -84,7 +85,7 @@ wp.api.models.Posts.defaults
 
 ### Available methods
 
-Each model and collection contains a list of methods the corrosponding endpoint supports. For example, models created from `wp.api.models.Posts` have a method array of:
+Each model and collection contains a list of methods the corresponding endpoint supports. For example, models created from `wp.api.models.Post` have a methods array of:
 
 ```
 ["GET", "POST", "PUT", "PATCH", "DELETE"]
@@ -95,7 +96,7 @@ Each model and collection contains a list of methods the corrosponding endpoint 
 Each model and collection contains a list of options the corrosponding endpoint accepts (note that options are passed as the second parameter when creating models or collections), for example:
 
 ```
-wp.api.collections.Posts.options
+wp.api.collections.Posts.prototype.options
  * author
  * context
  * filter
@@ -203,6 +204,36 @@ All collections support pagination automatically, and you can get the next page 
 
 ```js
 postsCollection.more();
+```
+
+to get page 5 of a collection:
+
+```js
+posts.fetch( { data: { page: 5 }  } );
+```
+
+check if the collection has any more posts:
+
+```js
+posts.hasMore();
+```
+
+### Working With Revisions
+You can access post or page revisions using the PostRevisions or PageRevisions collections or through the Post or Page collection.
+
+For example, to get a collection of all revisions of post ID 1:
+```
+var revisions = new wp.api.collections.PostRevisions({}, { parent: 1 });
+```
+
+Revision collections can also be accessed via their parent's collection. This example makes 2 HTTP requests instead of one, but now the original post and its revisions are avaible:
+
+```
+var post = new wp.api.models.Post( { id: 1 } );
+post.fetch();
+post.getRevisions().done( function( revisions ){
+console.log( revisions );
+});
 ```
 
 If you add custom endpoints to the api they will also become available as models/collections. For example, you will get new models and collections when you [add REST API support to your custom post type](http://v2.wp-api.org/extending/custom-content-types/). Note: because the schema is stored in the user's session cache to avoid re-fetching, you may need to open a new tab to get a new read of the Schema.
