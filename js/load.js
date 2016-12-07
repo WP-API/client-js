@@ -276,7 +276,6 @@
 
 						// Function that returns a constructed url passed on the parent.
 						url: function() {
-
 							return routeModel.get( 'apiRoot' ) + routeModel.get( 'versionString' ) +
 									parentName + '/' + this.parent + '/' +
 									routeName;
