@@ -276,13 +276,16 @@
 
 						// Function that returns a constructed url passed on the parent.
 						url: function() {
+
 							return routeModel.get( 'apiRoot' ) + routeModel.get( 'versionString' ) +
 									parentName + '/' + this.parent + '/' +
 									routeName;
 						},
 
 						// Specify the model that this collection contains.
-						model: loadingObjects.models[ modelClassName ],
+						model: function( attrs, options ) {
+							return new loadingObjects.models[ modelClassName ]( attrs, options );
+						},
 
 						// Include a reference to the original class name.
 						name: collectionClassName,
@@ -305,7 +308,9 @@
 						url: routeModel.get( 'apiRoot' ) + routeModel.get( 'versionString' ) + routeName,
 
 						// Specify the model that this collection contains.
-						model: loadingObjects.models[ modelClassName ],
+						model: function( attrs, options ) {
+							return new loadingObjects.models[ modelClassName ]( attrs, options );
+						},
 
 						// Include a reference to the original class name.
 						name: collectionClassName,
