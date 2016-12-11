@@ -28,6 +28,32 @@ var collectionClassNames = [
 		'Users'
 	];
 
+var collectionHelperTests = [
+	{
+		'collectionType':   'Posts',
+		'returnsModelType': 'post',
+		'supportsMethods':  {
+			'getDate':          'getDate',
+			'getRevisions':     'getRevisions',
+			'getTags':          'getTags',
+			'getCategories':    'getCategories',
+			'getAuthorUser':    'getAuthorUser',
+			'getFeaturedMedia': 'getFeaturedMedia'
+			/*'getMeta':        'getMeta', currently not supported */
+		}
+	},
+	{
+		'collectionType':   'Pages',
+		'returnsModelType': 'page',
+		'supportsMethods':  {
+			'getDate':          'getDate',
+			'getRevisions':     'getRevisions',
+			'getAuthorUser':    'getAuthorUser',
+			'getFeaturedMedia': 'getFeaturedMedia'
+		}
+	}
+];
+
 _.each( collectionClassNames, function( className ) {
 	QUnit.test( 'Testing ' + className + ' collection.', function( assert ) {
 		var done = assert.async();
@@ -45,45 +71,24 @@ _.each( collectionClassNames, function( className ) {
 					'We should be on page 1 of the collection in ' + className
 				);
 
-					// Test that collection models get helper methods.
-					var typesWithHelpers = [
-						{
-							'collectionType':   'Posts',
-							'returnsModelType': 'post',
-							'supportsMethods':  {
-								'getDate': 'getDate',
-								/*'getMeta': 'getMeta', currently not supported */
-								'getRevisions': 'getRevisions',
-								'getTags': 'getTags',
-								'getCategories': 'getCategories',
-								'getAuthorUser': 'getAuthorUser',
-								'getFeaturedMedia': 'getFeaturedMedia'
-							}
-						},
-						{
-							'collectionType':   'Pages',
-							'returnsModelType': 'page',
-							'supportsMethods':  {
-								'getDate': 'getDate',
-								'getRevisions': 'getRevisions',
-								'getAuthorUser': 'getAuthorUser',
-								'getFeaturedMedia': 'getFeaturedMedia'
-							}
-						}
+					// Should this collection have helper methods?
+					var collectionHelperTest = _.findWhere( collectionHelperTests, { 'collectionType': className } );
 
-					];
-					var matchingHelper = _.findWhere( typesWithHelpers, { 'collectionType': className } );
-					if ( ! _.isUndefined( matchingHelper ) ) {
+					// If we found a match, run the tests against it.
+					if ( ! _.isUndefined( collectionHelperTest ) ) {
 
-						// Test the returned model.
+						// Test the first returned model.
 						var firstModel = theCollection.at( 0 );
+
+						// Is the model the right type?
 						assert.equal(
-							matchingHelper.returnsModelType,
+							collectionHelperTest.returnsModelType,
 							firstModel.get( 'type' ),
-							'The wp.api.collections.' + className + ' is of type ' + matchingHelper.returnsModelType
+							'The wp.api.collections.' + className + ' is of type ' + collectionHelperTest.returnsModelType
 						);
 
-						_.each( matchingHelper.supportsMethods, function( method ) {
+						// Does the model have all of the expected supported methods?
+						_.each( collectionHelperTest.supportsMethods, function( method ) {
 							assert.equal(
 								'function',
 								typeof firstModel[ method ],
