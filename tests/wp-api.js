@@ -88,7 +88,7 @@ _.each( collectionClassNames, function( className ) {
 								'function',
 								typeof firstModel[ method ],
 								className + '.' + method + ' is a function.'
-							)
+							);
 						} );
 					}
 
