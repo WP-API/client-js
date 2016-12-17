@@ -299,9 +299,14 @@
 
 				// If we didn’t have an embedded getModel, fetch the getModel data.
 				if ( ! getModel.get( embedCheckField ) ) {
-					getModel.fetch( { success: function( getModel ) {
-						deferred.resolve( getModel );
-					} } );
+					getModel.fetch( {
+						success: function( getModel ) {
+							deferred.resolve( getModel );
+						},
+						error: function( getModel, response ) {
+							deferred.reject( response );
+						}
+					} );
 				} else {
 					deferred.resolve( getModel );
 				}
