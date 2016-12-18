@@ -308,6 +308,8 @@
 						}
 					} );
 				} else {
+
+					// Resolve with the embedded model.
 					deferred.resolve( getModel );
 				}
 
@@ -373,12 +375,17 @@
 
 				// If we didn’t have embedded getObjects, fetch the getObjects data.
 				if ( _.isUndefined( getObjects.models[0] ) ) {
-					getObjects.fetch( { success: function( getObjects ) {
+					getObjects.fetch( {
+						success: function( getObjects ) {
 
-						// Add a helper 'parent_post' attribute onto the model.
-						setHelperParentPost( getObjects, postId );
-						deferred.resolve( getObjects );
-					} } );
+							// Add a helper 'parent_post' attribute onto the model.
+							setHelperParentPost( getObjects, postId );
+							deferred.resolve( getObjects );
+						},
+						error: function( getModel, response ) {
+							deferred.reject( response );
+						}
+					} );
 				} else {
 
 					// Add a helper 'parent_post' attribute onto the model.
