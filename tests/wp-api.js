@@ -54,6 +54,7 @@ var collectionHelperTests = [
 	}
 ];
 
+// Check that we have and can get each collection type.
 _.each( collectionClassNames, function( className ) {
 	QUnit.test( 'Testing ' + className + ' collection.', function( assert ) {
 		var done = assert.async();
@@ -116,7 +117,7 @@ var modelsWithIdsClassNames =
 		'User'
 	];
 
-
+// Check that we have and can get each model type.
 _.each( modelsWithIdsClassNames, function( className ) {
 
 	QUnit.test( 'Checking ' + className + ' model.' , function( assert ) {
@@ -148,6 +149,7 @@ var modelsWithIndexes =
 		'Type'
 	];
 
+// Check that we have and can get each model type.
 _.each( modelsWithIndexes, function( className ) {
 
 	QUnit.test( 'Testing ' + className + ' model.' , function( assert ) {
@@ -174,4 +176,39 @@ _.each( modelsWithIndexes, function( className ) {
 		} );
 
 	});
+} );
+
+// Check that getAuthorUser handles errors when the callback fails.
+QUnit.test( 'Testing getAuthorUser ajax failure.' , function( assert ) {
+	var done = assert.async();
+
+	assert.expect( 1 );
+
+	wp.api.loadPromise.done( function() {
+		var post = new wp.api.models.Post( { 'id': 1 } );
+		post.fetch().done( function() {
+
+			var originalFetch = window.Backbone.Model.prototype.fetch;
+
+			// Override Backbone.Model.fetch to force an error.
+			window.Backbone.Model.prototype.fetch = function( options ) {
+				var deferred = jQuery.Deferred(),
+					promise  = deferred.promise();
+
+				if ( options.error ) {
+					assert.equal( 1, 1 , 'getAuthorUser should have error callback on failure.' );
+					done();
+				} else {
+					assert.equal( 1, 0 , 'getAuthorUser should have error callback on failure.' );
+					done();
+				}
+
+				deferred.reject();
+				return promise;
+			};
+
+			post.getAuthorUser();
+			window.Backbone.Model.prototype.fetch = originalFetch;
+		} );
+	} );
 } );
