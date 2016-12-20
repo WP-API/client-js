@@ -173,7 +173,7 @@
 					if ( ! _.isEmpty( routeEndpoint.args ) ) {
 
 						// Set as defauls if no defaults yet.
-						if ( _.isEmpty( modelInstance.prototype.options	 ) ) {
+						if ( _.isEmpty( modelInstance.prototype.options ) ) {
 							modelInstance.prototype.options = routeEndpoint.args;
 						} else {
 
