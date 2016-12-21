@@ -101,14 +101,18 @@
 	 * @param {string} route The endpoint route.
 	 * @param {int}    part  The number of parts from the end of the route to retrieve. Default 1.
 	 *                       Example route `/a/b/c`: part 1 is `c`, part 2 is `b`, part 3 is `a`.
+	 * @param {string} [versionString] Version string, defaults to wp.api.versionString.
 	 */
-	wp.api.utils.extractRoutePart = function( route, part ) {
+	wp.api.utils.extractRoutePart = function( route, part, versionString ) {
 		var routeParts;
 
-		part  = part || 1;
+		part = part || 1;
+		versionString = versionString || wp.api.versionString;
 
 		// Remove versions string from route to avoid returning it.
-		route = route.replace( wp.api.versionString, '' );
+		if ( 0 === route.indexOf( '/' + versionString ) ) {
+			route = route.substr( versionString.length + 1 );
+		}
 		routeParts = route.split( '/' ).reverse();
 		if ( _.isUndefined( routeParts[ --part ] ) ) {
 			return '';

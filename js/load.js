@@ -164,9 +164,9 @@
 
 				// Extract the name and any parent from the route.
 				var modelClassName,
-						routeName  = wp.api.utils.extractRoutePart( modelRoute.index, 2 ),
-						parentName = wp.api.utils.extractRoutePart( modelRoute.index, 4 ),
-						routeEnd   = wp.api.utils.extractRoutePart( modelRoute.index, 1 );
+					routeName  = wp.api.utils.extractRoutePart( modelRoute.index, 2, routeModel.get( 'versionString' ) ),
+					parentName = wp.api.utils.extractRoutePart( modelRoute.index, 4, routeModel.get( 'versionString' ) ),
+					routeEnd   = wp.api.utils.extractRoutePart( modelRoute.index, 1, routeModel.get( 'versionString' ) );
 
 				// Handle the special case of the 'me' route.
 				if ( 'me' === routeEnd ) {
