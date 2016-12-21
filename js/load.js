@@ -202,7 +202,8 @@
 						// Include the array of route methods for easy reference.
 						methods: modelRoute.route.methods,
 
-						initialize: function() {
+						initialize: function( attributes, options ) {
+							wp.api.WPApiBaseModel.prototype.initialize.call( this, attributes, options );
 
 							/**
 							 * Posts and pages support trashing, other types don't support a trash
