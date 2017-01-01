@@ -96,6 +96,28 @@
 	};
 
 	/**
+	 * Helper function that capitilises the first word and camel cases any words starting
+	 * after dashes, removing the dashes.
+	 */
+	wp.api.utils.capitalizeAndCamelCaseDashes = function( str ) {
+		if ( _.isUndefined( str ) ) {
+			return str;
+		}
+		str = wp.api.utils.capitalize( str );
+
+		return wp.api.utils.camelCaseDashes( str );
+	};
+
+	/**
+	 * Helper function to camel case the letter after dashes, removing the dashes.
+	 */
+	wp.api.utils.camelCaseDashes = function( str ) {
+		return str.replace( /-([a-z])/g, function( g ) {
+			return g[ 1 ].toUpperCase();
+		} );
+	};
+
+	/**
 	 * Extract a route part based on negative index.
 	 *
 	 * @param {string} route The endpoint route.
