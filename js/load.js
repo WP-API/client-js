@@ -73,7 +73,7 @@
 					success: function( newSchemaModel ) {
 
 						// Store a copy of the schema model in the session cache if available.
-						if ( ! _.isUndefined( sessionStorage ) && wpApiSettings.cacheSchema ) {
+						if ( ! _.isUndefined( sessionStorage ) && ( _.isUndefined( wpApiSettings.cacheSchema ) || wpApiSettings.cacheSchema ) ) {
 							try {
 							sessionStorage.setItem( 'wp-api-schema-model' + model.get( 'apiRoot' ) + model.get( 'versionString' ), JSON.stringify( newSchemaModel ) );
 							} catch ( error ) {
@@ -290,7 +290,9 @@
 						},
 
 						// Specify the model that this collection contains.
-						model: loadingObjects.models[ modelClassName ],
+						model: function( attrs, options ) {
+							return new loadingObjects.models[ modelClassName ]( attrs, options );
+						},
 
 						// Include a reference to the original class name.
 						name: collectionClassName,
@@ -313,7 +315,9 @@
 						url: routeModel.get( 'apiRoot' ) + routeModel.get( 'versionString' ) + routeName,
 
 						// Specify the model that this collection contains.
-						model: loadingObjects.models[ modelClassName ],
+						model: function( attrs, options ) {
+							return new loadingObjects.models[ modelClassName ]( attrs, options );
+						},
 
 						// Include a reference to the original class name.
 						name: collectionClassName,
