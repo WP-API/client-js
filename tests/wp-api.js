@@ -13,6 +13,44 @@ QUnit.test( 'API Loaded correctly', function( assert ) {
 
 } );
 
+// Test custom namespaces are parsed correctly.
+wp.api.init( {
+	'versionString': 'js-widgets/v1/'
+} )
+	.done( function() {
+		var customModels = [
+			'WidgetsText',
+			'WidgetsRecentPosts',
+			'WidgetsPostCollection'
+		];
+
+		// Check that we have and can get each model type.
+		_.each( customModels, function( className ) {
+			window.console.log( 'Checking ' + className + ' model.' );
+			QUnit.test( 'Checking ' + className + ' model.' , function( assert ) {
+				var done = assert.async();
+
+				assert.expect( 2 );
+
+				wp.api.loadPromise.done( function() {
+					var theModel = new wp.api.models[ className ]();
+					assert.ok( theModel, 'We can instantiate wp.api.models.' + className );
+					theModel.fetch().done( function() {
+						var theModel2 = new wp.api.models[ className ]();
+						theModel2.set( 'id', theModel.attributes[0].id );
+						theModel2.fetch().done( function() {
+							assert.equal( theModel.attributes[0].id, theModel2.get( 'id' ) , 'We should be able to get a ' + className );
+							done();
+						} );
+					} );
+
+				} );
+
+			});
+		} );
+
+	} );
+
 
 // Verify collections loaded.
 var collectionClassNames = [
