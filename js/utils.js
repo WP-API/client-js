@@ -102,8 +102,9 @@
 	 * @param {int}    part  The number of parts from the end of the route to retrieve. Default 1.
 	 *                       Example route `/a/b/c`: part 1 is `c`, part 2 is `b`, part 3 is `a`.
 	 * @param {string} [versionString] Version string, defaults to wp.api.versionString.
+	 * @param {boolean} [reverse] Whether to reverse the order when extracting the rout part. Optional, default true;
 	 */
-	wp.api.utils.extractRoutePart = function( route, part, versionString ) {
+	wp.api.utils.extractRoutePart = function( route, part, versionString, reverse ) {
 		var routeParts;
 
 		part = part || 1;
@@ -113,7 +114,11 @@
 		if ( 0 === route.indexOf( '/' + versionString ) ) {
 			route = route.substr( versionString.length + 1 );
 		}
-		routeParts = route.split( '/' ).reverse();
+
+		routeParts = route.split( '/' );
+		if ( reverse ) {
+			routeParts = routeParts.reverse();
+		}
 		if ( _.isUndefined( routeParts[ --part ] ) ) {
 			return '';
 		}

@@ -164,9 +164,18 @@
 
 				// Extract the name and any parent from the route.
 				var modelClassName,
-					routeName  = wp.api.utils.extractRoutePart( modelRoute.index, 2, routeModel.get( 'versionString' ) ),
-					parentName = wp.api.utils.extractRoutePart( modelRoute.index, 4, routeModel.get( 'versionString' ) ),
-					routeEnd   = wp.api.utils.extractRoutePart( modelRoute.index, 1, routeModel.get( 'versionString' ) );
+					routeName  = wp.api.utils.extractRoutePart( modelRoute.index, 2, routeModel.get( 'versionString' ), true ),
+					parentName = wp.api.utils.extractRoutePart( modelRoute.index, 1, routeModel.get( 'versionString' ), false ),
+					routeEnd   = wp.api.utils.extractRoutePart( modelRoute.index, 1, routeModel.get( 'versionString' ), true );
+
+				// Clear the parent part of the rouite if its actually the version string.
+				if ( parentName === routeModel.get( 'versionString' ) ) {
+					parentName = '';
+				}
+				window.console.log( parentName );
+
+				// Camel case dashed names.
+//				routeEnd = routeEnd.replace
 
 				// Handle the special case of the 'me' route.
 				if ( 'me' === routeEnd ) {
@@ -175,18 +184,21 @@
 
 				// If the model has a parent in its route, add that to its class name.
 				if ( '' !== parentName && parentName !== routeName ) {
-					modelClassName = wp.api.utils.capitalize( parentName ) + wp.api.utils.capitalize( routeName );
+					modelClassName = wp.api.utils.capitalizeAndCamelCaseDashes( parentName ) + wp.api.utils.capitalizeAndCamelCaseDashes( routeName );
 					modelClassName = mapping.models[ modelClassName ] || modelClassName;
 					loadingObjects.models[ modelClassName ] = wp.api.WPApiBaseModel.extend( {
 
 						// Return a constructed url based on the parent and id.
 						url: function() {
-							var url = routeModel.get( 'apiRoot' ) + routeModel.get( 'versionString' ) +
-									parentName +  '/' +
+							var url =
+								routeModel.get( 'apiRoot' ) +
+								routeModel.get( 'versionString' ) +
+								parentName +  '/' +
 									( ( _.isUndefined( this.get( 'parent' ) ) || 0 === this.get( 'parent' ) ) ?
-										this.get( 'parent_post' ) :
-										this.get( 'parent' ) ) + '/' +
-									routeName;
+										( _.isUndefined( this.get( 'parent_post' ) ) ? '' : this.get( 'parent_post' ) + '/' ) :
+										this.get( 'parent' ) + '/' ) +
+								routeName;
+
 							if ( ! _.isUndefined( this.get( 'id' ) ) ) {
 								url +=  '/' + this.get( 'id' );
 							}
@@ -222,7 +234,7 @@
 				} else {
 
 					// This is a model without a parent in its route
-					modelClassName = wp.api.utils.capitalize( routeName );
+					modelClassName = wp.api.utils.capitalizeAndCamelCaseDashes( routeName );
 					modelClassName = mapping.models[ modelClassName ] || modelClassName;
 					loadingObjects.models[ modelClassName ] = wp.api.WPApiBaseModel.extend( {
 
@@ -267,9 +279,9 @@
 						parentName = wp.api.utils.extractRoutePart( collectionRoute.index, 3 );
 
 				// If the collection has a parent in its route, add that to its class name.
-				if ( '' !== parentName && parentName !== routeName ) {
+				if ( '' !== parentName && parentName !== routeName && routeModel.get( 'versionString' ) !== parentName ) {
 
-					collectionClassName = wp.api.utils.capitalize( parentName ) + wp.api.utils.capitalize( routeName );
+					collectionClassName = wp.api.utils.capitalizeAndCamelCaseDashes( parentName ) + wp.api.utils.capitalizeAndCamelCaseDashes( routeName );
 					modelClassName      = mapping.models[ collectionClassName ] || collectionClassName;
 					collectionClassName = mapping.collections[ collectionClassName ] || collectionClassName;
 					loadingObjects.collections[ collectionClassName ] = wp.api.WPApiBaseCollection.extend( {
@@ -298,7 +310,7 @@
 				} else {
 
 					// This is a collection without a parent in its route.
-					collectionClassName = wp.api.utils.capitalize( routeName );
+					collectionClassName = wp.api.utils.capitalizeAndCamelCaseDashes( routeName );
 					modelClassName      = mapping.models[ collectionClassName ] || collectionClassName;
 					collectionClassName = mapping.collections[ collectionClassName ] || collectionClassName;
 					loadingObjects.collections[ collectionClassName ] = wp.api.WPApiBaseCollection.extend( {
