@@ -262,7 +262,11 @@
 				}
 
 				// Add defaults to the new model, pulled form the endpoint.
-				wp.api.utils.decorateFromRoute( modelRoute.route.endpoints, loadingObjects.models[ modelClassName ] );
+				wp.api.utils.decorateFromRoute(
+					modelRoute.route.endpoints,
+					loadingObjects.models[ modelClassName ],
+					routeModel.get( 'versionString' )
+				);
 
 			} );
 
@@ -276,7 +280,7 @@
 				// Extract the name and any parent from the route.
 				var collectionClassName, modelClassName,
 						routeName  = collectionRoute.index.slice( collectionRoute.index.lastIndexOf( '/' ) + 1 ),
-						parentName = wp.api.utils.extractRoutePart( collectionRoute.index, 3 );
+						parentName = wp.api.utils.extractRoutePart( collectionRoute.index, 1, routeModel.get( 'versionString' ), false );
 
 				// If the collection has a parent in its route, add that to its class name.
 				if ( '' !== parentName && parentName !== routeName && routeModel.get( 'versionString' ) !== parentName ) {
