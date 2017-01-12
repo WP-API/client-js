@@ -93,7 +93,7 @@
 					};
 				}
 
-				// Continue by calling Bacckbone's sync.
+				// Continue by calling Backbone's sync.
 				return Backbone.sync( method, model, options );
 			},
 
