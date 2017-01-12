@@ -179,13 +179,13 @@
 				// Add any non empty args, merging them into the args object.
 				if ( ! _.isEmpty( routeEndpoint.args ) ) {
 
-					// Set as defauls if no args yet.
+					// Set as default if no args yet.
 					if ( _.isEmpty( modelInstance.prototype.args ) ) {
 						modelInstance.prototype.args = routeEndpoint.args;
 					} else {
 
 						// We already have args, merge these new args in.
-						modelInstance.prototype.args = _.union( routeEndpoint.args, modelInstance.prototype.defaults );
+						modelInstance.prototype.args = _.extend( modelInstance.prototype.args, routeEndpoint.args );
 					}
 				}
 			} else {
@@ -202,7 +202,7 @@
 						} else {
 
 							// We already have options, merge these new args in.
-							modelInstance.prototype.options = _.union( routeEndpoint.args, modelInstance.prototype.options );
+							modelInstance.prototype.options = _.extend( modelInstance.prototype.options, routeEndpoint.args );
 						}
 					}
 
@@ -1166,7 +1166,8 @@
 						// Include the array of route methods for easy reference.
 						methods: modelRoute.route.methods,
 
-						initialize: function() {
+						initialize: function( attributes, options ) {
+							wp.api.WPApiBaseModel.prototype.initialize.call( this, attributes, options );
 
 							/**
 							 * Posts and pages support trashing, other types don't support a trash
