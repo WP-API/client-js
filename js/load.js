@@ -341,9 +341,7 @@
 
 	} );
 
-	wp.api.endpoints = new Backbone.Collection( {
-		model: Endpoint
-	} );
+	wp.api.endpoints = new Backbone.Collection();
 
 	/**
 	 * Initialize the wp-api, optionally passing the API root.
