@@ -181,7 +181,7 @@
 
 						// Return a constructed url based on the parent and id.
 						url: function() {
-							var url = this.get( 'apiRoot' ) + this.get( 'versionString' ) +
+							var url = routeModel.get( 'apiRoot' ) + routeModel.get( 'versionString' ) +
 									parentName +  '/' +
 									( ( _.isUndefined( this.get( 'parent' ) ) || 0 === this.get( 'parent' ) ) ?
 										this.get( 'parent_post' ) :
@@ -229,8 +229,8 @@
 
 						// Function that returns a constructed url based on the id.
 						url: function() {
-							var url = this.get( 'apiRoot' ) +
-								this.get( 'versionString' ) +
+							var url = routeModel.get( 'apiRoot' ) +
+								routeModel.get( 'versionString' ) +
 								( ( 'me' === routeName ) ? 'users/me' : routeName );
 
 							if ( ! _.isUndefined( this.get( 'id' ) ) ) {
@@ -277,7 +277,7 @@
 
 						// Function that returns a constructed url passed on the parent.
 						url: function() {
-							return this.get( 'apiRoot' ) + this.get( 'versionString' ) +
+							return routeModel.get( 'apiRoot' ) + routeModel.get( 'versionString' ) +
 									parentName + '/' + this.parent + '/' +
 									routeName;
 						},
@@ -306,7 +306,7 @@
 
 						// For the url of a root level collection, use a string.
 						url: function() {
-							return this.get( 'apiRoot' ) + this.get( 'versionString' ) + routeName;
+							return routeModel.get( 'apiRoot' ) + routeModel.get( 'versionString' ) + routeName;
 						},
 
 						// Specify the model that this collection contains.
@@ -334,8 +334,9 @@
 				loadingObjects.models[ index ] = wp.api.utils.addMixinsAndHelpers( model, index, loadingObjects );
 			} );
 
-			this.set( 'models', loadingObjects.models );
-			this.set( 'collections', loadingObjects.collections );
+			// Set the routeModel models and collections.
+			routeModel.set( 'models', loadingObjects.models );
+			routeModel.set( 'collections', loadingObjects.collections );
 
 		}
 
