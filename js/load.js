@@ -334,6 +334,9 @@
 				loadingObjects.models[ index ] = wp.api.utils.addMixinsAndHelpers( model, index, loadingObjects );
 			} );
 
+			this.set( 'models', loadingObjects.models );
+			this.set( 'collections', loadingObjects.collections );
+
 		}
 
 	} );
