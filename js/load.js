@@ -365,7 +365,9 @@
 		}
 
 		if ( ! initializedDeferreds[ attributes.apiRoot + attributes.versionString ] ) {
-			endpoint = wp.api.endpoints.findWhere( { apiRoot: attributes.apiRoot, versionString: attributes.versionString } );
+
+			// Look for an existing copy of this endpoint
+			endpoint = wp.api.endpoints.findWhere( { 'apiRoot': attributes.apiRoot, 'versionString': attributes.versionString } );
 			if ( ! endpoint ) {
 				endpoint = new Endpoint( attributes );
 				wp.api.endpoints.add( endpoint );
