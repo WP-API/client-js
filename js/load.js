@@ -357,8 +357,8 @@
 		var endpoint, attributes = {}, deferred, promise;
 
 		args                     = args || {};
-		attributes.apiRoot       = args.apiRoot || wpApiSettings.root;
-		attributes.versionString = args.versionString || wpApiSettings.versionString;
+		attributes.apiRoot       = args.apiRoot || wpApiSettings.root || '/wp-json';
+		attributes.versionString = args.versionString || wpApiSettings.versionString || 'wp/v2/';
 		attributes.schema        = args.schema || null;
 		if ( ! attributes.schema && attributes.apiRoot === wpApiSettings.root && attributes.versionString === wpApiSettings.versionString ) {
 			attributes.schema = wpApiSettings.schema;
