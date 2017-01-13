@@ -133,8 +133,8 @@
 			/**
 			 * Tracking objects for models and collections.
 			 */
-			loadingObjects.models      = routeModel.get( 'models' );
-			loadingObjects.collections = routeModel.get( 'collections' );
+			loadingObjects.models      = {};
+			loadingObjects.collections = {};
 
 			_.each( routeModel.schemaModel.get( 'routes' ), function( route, index ) {
 
