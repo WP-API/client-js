@@ -181,7 +181,7 @@
 
 						// Return a constructed url based on the parent and id.
 						url: function() {
-							var url = routeModel.get( 'apiRoot' ) + routeModel.get( 'versionString' ) +
+							var url = this.get( 'apiRoot' ) + this.get( 'versionString' ) +
 									parentName +  '/' +
 									( ( _.isUndefined( this.get( 'parent' ) ) || 0 === this.get( 'parent' ) ) ?
 										this.get( 'parent_post' ) :
@@ -229,8 +229,8 @@
 
 						// Function that returns a constructed url based on the id.
 						url: function() {
-							var url = routeModel.get( 'apiRoot' ) +
-								routeModel.get( 'versionString' ) +
+							var url = this.get( 'apiRoot' ) +
+								this.get( 'versionString' ) +
 								( ( 'me' === routeName ) ? 'users/me' : routeName );
 
 							if ( ! _.isUndefined( this.get( 'id' ) ) ) {
@@ -277,7 +277,7 @@
 
 						// Function that returns a constructed url passed on the parent.
 						url: function() {
-							return routeModel.get( 'apiRoot' ) + routeModel.get( 'versionString' ) +
+							return this.get( 'apiRoot' ) + this.get( 'versionString' ) +
 									parentName + '/' + this.parent + '/' +
 									routeName;
 						},
@@ -305,7 +305,9 @@
 					loadingObjects.collections[ collectionClassName ] = wp.api.WPApiBaseCollection.extend( {
 
 						// For the url of a root level collection, use a string.
-						url: routeModel.get( 'apiRoot' ) + routeModel.get( 'versionString' ) + routeName,
+						url: function() {
+							return this.get( 'apiRoot' ) + this.get( 'versionString' ) + routeName;
+						},
 
 						// Specify the model that this collection contains.
 						model: function( attrs, options ) {
