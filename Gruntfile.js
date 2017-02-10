@@ -75,6 +75,7 @@ module.exports = function( grunt ) {
 	grunt.loadNpmTasks( 'grunt-contrib-watch' );
 	grunt.loadNpmTasks( 'grunt-contrib-qunit' );
 	grunt.loadNpmTasks( 'grunt-jscs' );
-	grunt.registerTask( 'default', [ 'jshint', 'jscs', 'uglify:js', 'concat:js', 'qunit' ] );
+	grunt.registerTask( 'build', [ 'uglify:js', 'concat:js' ] );
+	grunt.registerTask( 'default', [ 'jshint', 'jscs', 'build', 'qunit' ] );
 	grunt.registerTask( 'test', [ 'qunit:all' ] );
 };
