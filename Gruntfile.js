@@ -64,7 +64,6 @@ module.exports = function( grunt ) {
 			src: 'js/*.js',
 				options: {
 					config: '.jscsrc',
-					verbose: true,
 					preset: 'wordpress'
 				}
 			}
