@@ -1,6 +1,8 @@
 <?php
 /**
  * Plugin Name: WP-API Client JS.
+ *
+ * Version 1.0.1
  */
 
 /**
