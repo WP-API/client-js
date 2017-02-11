@@ -26,7 +26,6 @@ wp.api.init( {
 
 		// Check that we have and can get each model type.
 		_.each( customModels, function( className ) {
-			window.console.log( 'Checking ' + className + ' model.' );
 			QUnit.test( 'Checking ' + className + ' model.' , function( assert ) {
 				var done = assert.async();
 
