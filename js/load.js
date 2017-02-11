@@ -172,10 +172,6 @@
 				if ( parentName === routeModel.get( 'versionString' ) ) {
 					parentName = '';
 				}
-				window.console.log( parentName );
-
-				// Camel case dashed names.
-//				routeEnd = routeEnd.replace
 
 				// Handle the special case of the 'me' route.
 				if ( 'me' === routeEnd ) {
