@@ -96,20 +96,51 @@
 	};
 
 	/**
-	 * Extract a route part based on negitive index.
+	 * Helper function that capitilises the first word and camel cases any words starting
+	 * after dashes, removing the dashes.
+	 */
+	wp.api.utils.capitalizeAndCamelCaseDashes = function( str ) {
+		if ( _.isUndefined( str ) ) {
+			return str;
+		}
+		str = wp.api.utils.capitalize( str );
+
+		return wp.api.utils.camelCaseDashes( str );
+	};
+
+	/**
+	 * Helper function to camel case the letter after dashes, removing the dashes.
+	 */
+	wp.api.utils.camelCaseDashes = function( str ) {
+		return str.replace( /-([a-z])/g, function( g ) {
+			return g[ 1 ].toUpperCase();
+		} );
+	};
+
+	/**
+	 * Extract a route part based on negative index.
 	 *
 	 * @param {string} route The endpoint route.
 	 * @param {int}    part  The number of parts from the end of the route to retrieve. Default 1.
 	 *                       Example route `/a/b/c`: part 1 is `c`, part 2 is `b`, part 3 is `a`.
+	 * @param {string} [versionString] Version string, defaults to wp.api.versionString.
+	 * @param {boolean} [reverse] Whether to reverse the order when extracting the rout part. Optional, default true;
 	 */
-	wp.api.utils.extractRoutePart = function( route, part ) {
+	wp.api.utils.extractRoutePart = function( route, part, versionString, reverse ) {
 		var routeParts;
 
-		part  = part || 1;
+		part = part || 1;
+		versionString = versionString || wp.api.versionString;
 
 		// Remove versions string from route to avoid returning it.
-		route = route.replace( wp.api.versionString, '' );
-		routeParts = route.split( '/' ).reverse();
+		if ( 0 === route.indexOf( '/' + versionString ) ) {
+			route = route.substr( versionString.length + 1 );
+		}
+
+		routeParts = route.split( '/' );
+		if ( reverse ) {
+			routeParts = routeParts.reverse();
+		}
 		if ( _.isUndefined( routeParts[ --part ] ) ) {
 			return '';
 		}
@@ -155,13 +186,13 @@
 				// Add any non empty args, merging them into the args object.
 				if ( ! _.isEmpty( routeEndpoint.args ) ) {
 
-					// Set as defauls if no args yet.
+					// Set as default if no args yet.
 					if ( _.isEmpty( modelInstance.prototype.args ) ) {
 						modelInstance.prototype.args = routeEndpoint.args;
 					} else {
 
 						// We already have args, merge these new args in.
-						modelInstance.prototype.args = _.union( routeEndpoint.args, modelInstance.prototype.defaults );
+						modelInstance.prototype.args = _.extend( modelInstance.prototype.args, routeEndpoint.args );
 					}
 				}
 			} else {
@@ -178,7 +209,7 @@
 						} else {
 
 							// We already have options, merge these new args in.
-							modelInstance.prototype.options = _.union( routeEndpoint.args, modelInstance.prototype.options );
+							modelInstance.prototype.options = _.extend( modelInstance.prototype.options, routeEndpoint.args );
 						}
 					}
 
@@ -217,51 +248,47 @@
 			 * @type {{toJSON: toJSON, parse: parse}}.
 			 */
 			TimeStampedMixin = {
+
 				/**
-				 * Serialize the entity pre-sync.
+				 * Prepare a JavaScript Date for transmitting to the server.
 				 *
-				 * @returns {*}.
+				 * This helper function accepts a field and Date object. It converts the passed Date
+				 * to an ISO string and sets that on the model field.
+				 *
+				 * @param {Date}   date   A JavaScript date object. WordPress expects dates in UTC.
+				 * @param {string} field  The date field to set. One of 'date', 'date_gmt', 'date_modified'
+				 *                        or 'date_modified_gmt'. Optional, defaults to 'date'.
 				 */
-				toJSON: function() {
-					var attributes = _.clone( this.attributes );
+				setDate: function( date, field ) {
+					var theField = field || 'date';
 
-					// Serialize Date objects back into 8601 strings.
-					_.each( parseableDates, function( key ) {
-						if ( key in attributes ) {
+					// Don't alter non parsable date fields.
+					if ( _.indexOf( parseableDates, theField ) < 0 ) {
+						return false;
+					}
 
-							// Don't convert null values
-							if ( ! _.isNull( attributes[ key ] ) ) {
-								attributes[ key ] = attributes[ key ].toISOString();
-							}
-						}
-					} );
-
-					return attributes;
+					this.set( theField, date.toISOString() );
 				},
 
 				/**
-				 * Unserialize the fetched response.
+				 * Get a JavaScript Date from the passed field.
 				 *
-				 * @param {*} response.
-				 * @returns {*}.
+				 * WordPress returns 'date' and 'date_modified' in the timezone of the server as well as
+				 * UTC dates as 'date_gmt' and 'date_modified_gmt'. Draft posts do not include UTC dates.
+				 *
+				 * @param {string} field  The date field to set. One of 'date', 'date_gmt', 'date_modified'
+				 *                        or 'date_modified_gmt'. Optional, defaults to 'date'.
 				 */
-				parse: function( response ) {
-					var timestamp;
+				getDate: function( field ) {
+					var theField   = field || 'date',
+						theISODate = this.get( theField );
 
-					// Parse dates into native Date objects.
-					_.each( parseableDates, function( key ) {
-						if ( ! ( key in response ) ) {
-							return;
-						}
+					// Only get date fields and non null values.
+					if ( _.indexOf( parseableDates, theField ) < 0 || _.isNull( theISODate ) ) {
+						return false;
+					}
 
-						// Don't convert null values
-						if ( ! _.isNull( response[ key ] ) ) {
-							timestamp = wp.api.utils.parseISO8601( response[ key ] );
-							response[ key ] = new Date( timestamp );
-						}
-					});
-
-					return response;
+					return new Date( wp.api.utils.parseISO8601( theISODate ) );
 				}
 			},
 
@@ -282,8 +309,8 @@
 				deferred  = jQuery.Deferred();
 				embeddeds = parentModel.get( '_embedded' ) || {};
 
-				// Verify that we have a valied author id.
-				if ( ! _.isNumber( modelId ) ) {
+				// Verify that we have a valied object id.
+				if ( ! _.isNumber( modelId ) || 0 === modelId ) {
 					deferred.reject();
 					return deferred;
 				}
@@ -303,10 +330,17 @@
 
 				// If we didn’t have an embedded getModel, fetch the getModel data.
 				if ( ! getModel.get( embedCheckField ) ) {
-					getModel.fetch( { success: function( getModel ) {
-						deferred.resolve( getModel );
-					} } );
+					getModel.fetch( {
+						success: function( getModel ) {
+							deferred.resolve( getModel );
+						},
+						error: function( getModel, response ) {
+							deferred.reject( response );
+						}
+					} );
 				} else {
+
+					// Resolve with the embedded model.
 					deferred.resolve( getModel );
 				}
 
@@ -372,12 +406,17 @@
 
 				// If we didn’t have embedded getObjects, fetch the getObjects data.
 				if ( _.isUndefined( getObjects.models[0] ) ) {
-					getObjects.fetch( { success: function( getObjects ) {
+					getObjects.fetch( {
+						success: function( getObjects ) {
 
-						// Add a helper 'parent_post' attribute onto the model.
-						setHelperParentPost( getObjects, postId );
-						deferred.resolve( getObjects );
-					} } );
+							// Add a helper 'parent_post' attribute onto the model.
+							setHelperParentPost( getObjects, postId );
+							deferred.resolve( getObjects );
+						},
+						error: function( getModel, response ) {
+							deferred.reject( response );
+						}
+					} );
 				} else {
 
 					// Add a helper 'parent_post' attribute onto the model.
@@ -598,11 +637,11 @@
 			},
 
 			/**
-			 * Add a helper function to retrieve the featured image.
+			 * Add a helper function to retrieve the featured media.
 			 */
-			FeaturedImageMixin = {
-				getFeaturedImage: function() {
-					return buildModelGetter( this, this.get( 'featured_image' ), 'Media', 'https://api.w.org/featuredmedia', 'source_url' );
+			FeaturedMediaMixin = {
+				getFeaturedMedia: function() {
+					return buildModelGetter( this, this.get( 'featured_media' ), 'Media', 'wp:featuredmedia', 'source_url' );
 				}
 			};
 
@@ -628,9 +667,9 @@
 			model = model.extend( AuthorMixin );
 		}
 
-		// Add the FeaturedImageMixin for models that contain a featured_image.
-		if ( ! _.isUndefined( model.prototype.args.featured_image ) ) {
-			model = model.extend( FeaturedImageMixin );
+		// Add the FeaturedMediaMixin for models that contain a featured_media.
+		if ( ! _.isUndefined( model.prototype.args.featured_media ) ) {
+			model = model.extend( FeaturedMediaMixin );
 		}
 
 		// Add the CategoriesMixin for models that support categories collections.
