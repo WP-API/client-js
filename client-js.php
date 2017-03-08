@@ -15,7 +15,16 @@ function json_api_client_js() {
 	 */
 	global $wp_rest_server;
 
-	// Ensure the rest server is intiialized.
+	// Ensure that the wp-api script is registered.
+	$scripts = wp_scripts();
+	$src = plugins_url( 'build/js/wp-api.js', __FILE__ );
+	if ( isset( $scripts->registered['wp-api'] ) ) {
+		$scripts->registered['wp-api']->src = $src;
+	} else {
+		wp_register_script( 'wp-api', $src, array( 'jquery', 'underscore', 'backbone' ), '1.0', true );
+	}
+
+	// Ensure the rest server is intialized.
 	if ( empty( $wp_rest_server ) ) {
 		/** This filter is documented in wp-includes/rest-api.php */
 		$wp_rest_server_class = apply_filters( 'wp_rest_server_class', 'WP_REST_Server' );
