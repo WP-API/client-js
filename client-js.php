@@ -1,8 +1,9 @@
 <?php
 /**
- * Plugin Name: WP-API Client JS.
- *
- * Version 1.0.1
+ * Plugin Name: WP-API Client JS
+ * Plugin URI: https://github.com/WP-API/client-js
+ * Description: Backbone-based JavaScript client for WP API.
+ * Version: 1.0.1
  */
 
 /**
