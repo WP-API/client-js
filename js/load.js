@@ -27,13 +27,13 @@
 		initialize: function() {
 			var model = this, deferred, oauth, requestData, token;
 
-				wp.api.oauth.setup = function( publicKey, secretKey, requestUrl ) {
+				wp.api.oauth.setup = function( clientKey, secretKey, requestUrl ) {
 
 				// Are we using OAuth 1 and don't already have a token in the response
 				if ( wpApiSettings.oauth1 && _.isNull( wpApiSettings.oauth1Token ) ) {
 					oauth = new OAuth( {
 						consumer: {
-							'public': publicKey,
+							'public': clientKey,
 							'secret': secretKey
 						},
 						signature_method: 'HMAC-SHA1'
@@ -74,14 +74,14 @@
 			};
 
 			// Set up OAuth, using localized or passed credentials.
-			wp.api.oauth.connect = function( publicK, secretK ) {
-				var secretKey = secretK || wpApiSettings.oauth1Secret,
-					publicKey = publicK || wpApiSettings.oauth1Public;
+			wp.api.oauth.connect = function( clientKey, secretKey ) {
+				var secretKey = secretKey || wpApiSettings.oauth1Secret,
+					clientKey = clientKey || wpApiSettings.oauth1Public;
 
 				if ( ! localStorage.getItem( 'wpOathToken' ) ) {
 
 					// Setup the oath process.
-					wp.api.oauth.setup( publicKey, secretKey, wpApiSettings.oauth1.request );
+					wp.api.oauth.setup( clientKey, secretKey, wpApiSettings.oauth1.request );
 				}
 			};
 

@@ -37,7 +37,7 @@
 					model.unset( 'slug' );
 				}
 
-				// Use Oauth authentication if available.
+				// Use OAuth authentication if available.
 				token = JSON.parse( localStorage.getItem( 'wpOathToken' ) );
 				if ( ! _.isUndefined( token ) ) {
 
